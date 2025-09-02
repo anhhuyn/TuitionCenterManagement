@@ -8,10 +8,11 @@ const validatePassword = (password) => {
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
 };
+
 let handleRegister = async (userData) => {
     return new Promise(async (resolve, reject) => {
         try {
-            const { email, password, fullName, phoneNumber } = userData;
+            const { email, password } = userData;
             if (!validatePassword(password)) {
                 return resolve({
                     errCode: 4,
@@ -31,7 +32,7 @@ let handleRegister = async (userData) => {
             const otp = Math.floor(100000 + Math.random() * 900000).toString();
             temporaryUsers[email] = {
                 otp: otp,
-                data: { ...userData }, 
+                data: { ...userData },
                 createdAt: Date.now()
             };
             let transporter = nodemailer.createTransport({
@@ -60,6 +61,7 @@ let handleRegister = async (userData) => {
         }
     });
 };
+
 let handleVerifyOTP = async (email, otp) => {
     return new Promise(async (resolve, reject) => {
         try {
@@ -82,8 +84,8 @@ let handleVerifyOTP = async (email, otp) => {
             await db.User.create({
                 email: userData.email,
                 password: hashedPassword,
-                fullName: userData.fullName,
-                phoneNumber: userData.phoneNumber,
+                fullName: userData.fullName || 'Người dùng mới',
+                phoneNumber: userData.phoneNumber || '',
                 roleId: 'R2',
             });
             delete temporaryUsers[email];

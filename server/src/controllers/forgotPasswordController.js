@@ -11,11 +11,18 @@ const requestOTP = async (req, res) => {
     if (!email) throw new Error("Vui lòng nhập email.");
 
     const result = await sendPasswordResetOTPEmail(email);
-    return res.status(200).json(result);
+    return res.status(200).json({
+      success: true,
+      message: result.message
+    });
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+
 
 // B2: xác thực OTP (chỉ check đúng/sai, chưa đổi mật khẩu)
 const verifyOTPCode = async (req, res) => {
@@ -24,11 +31,19 @@ const verifyOTPCode = async (req, res) => {
     if (!email || !otp) throw new Error("Thiếu dữ liệu.");
 
     const result = await checkOTP(email, otp);
-    return res.status(200).json(result);
+    // result đang là { message: "OTP hợp lệ." } — ta wrap thêm success
+    return res.status(200).json({
+      success: true,
+      message: result.message || "OTP hợp lệ."
+    });
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+
 
 // B3: reset mật khẩu (check OTP lại 1 lần nữa + đổi mật khẩu)
 const resetPassword = async (req, res) => {
@@ -37,10 +52,17 @@ const resetPassword = async (req, res) => {
     if (!email || !otp || !newPassword) throw new Error("Thiếu dữ liệu.");
 
     const result = await verifyOTPAndResetPassword(email, otp, newPassword);
-    return res.status(200).json(result);
+    return res.status(200).json({
+      success: true,
+      message: result.message || "Mật khẩu đã được đặt lại thành công."
+    });
   } catch (error) {
-    return res.status(400).json({ error: error.message });
+    return res.status(400).json({
+      success: false,
+      message: error.message
+    });
   }
 };
+
 
 export default { requestOTP, verifyOTPCode, resetPassword };

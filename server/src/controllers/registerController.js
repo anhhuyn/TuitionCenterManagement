@@ -3,9 +3,9 @@ let getRegisterPage = (req, res) => {
     return res.render("register");
 };
 let handleRegister = async (req, res) => {
-    const { email, password, fullName, phoneNumber } = req.body;
+    const { email, password } = req.body;
     try {
-        const response = await registerService.handleRegister({ email, password, fullName, phoneNumber });
+        const response = await registerService.handleRegister({ email, password });
         if (response.errCode === 0) {
             return res.status(200).json({
                 message: response.message,

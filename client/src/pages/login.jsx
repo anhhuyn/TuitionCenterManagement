@@ -87,7 +87,10 @@ const LoginPage = () => {
             </Form.Item>
 
             <div className="forgot-link">
-              <a href="#">Forgot Password?</a>
+              <a onClick={() => navigate("/forgot-password")} style={{ cursor: "pointer" }}>
+  Forgot Password?
+</a>
+
             </div>
 
             <Button type="primary" htmlType="submit" className="btn">

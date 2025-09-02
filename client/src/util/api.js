@@ -23,4 +23,18 @@ const getAuthMe = () => {
   return axios.get("/v1/api/auth/me");
 };
 
-export { createUserApi, loginApi, getUserApi, getAuthMe };
+//Quên mật khẩu
+const forgotPasswordApi = (email) => {
+  return axios.post("/v1/api/forgot-password", { email });
+};
+
+const verifyOtpApi = (email, otp) => {
+  return axios.post("/v1/api/forgot-password/verify-otp", { email, otp });
+};
+
+const resetPasswordApi = (email, otp, newPassword) => {
+  return axios.post("/v1/api/reset-password", { email, otp, newPassword });
+};
+
+
+export { createUserApi, loginApi, getUserApi, getAuthMe, forgotPasswordApi, verifyOtpApi, resetPasswordApi};
