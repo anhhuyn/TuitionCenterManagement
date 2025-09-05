@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { getAuthMe } from "../util/api.js";
+import Layout from "../components/layout/Layout";
 
 const HomePage = () => {
   const [user, setUser] = useState(null);
@@ -25,11 +26,14 @@ const HomePage = () => {
 
   if (!user) return null; // Loading
 
-  return (
-    <div style={{ padding: "40px", textAlign: "center" }}>
-      <h1>Chào mừng, {user.fullName}</h1>
-      <p>Email của bạn: {user.email}</p>
-    </div>
+ return (
+    <Layout>
+      {/* Đây là children, sẽ hiển thị trong <main> của Layout */}
+      <div style={{ padding: "40px", textAlign: "center" }}>
+        <h1>Chào mừng, {user.fullName}</h1>
+        <p>Email của bạn: {user.email}</p>
+      </div>
+    </Layout>
   );
 };
 

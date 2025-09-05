@@ -46,6 +46,7 @@ const ResetPasswordPage = () => {
   };
 
   return (
+    <div className="login-page">
     <div className="container">
       {/* Bìa xanh bên trái */}
       <div className="toggle-box">
@@ -75,7 +76,7 @@ const ResetPasswordPage = () => {
               <Input.Password placeholder="Xác nhận mật khẩu mới" />
             </Form.Item>
 
-            <Button type="primary" htmlType="submit" className="btn" block>
+            <Button type="primary" htmlType="submit" className="btn-primary" block>
               Đặt lại mật khẩu
             </Button>
           </Form>
@@ -93,6 +94,7 @@ const ResetPasswordPage = () => {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };

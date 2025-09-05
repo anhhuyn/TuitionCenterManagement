@@ -65,6 +65,8 @@ const LoginPage = () => {
   };
 
   return (
+    <div className="login-page">
+   <div className="login-wrapper">
     <div className={`container ${isActive ? "active" : ""}`}>
       {/* Form Login */}
       <div className="form-box login">
@@ -82,6 +84,7 @@ const LoginPage = () => {
             <Form.Item
               name="password"
               rules={[{ required: true, message: "Please input your password!" }]}
+              style={{ marginBottom: "8px" }} 
             >
               <Input.Password placeholder="Password" />
             </Form.Item>
@@ -93,7 +96,7 @@ const LoginPage = () => {
 
             </div>
 
-            <Button type="primary" htmlType="submit" className="btn">
+            <Button type="primary" htmlType="submit" className="btn-primary">
               Login
             </Button>
           </Form>
@@ -136,7 +139,7 @@ const LoginPage = () => {
               <Input.Password placeholder="Password" />
             </Form.Item>
 
-            <Button type="primary" htmlType="submit" className="btn">
+            <Button type="primary" htmlType="submit" className="btn-primary">
               Register
             </Button>
           </Form>
@@ -155,18 +158,20 @@ const LoginPage = () => {
         <div className="toggle-panel toggle-left">
           <h1>Hello, Welcome!</h1>
           <p>Don't have an account?</p>
-          <button className="btn register-btn" onClick={() => setIsActive(true)}>
+          <button className="btn-outline" onClick={() => setIsActive(true)}>
             Register
           </button>
         </div>
         <div className="toggle-panel toggle-right">
           <h1>Welcome Back!</h1>
           <p>Already have an account?</p>
-          <button className="btn login-btn" onClick={() => setIsActive(false)}>
+          <button className="btn-outline" onClick={() => setIsActive(false)}>
             Login
           </button>
         </div>
       </div>
+    </div>
+    </div>
     </div>
   );
 };

@@ -2,3 +2,18 @@
   margin: 0;
   padding: 0;
 }
+
+.custom-sidebar {
+  background-color: #7494ec !important;
+  color: white !important; /* để chữ/icon sáng hơn */
+}
+
+.custom-sidebar .nav-link,
+.custom-sidebar .nav-item {
+  color: white !important;
+}
+
+.custom-sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-radius: 8px;
+}

@@ -10,16 +10,19 @@
 }
 
 body {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+  background: linear-gradient(90deg, #e2e2e2, #c9d6ff);
+}
+
+.login-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
 }
 
 .container {
     position: relative;
-    width: 850px;
+    width: 750px;
     height: 550px;
     background: #fff;
     margin: 20px;
@@ -73,17 +76,20 @@ form {
 }
 
 .form-content {
-    width: 100%;
+  width: 100%;
+  max-width: 350px; 
+  margin: 0 auto;  
 }
+
 
 .form-content h1, 
 .form-content p {
     text-align: center;
 }
 
-.input-box {
+.login-page .input-box:last-of-type{
     position: relative;
-    margin: 30px 0;
+    margin: 12px 0;
 }
 
 .input-box input {
@@ -111,19 +117,20 @@ form {
     font-size: 20px;
 }
 
-.forgot-link {
-  margin: 10px 0;
+.login-page .forgot-link {
+   margin: 5px 0 15px 0;
   text-align: center; /* Căn giữa ngang */
 }
 
-.forgot-link a {
-  font-size: 13px; /* Nhỏ hơn mặc định */
-  color: #7494ec; /* Màu nổi bật (có thể đổi tùy thích) */
+
+.login-page .forgot-link a {
+  font-size: 13px !important;
+  color: #7494ec !important;
   text-decoration: none;
   transition: color 0.3s ease;
 }
 
-.forgot-link a:hover {
+.login-page .forgot-link a:hover {
   color: #4d6ddf; /* Màu khi hover */
 }
 
@@ -149,7 +156,7 @@ form {
 .social-icons a {
     display: inline-flex;
     padding: 10px;
-    border: 2px solid #ccc;
+    border: none !important;
     border-radius: 8px;
     font-size: 24px;
     color: #333;
@@ -317,4 +324,120 @@ form {
   display: flex;
   align-items: center;
   padding-right: 12px;
+}
+
+/* Nút login màu xanh */
+.btn-primary {
+  width: 100%;
+  height: 48px;
+  background: #7494ec !important;
+  border-radius: 8px !important;
+  border: none !important;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff !important;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: #4d6ddf !important; /* xanh đậm hơn khi hover */
+}
+
+/* Nút register viền trắng */
+.btn-outline {
+  width: 160px;
+  height: 46px;
+  background: transparent !important;
+  border: 2px solid #fff !important;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff !important;
+  font-weight: 600;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #fff !important;
+  color: #7494ec !important; /* chữ xanh khi hover */
+}
+
+.btn-outline {
+  width: 160px;
+  height: 46px;
+  background: transparent !important;
+  border: 2px solid #fff !important;
+  border-radius: 8px !important;
+  cursor: pointer;
+  font-size: 16px;
+  color: #fff !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: #fff !important;
+  color: #7494ec !important;
+  border-color: #fff !important;
+}
+.login-page .container {
+  position: relative;
+  width: 750px;
+  height: 500px;
+  background: #fff;
+  margin: 20px auto;
+  border-radius: 30px;
+  box-shadow: 0 0 30px rgba(0, 0, 0, .2);
+  overflow: hidden;
+}
+
+.login-page .form-box {
+  position: absolute;
+  right: 0;
+  width: 50%;
+  height: 100%;
+  background: #fff;
+  color: #333;
+  padding: 40px;
+  z-index: 1;
+  transition: .6s ease-in-out 1.2s, visibility 0s 1s;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-page .btn-primary {
+  width: 100%;
+  height: 48px;
+  background: #7494ec !important;
+  border-radius: 8px !important;
+  border: none !important;
+  font-size: 16px;
+  color: #fff !important;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+
+.login-page .btn-primary:hover {
+  background: #4d6ddf !important;
+}
+
+.login-page .btn-outline {
+  width: 160px;
+  height: 46px;
+  background: transparent !important;
+  border: 2px solid #fff !important;
+  border-radius: 8px !important;
+  font-size: 16px;
+  color: #fff !important;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.login-page .btn-outline:hover {
+  background: #fff !important;
+  color: #7494ec !important;
+  border-color: #fff !important;
 }

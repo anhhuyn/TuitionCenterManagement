@@ -35,6 +35,7 @@ if (res?.success) {
   };
 
     return (
+       <div className="login-page">
     <div className="container">{/* KHÔNG cần active để bìa ở bên trái */}
       {/* Bìa xanh bên trái */}
       <div className="toggle-box">
@@ -60,7 +61,7 @@ if (res?.success) {
               <Input placeholder="Nhập email của bạn" />
             </Form.Item>
 
-            <Button type="primary" htmlType="submit" className="btn" block>
+            <Button type="primary" htmlType="submit" className="btn-primary" block>
               Gửi yêu cầu
             </Button>
           </Form>
@@ -78,6 +79,7 @@ if (res?.success) {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 };
