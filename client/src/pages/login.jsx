@@ -3,10 +3,13 @@ import { Form, Input, Button, notification } from "antd";
 import { useNavigate } from "react-router-dom";
 import { loginApi } from "../util/api";
 import "../styles/LoginRegister.css"; 
+import { useDispatch } from 'react-redux'
+import { loginSuccess } from '../store/authSlice'  
 
 const LoginPage = () => {
   const [isActive, setIsActive] = useState(false);
   const navigate = useNavigate();
+  const dispatch = useDispatch()
 
   // Hàm set cookie
   const setCookie = (cname, cvalue, exdays) => {
@@ -32,9 +35,11 @@ const LoginPage = () => {
   const onLogin = async (values) => {
     try {
       const res = await loginApi(values.email, values.password);
+      
       if (res?.token) {
         // Lưu token vào cookie 1 ngày
         setCookie("token", res.token, 1);
+         dispatch(loginSuccess(res.user))
 
         notification.success({
           message: "Đăng nhập thành công",

@@ -16,7 +16,6 @@ export default (sequelize, DataTypes) => {
     gender: DataTypes.BOOLEAN,
     image: DataTypes.STRING,
     roleId: DataTypes.STRING,
-    // Không cần khai báo createdAt/updatedAt ở đây nếu dùng mặc định
   }, {
     sequelize,
     modelName: 'User',

@@ -1,4 +1,5 @@
 import axios from "./axios.customize";
+import { loginSuccess, setLoading } from '../store/authSlice';
 
 // Đăng ký
 const createUserApi = (name, email, password) => {
@@ -36,5 +37,22 @@ const resetPasswordApi = (email, otp, newPassword) => {
   return axios.post("/v1/api/reset-password", { email, otp, newPassword });
 };
 
+const fetchUserFromToken = async (dispatch) => {
+  dispatch(setLoading(true)); // 🟢 Bắt đầu loading
 
-export { createUserApi, loginApi, getUserApi, getAuthMe, forgotPasswordApi, verifyOtpApi, resetPasswordApi};
+  try {
+    const res = await axios.get("/v1/api/auth/me", { withCredentials: true,});
+    console.log("🔥 Response from /auth/me:", res.data);
+    if (res.data && res.data.user) {
+      dispatch(loginSuccess(res.data.user));
+    } else {
+      dispatch(setLoading(false)); // 🟡 Không có user
+    }
+  } catch (error) {
+    console.error(error);
+    dispatch(setLoading(false)); // 🔴 Gặp lỗi
+  }
+};
+
+
+export { createUserApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };

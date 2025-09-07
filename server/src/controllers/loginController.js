@@ -13,11 +13,10 @@ let handleLogin = async (req, res) => {
 
       // Tạo JWT token
       const token = jwt.sign(
-        { id: user.id, email: user.email }, // payload chứa thông tin user
-        'mk',                               // bí mật (nên đặt vào .env)
-        { expiresIn: '1h' }                 // token hết hạn sau 1 giờ
-      );
-
+  { id: user.id, email: user.email, image: user.image }, // thêm image vào đây
+  'mk',
+  { expiresIn: '1h' }
+);
       // Trả token về dưới dạng JSON
       return res.status(200).json({
         message: "Đăng nhập thành công!",
@@ -25,7 +24,8 @@ let handleLogin = async (req, res) => {
         user: {
           id: user.id,
           email: user.email,
-          fullName: user.fullName
+          fullName: user.fullName,
+          image: user.image
         }
       });
     } else {

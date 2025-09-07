@@ -4,7 +4,7 @@ import AppHeader from './AppHeader'
 import AppSidebar from './AppSidebar'
 
 const Layout = ({ children }) => {
-  const sidebarShow = useSelector(state => state.sidebarShow)
+  const sidebarShow = useSelector(state => state.ui.sidebarShow)
 
   return (
     <div className="d-flex">

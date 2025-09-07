@@ -35,7 +35,7 @@ const AppHeader = () => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const dispatch = useDispatch()
-const sidebarShow = useSelector((state) => state.sidebarShow) // hoặc state.sidebar.sidebarShow nếu bạn có reducer riêng
+const sidebarShow = useSelector((state) => state.ui.sidebarShow)
 
 
   useEffect(() => {
