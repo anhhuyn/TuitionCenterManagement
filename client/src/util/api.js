@@ -1,10 +1,17 @@
 import axios from "./axios.customize";
 import { loginSuccess, setLoading } from '../store/authSlice';
 
-// Đăng ký
-const createUserApi = (name, email, password) => {
+// Đăng ký (gửi OTP về email)
+const registerApi = (data) => {
   const URL_API = "/v1/api/register";
-  return axios.post(URL_API, { name, email, password });
+  // Truyền toàn bộ đối tượng data vào body của request
+  return axios.post(URL_API, data);
+};
+
+// Xác thực OTP
+const verifyRegisterOtpApi = (email, otp) => {
+  const URL_API = "/v1/api/verify-otp";
+  return axios.post(URL_API, { email, otp });
 };
 
 // Đăng nhập
@@ -55,4 +62,4 @@ const fetchUserFromToken = async (dispatch) => {
 };
 
 
-export { createUserApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };
+export { registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };

@@ -8,6 +8,7 @@ let router = express.Router();
 
 router.post('/login', loginController.handleLogin);
 router.post('/register', registerController.handleRegister);
+router.post("/verify-otp", registerController.handleVerifyOTP);
 router.post("/forgot-password", forgotPasswordController.requestOTP);
 router.post("/reset-password", forgotPasswordController.resetPassword);
 router.post("/forgot-password/verify-otp", forgotPasswordController.verifyOTPCode);

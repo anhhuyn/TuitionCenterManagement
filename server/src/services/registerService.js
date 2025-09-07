@@ -4,74 +4,97 @@ import db from '../models/index.js';
 
 const temporaryUsers = {};
 
+// Ánh xạ vai trò từ tên tiếng Việt sang roleId tương ứng
+const roleMapping = {
+    'Giáo viên': 'R1',
+    'Học sinh': 'R2',
+};
+
+// Hàm validate mật khẩu theo quy tắc
 const validatePassword = (password) => {
+    // Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return passwordRegex.test(password);
 };
 
+// Hàm xử lý đăng ký người dùng
 let handleRegister = async (userData) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            const { email, password } = userData;
-            if (!validatePassword(password)) {
-                return resolve({
-                    errCode: 4,
-                    message: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ hoa, chữ thường, chữ số và ký tự đặc biệt."
-                });
-            }
-            let existingUser = await db.User.findOne({
-                where: { email: email },
-            });
-            if (existingUser) {
-                resolve({
-                    errCode: 1,
-                    message: "Email này đã tồn tại trong hệ thống."
-                });
-                return;
-            }
-            const otp = Math.floor(100000 + Math.random() * 900000).toString();
-            temporaryUsers[email] = {
-                otp: otp,
-                data: { ...userData },
-                createdAt: Date.now()
-            };
-            let transporter = nodemailer.createTransport({
-                service: 'gmail',
-                auth: {
-                    user: process.env.EMAIL_USERNAME,
-                    pass: process.env.EMAIL_PASSWORD
-                }
-            });
-            let mailOptions = {
-                from: process.env.EMAIL_USERNAME,
-                to: email,
-                subject: 'Mã OTP xác thực đăng ký',
-                html: `Mã OTP của bạn là: <b>${otp}</b>. Vui lòng không chia sẻ mã này với bất kỳ ai.`
-            };
+    const { email, password, fullName, role } = userData;
 
-            await transporter.sendMail(mailOptions);
-            resolve({
-                errCode: 0,
-                message: "Mã OTP đã được gửi đến email của bạn."
-            });
+    // Kiểm tra các trường bắt buộc
+    if (!email || !password || !fullName || !role) {
+        return { errCode: 5, message: "Vui lòng điền đầy đủ thông tin: email, mật khẩu, họ tên và vai trò." };
+    }
 
-        } catch (e) {
-            console.error("Lỗi khi đăng ký:", e);
-            reject(e);
+    // Kiểm tra định dạng mật khẩu
+    if (!validatePassword(password)) {
+        return { errCode: 4, message: "Mật khẩu phải có ít nhất 8 ký tự, bao gồm chữ thường, chữ hoa, số và ký tự đặc biệt." };
+    }
+
+    // Kiểm tra vai trò hợp lệ
+    if (!roleMapping[role]) {
+        return { errCode: 6, message: "Vai trò không hợp lệ. Vui lòng chọn 'Giáo viên' hoặc 'Học sinh'." };
+    }
+
+    // Kiểm tra email đã tồn tại chưa
+    let existingUser = await db.User.findOne({ where: { email } });
+    if (existingUser) {
+        return { errCode: 1, message: "Email này đã tồn tại." };
+    }
+
+    // Tạo mã OTP ngẫu nhiên
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
+    // Lưu thông tin tạm thời của người dùng cùng với mã OTP và roleId
+    temporaryUsers[email] = {
+        otp,
+        data: {
+            ...userData,
+            roleId: roleMapping[role], // Lưu roleId đã ánh xạ
+        },
+        createdAt: Date.now(),
+    };
+
+    // Cấu hình Nodemailer để gửi email
+    let transporter = nodemailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: process.env.EMAIL_USERNAME,
+            pass: process.env.EMAIL_PASSWORD
         }
     });
+
+    let mailOptions = {
+        from: process.env.EMAIL_USERNAME,
+        to: email,
+        subject: 'Mã OTP xác thực đăng ký',
+        html: `Mã OTP của bạn là: <b>${otp}</b>. Vui lòng sử dụng mã này để hoàn tất đăng ký.`,
+    };
+
+    // Gửi email
+    try {
+        await transporter.sendMail(mailOptions);
+        return { errCode: 0, message: "Mã OTP đã được gửi đến email của bạn." };
+    } catch (error) {
+        console.error("Lỗi gửi email:", error);
+        return { errCode: 500, message: "Có lỗi xảy ra khi gửi email." };
+    }
 };
 
+// Hàm xử lý xác thực mã OTP
 let handleVerifyOTP = async (email, otp) => {
     return new Promise(async (resolve, reject) => {
         try {
-            if (!temporaryUsers[email]) {
+            // Kiểm tra thông tin người dùng tạm thời
+            if (!temporaryUsers[email] || (Date.now() - temporaryUsers[email].createdAt) > 300000) { // OTP hết hạn sau 5 phút
                 resolve({
                     errCode: 2,
                     message: "Mã OTP không hợp lệ hoặc đã hết hạn."
                 });
                 return;
             }
+
+            // Kiểm tra mã OTP
             if (temporaryUsers[email].otp !== otp) {
                 resolve({
                     errCode: 3,
@@ -79,26 +102,35 @@ let handleVerifyOTP = async (email, otp) => {
                 });
                 return;
             }
-            const userData = temporaryUsers[email].data;
-            const hashedPassword = await bcrypt.hash(userData.password, 10);
+
+            // Lấy dữ liệu người dùng từ bộ nhớ tạm
+            const { password, ...userData } = temporaryUsers[email].data;
+
+            // Băm mật khẩu trước khi lưu vào database
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Tạo người dùng mới trong database
             await db.User.create({
-                email: userData.email,
+                ...userData,
                 password: hashedPassword,
-                fullName: userData.fullName || 'Người dùng mới',
-                phoneNumber: userData.phoneNumber || '',
-                roleId: 'R2',
+                // roleId đã được lấy từ temporaryUsers
             });
+
+            // Xóa người dùng tạm thời sau khi đăng ký thành công
             delete temporaryUsers[email];
+
             resolve({
                 errCode: 0,
                 message: "Đăng ký tài khoản thành công!"
             });
+
         } catch (e) {
             console.error("Lỗi khi xác thực OTP:", e);
             reject(e);
         }
     });
 };
+
 export default {
     handleRegister,
     handleVerifyOTP,

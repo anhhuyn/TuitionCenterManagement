@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Input, Button, notification } from "antd";
 import { useNavigate, useLocation } from "react-router-dom";
-import { verifyOtpApi } from "../util/api"; 
+import { verifyOtpApi, verifyRegisterOtpApi } from "../util/api";
 import "../styles/OtpPage.css"; 
 
 const OtpPage = () => {
@@ -10,7 +10,7 @@ const OtpPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const { email } = location.state || {}; // lấy email từ trang ForgotPassword
+  const { email, mode } = location.state || {}; // lấy email từ trang ForgotPassword
 
   // đếm ngược
   useEffect(() => {
@@ -60,30 +60,34 @@ const OtpPage = () => {
       return;
     }
 
-    try {
-      const res = await verifyOtpApi(email, code);
+     try {
+      let res;
+      if (mode === "forgot") {
+        res = await verifyOtpApi(email, code);
+      } else if (mode === "register") {
+        res = await verifyRegisterOtpApi(email, code);
+      }
 
-      if (res?.success) {
+      if (res?.message) {
         notification.success({
           message: "Xác thực thành công",
-          description: res.message || "OTP hợp lệ!",
+          description: res.message,
         });
 
-        // chuyển sang trang ResetPasswordPage
-        navigate("/reset-password", { state: { email, otp: code } });
-      } else {
-        notification.error({
-          message: "Lỗi",
-          description: res?.message || "OTP không hợp lệ!",
-        });
+        if (mode === "forgot") {
+          navigate("/reset-password", { state: { email, otp: code } });
+        } else {
+          navigate("/login");
+        }
       }
-    } catch (error) {
+    } catch (err) {
       notification.error({
-        message: "Lỗi",
-        description: "Đã xảy ra lỗi khi xác thực OTP.",
+        message: "Xác thực thất bại",
+        description: err?.response?.data?.message || "OTP không hợp lệ!",
       });
     }
   };
+
 
   return (
     <div className="otp-wrapper">
@@ -121,7 +125,8 @@ const OtpPage = () => {
             href="#"
             onClick={(e) => {
               e.preventDefault();
-              navigate("/forgot-password");
+              navigate(mode === "forgot" ? "/forgot-password" : "/register");
+
             }}
           >
             ← Quay lại nhập email
