@@ -104,7 +104,7 @@ const LoginPage = () => {
                     Forgot Password?
                   </a>
                 </div>
-                <Button type="primary" htmlType="submit" className="btn">
+                <Button type="primary" htmlType="submit" className="btn-primary">
                   Login
                 </Button>
               </Form>
@@ -150,7 +150,7 @@ const LoginPage = () => {
                     <Option value="Học sinh">Student</Option>
                   </Select>
                 </Form.Item>
-                <Button type="primary" htmlType="submit" className="btn">
+                <Button type="primary" htmlType="submit" className="btn-primary">
                   Register
                 </Button>
               </Form>
@@ -169,14 +169,14 @@ const LoginPage = () => {
             <div className="toggle-panel toggle-left">
               <h1>Welcome!</h1>
               <p>Don't have an account?</p>
-              <button className="btn register-btn" onClick={() => navigate("/register")}>
+              <button className="btn-outline" onClick={() => navigate("/register")}>
                 Register
               </button>
             </div>
             <div className="toggle-panel toggle-right">
               <h1>Welcome Back!</h1>
               <p>Already have an account?</p>
-              <button className="btn login-btn" onClick={() => setIsActive(false)}>
+              <button className="btn-outline" onClick={() => setIsActive(false)}>
                 Login
               </button>
             </div>
