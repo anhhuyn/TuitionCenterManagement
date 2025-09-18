@@ -3,9 +3,20 @@ import { Form, Input, Button, notification } from "antd";
 import { useNavigate } from "react-router-dom";
 import { forgotPasswordApi } from "../util/api";
 import "../styles/LoginRegister.css";
+import { useLocation } from "react-router-dom";
 
 const ForgotPasswordPage = () => {
   const navigate = useNavigate();
+
+  const location = useLocation();
+  const mode = location.state?.mode || "forgot";
+
+  // Dựa vào mode để đặt tiêu đề và mô tả
+  const title = mode === "change" ? "Đổi mật khẩu" : "Quên mật khẩu";
+  const description =
+    mode === "change"
+      ? "Nhập email để thay đổi mật khẩu."
+      : "Nhập email để nhận hướng dẫn đặt lại mật khẩu.";
 
   const onFinish = async (values) => {
     const email = values.email;
@@ -41,7 +52,7 @@ const ForgotPasswordPage = () => {
         <div className="toggle-box">
           <div className="toggle-panel toggle-left">
             <h1>Welcome!</h1>
-            <p>Nhập email để nhận hướng dẫn đặt lại mật khẩu.</p>
+            <p>{description}</p>
           </div>
         </div>
 
@@ -49,7 +60,7 @@ const ForgotPasswordPage = () => {
         <div className="form-box login">
           <div className="form-content">
             <Form layout="vertical" onFinish={onFinish}>
-              <h1>Quên mật khẩu</h1>
+              <h1>{title}</h1>
 
               <Form.Item
                 name="email"
@@ -70,18 +81,19 @@ const ForgotPasswordPage = () => {
                 Gửi yêu cầu
               </Button>
             </Form>
-
-            <div className="forgot-link">
-              <a
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  navigate("/login");
-                }}
-              >
-                ← Quay lại trang đăng nhập
-              </a>
-            </div>
+            {mode !== "change" && (
+              <div className="forgot-link">
+                <a
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    navigate("/login");
+                  }}
+                >
+                  ← Quay lại trang đăng nhập
+                </a>
+              </div>
+            )}
           </div>
         </div>
       </div>

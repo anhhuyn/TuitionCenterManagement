@@ -40,3 +40,28 @@
 .read-the-docs {
   color: #888;
 }
+
+body.dark-mode {
+  background-color: #1e1e2f;
+  color: #fff;
+}
+
+body.dark-mode .app-layout {
+  background-color: #1e1e2f;
+  color: #fff;
+}
+
+body.dark-mode .card,
+body.dark-mode .form-control,
+body.dark-mode .sidebar,
+body.dark-mode .content {
+  background-color: #2c2c3c;
+  color: #fff;
+  border-color: #444;
+}
+
+/* Light mode nếu cần */
+body.light-mode {
+  background-color: #fff;
+  color: #000;
+}

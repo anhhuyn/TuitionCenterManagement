@@ -1,3 +1,4 @@
+//index.js
 import Sequelize from 'sequelize';
 import userModel from './user.js';
 

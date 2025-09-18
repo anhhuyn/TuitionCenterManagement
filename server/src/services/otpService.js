@@ -77,4 +77,31 @@ const verifyOTPAndResetPassword = async (email, otp, newPassword) => {
   return { message: "Mật khẩu đã được đặt lại thành công." };
 };
 
-export { sendPasswordResetOTPEmail, checkOTP, verifyOTPAndResetPassword };
+// otpService.js
+const sendOtpForEmailChange = async (email) => {
+  // Không cần check email trong DB
+  const otp = crypto.randomInt(100000, 999999).toString();
+  const expiry = Date.now() + 5 * 60 * 1000;
+
+  otpStore[email] = { otp, expiry };
+
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.EMAIL_USERNAME,
+      pass: process.env.EMAIL_PASSWORD 
+    }
+  });
+
+  await transporter.sendMail({
+    from: '"Tuition Center" <nguyenthianhhuyen03@gmail.com>',
+    to: email,
+    subject: "Email Change OTP",
+    text: `Mã OTP để đổi email là: ${otp}. OTP có hiệu lực trong 5 phút.`
+  });
+
+  return { message: "OTP đã được gửi đến email mới." };
+};
+
+
+export { sendPasswordResetOTPEmail, checkOTP, verifyOTPAndResetPassword, sendOtpForEmailChange };

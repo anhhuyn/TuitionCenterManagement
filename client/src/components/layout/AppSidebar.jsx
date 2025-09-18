@@ -1,5 +1,8 @@
+//AppSidebar.jsx
 import React from 'react'
 import { useSelector, useDispatch } from 'react-redux'
+import '../../styles/AppSidebar.css';
+
 
 import {
   CCloseButton,
@@ -10,10 +13,8 @@ import {
   CSidebarToggler,
 } from '@coreui/react'
 import CIcon from '@coreui/icons-react'
-
 import { AppSidebarNav } from './AppSidebarNav'
-
-import { logo } from '../../assets/brand/logo';
+import logo from '../../assets/images/logo.png';
 import { sygnet } from '../../assets/brand/sygnet';
 
 // sidebar nav config
@@ -35,17 +36,18 @@ const unfoldable = useSelector((state) => state.ui.sidebarUnfoldable)
 }}
 >
 
-      <CSidebarHeader className="border-bottom">
-        <CSidebarBrand to="/">
-          <CIcon customClassName="sidebar-brand-full" icon={logo} height={40} />
-          <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
-        </CSidebarBrand>
-        <CCloseButton
-          className="d-lg-none"
-          dark
-          onClick={() => dispatch({ type: 'set', sidebarShow: false })}
-        />
-      </CSidebarHeader>
+     <CSidebarHeader className="sidebar-header border-bottom">
+  <CSidebarBrand to="/" className="app-sidebar-brand">
+    <img src={logo} alt="Logo" className="app-sidebar-logo" />
+    <CIcon customClassName="sidebar-brand-narrow" icon={sygnet} height={32} />
+  </CSidebarBrand>
+  <CCloseButton
+    className="d-lg-none"
+    dark
+    onClick={() => dispatch({ type: 'set', sidebarShow: false })}
+  />
+</CSidebarHeader>
+
       <AppSidebarNav items={navigation} />
       <CSidebarFooter className="border-top d-none d-lg-flex">
         <CSidebarToggler

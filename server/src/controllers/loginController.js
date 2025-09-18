@@ -1,6 +1,5 @@
 import loginService from "../services/loginService.js";
-import jwt from 'jsonwebtoken'; 
-
+import jwt from 'jsonwebtoken';
 
 // Hàm xử lý login
 let handleLogin = async (req, res) => {
@@ -13,10 +12,24 @@ let handleLogin = async (req, res) => {
 
       // Tạo JWT token
       const token = jwt.sign(
-  { id: user.id, email: user.email, image: user.image }, // thêm image vào đây
-  'mk',
-  { expiresIn: '1h' }
-);
+        {
+          id: user.id,
+          email: user.email,
+          image: user.image,
+          roleId: user.roleId
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '1h' }
+      );
+
+       // Gửi token trong cookie (httpOnly để bảo mật, không cho client JS truy cập)
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production', // chỉ dùng HTTPS khi deploy
+        sameSite: 'strict',
+        maxAge: 60 * 60 * 1000 // 1 giờ (ms)
+      });
+
       // Trả token về dưới dạng JSON
       return res.status(200).json({
         message: "Đăng nhập thành công!",
@@ -25,7 +38,10 @@ let handleLogin = async (req, res) => {
           id: user.id,
           email: user.email,
           fullName: user.fullName,
-          image: user.image
+          image: user.image,
+          roleId: user.roleId,
+          gender: user.gender,
+          phoneNumber: user.phoneNumber,
         }
       });
     } else {

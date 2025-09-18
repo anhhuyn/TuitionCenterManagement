@@ -27,7 +27,7 @@ import {
 //import { AppBreadcrumb } from './index'
 import { AppHeaderDropdown } from './header/index';
 import '../../styles/AppHeader.css'
-import { useSelector, useDispatch } from 'react-redux' 
+import { useSelector, useDispatch } from 'react-redux'
 import '@coreui/coreui/dist/css/coreui.min.css'
 
 
@@ -35,7 +35,7 @@ const AppHeader = () => {
   const headerRef = useRef()
   const { colorMode, setColorMode } = useColorModes('coreui-free-react-admin-template-theme')
   const dispatch = useDispatch()
-const sidebarShow = useSelector((state) => state.ui.sidebarShow)
+  const sidebarShow = useSelector((state) => state.ui.sidebarShow)
 
 
   useEffect(() => {
@@ -51,20 +51,18 @@ const sidebarShow = useSelector((state) => state.ui.sidebarShow)
   // Thay vì toggle sidebar qua dispatch, bạn có thể tự xử lý nếu cần hoặc bỏ đi
 
   return (
-    <CHeader position="sticky" className="mb-4 p-0 custom-header" ref={headerRef}>
-      <CContainer className="border-bottom px-4" fluid>
-        {/* Bỏ nút toggle sidebar hoặc giữ nếu bạn xử lý riêng */}
+    <CHeader position="sticky" className="p-0 px-3 custom-header" ref={headerRef}>
         <CHeaderToggler
-  onClick={() =>
-    dispatch({
-      type: 'set',
-      payload: { sidebarShow: !sidebarShow }  // ✅ Toggle trạng thái
-    })
-  }
-  style={{ marginInlineStart: '-14px' }}
->
-  <CIcon icon={cilMenu} size="lg" />
-</CHeaderToggler>
+          onClick={() =>
+            dispatch({
+              type: 'set',
+              payload: { sidebarShow: !sidebarShow }
+            })
+          }
+          className="me-2"
+        >
+          <CIcon icon={cilMenu} size="lg" />
+        </CHeaderToggler>
 
         <CHeaderNav className="d-none d-md-flex">
           <CNavItem>
@@ -145,7 +143,6 @@ const sidebarShow = useSelector((state) => state.ui.sidebarShow)
           </li>
           <AppHeaderDropdown />
         </CHeaderNav>
-      </CContainer>
     </CHeader>
   )
 }

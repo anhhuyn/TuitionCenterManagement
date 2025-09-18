@@ -1,0 +1,196 @@
+/* Cover */
+.profile-cover {
+  height: 120px;
+  background: #3A4A76;
+  border-radius: 8px 8px 0 0;
+  position: relative;
+  padding: 15px 20px; /* fixed extra space in '15   px' */
+  box-sizing: border-box;
+}
+
+.profile-cover-header {
+  position: absolute;
+  top: 15px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.profile-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: white;
+}
+
+.edit-cover-btn {
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+/* Avatar giữa cover */
+.profile-avatar-container {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.profile-avatar {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-avatar img {
+  display: block;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  object-fit: cover;
+}
+
+.upload-btn {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: rgba(0, 0, 0, 0.6);
+  border: none;
+  border-radius: 50%;
+  padding: 6px;
+  cursor: pointer;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.upload-btn:hover {
+  background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Wrapper */
+.profile-wrapper {
+  display: flex;
+  justify-content: space-between;
+  max-width: 1000px;
+  margin: 80px auto 30px;
+  gap: 20px;
+}
+
+.profile-left,
+.profile-right {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* Card */
+.profile-card {
+  background: white;
+  padding: 15px 20px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* 👈 Hiệu ứng mượt */
+}
+
+.profile-card:hover {
+  transform: translateY(-4px); /* Nhẹ nhàng nổi lên */
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15); /* Bóng đậm hơn */
+}
+
+
+/* Header với icon + tiêu đề */
+.profile-card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.profile-card-header h4 {
+  font-size: 16px;
+  /*font-weight: 400;*/
+  /*font-style: italic;*/
+  color: black;
+  margin: 0;
+}
+
+/* Nội dung */
+.profile-card p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  padding-left: 26px; /* 🔥 Dòng này giúp <p> thẳng hàng với h4 */
+}
+
+/* Icon */
+.profile-icon {
+  color: #7494ec;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* Edit button */
+.edit-btn {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: transparent;
+  border: none;
+  color: #666;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+/* Tag component (nếu có dùng) */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tag {
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: #e9f5ff;
+  color: #007bff;
+  font-size: 14px;
+}
+
+.profile-input {
+  width: 100%;
+  padding: 8px;
+  margin-top: 4px;
+  border: 1px solid #ccc;
+  background-color: white !important;  /* Luôn là trắng */
+  color: black !important; 
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.update-btn {
+  background-color: #2eb85c;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.update-btn:hover {
+  background-color: #23964a;
+}

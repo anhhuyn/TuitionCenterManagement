@@ -22,9 +22,10 @@ const loginApi = (email, password) => {
 
 // Lấy thông tin user
 const getUserApi = () => {
-  const URL_API = "/v1/api/user";
-  return axios.get(URL_API);
+  return axios.get("/v1/api/profile"); 
 };
+
+
 
 // Lấy thông tin người dùng qua token
 const getAuthMe = () => {
@@ -45,21 +46,44 @@ const resetPasswordApi = (email, otp, newPassword) => {
 };
 
 const fetchUserFromToken = async (dispatch) => {
-  dispatch(setLoading(true)); // 🟢 Bắt đầu loading
+  dispatch(setLoading(true)); 
 
   try {
-    const res = await axios.get("/v1/api/auth/me", { withCredentials: true,});
-    console.log("🔥 Response from /auth/me:", res.data);
-    if (res.data && res.data.user) {
-      dispatch(loginSuccess(res.data.user));
+    const res = await axios.get("/v1/api/auth/me", { withCredentials: true });
+    console.log("Response from /auth/me:", res);
+
+    // res là data rồi, không phải res.data
+    if (res && res.user) {
+      dispatch(loginSuccess(res.user));
     } else {
-      dispatch(setLoading(false)); // 🟡 Không có user
+      dispatch(setLoading(false)); 
     }
   } catch (error) {
     console.error(error);
-    dispatch(setLoading(false)); // 🔴 Gặp lỗi
+    dispatch(setLoading(false)); 
   }
 };
 
+const updateProfileApi = (formData) => {
+  const URL_API = "/v1/api/profile/update";
+  return axios.post(URL_API, formData);
+};
 
-export { registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };
+const verifyEmailChangeOtpApi = (otp) => {
+  // Gọi endpoint verify otp cho email đổi mới
+  return axios.post("/v1/api/profile/verify-email-otp", { otp });
+};
+
+const updateImageApi = (file) => {
+  const formData = new FormData();
+  formData.append("image", file);
+
+  return axios.put("/v1/api/profile/image", formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+};
+
+
+export { updateImageApi ,verifyEmailChangeOtpApi, updateProfileApi,registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };

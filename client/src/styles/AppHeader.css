@@ -1,8 +1,8 @@
 /* Đặt chiều cao cố định cho header */
 .custom-header {
-  height: 64px; /* cao hơn mặc định */
+  height: 64px;
   background-color: #fff;
-  border-bottom: 1px solid #e0e0e0;
+  border-bottom: 1px solid #e0e0e0; /* đường kẻ duy nhất */
   box-shadow: none;
   transition: box-shadow 0.3s ease;
   display: flex;
@@ -12,6 +12,7 @@
   top: 0;
   z-index: 1030;
 }
+
 
 /* Khi scroll thì thêm bóng nhẹ */
 .custom-header.shadow {

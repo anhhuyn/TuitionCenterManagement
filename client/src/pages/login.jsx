@@ -37,12 +37,18 @@ const LoginPage = () => {
       if (res?.token) {
         setCookie("token", res.token, 1); // Lưu cookie 1 ngày
         dispatch(loginSuccess(res.user));
+        const userRole = res.user?.roleId;
+
 
         notification.success({
           message: "Đăng nhập thành công",
           description: `Xin chào ${res.user?.fullName ?? "người dùng"}!`,
         });
-        navigate("/home");
+
+        if (userRole === "R0") {
+          // Role cho Admin
+          navigate("/admin/home");
+        }
       } else {
         notification.error({
           message: "Đăng nhập thất bại",
@@ -100,7 +106,10 @@ const LoginPage = () => {
                   <Input.Password placeholder="Password" />
                 </Form.Item>
                 <div className="forgot-link">
-                  <a onClick={() => navigate("/forgot-password")} style={{ cursor: "pointer" }}>
+                  <a
+                    onClick={() => navigate("/forgot-password", { state: { mode: "forgot" } })}
+                    style={{ cursor: "pointer" }}
+                  >
                     Forgot Password?
                   </a>
                 </div>

@@ -1,3 +1,4 @@
+//user.js
 'use strict';
 import { Model } from 'sequelize';
 

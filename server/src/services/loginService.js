@@ -29,34 +29,6 @@ let handleUserLogin = (email, password) => {
   });
 };
 
-/*let handleUserLogin = (email, password) => {
-  return new Promise(async (resolve, reject) => {
-    try {
-      // Tìm người dùng theo email
-      let user = await db.User.findOne({
-        where: { email: email },
-      });
-
-      if (user) {
-        // So sánh trực tiếp mật khẩu nhập với mật khẩu gốc trong DB (không hash)
-        if (password === user.password) {
-          // Xác thực thành công
-          resolve(user);
-        } else {
-          // Sai mật khẩu
-          resolve(false);
-        }
-      } else {
-        // Không tìm thấy user
-        resolve(false);
-      }
-    } catch (e) {
-      reject(e);
-    }
-  });
-};*/
-
-
 export default {
   handleUserLogin,
 };

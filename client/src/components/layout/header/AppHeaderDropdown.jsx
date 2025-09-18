@@ -24,20 +24,20 @@ import CIcon from '@coreui/icons-react'
 import { useSelector } from 'react-redux'
 
 import avatar8 from '../../../assets/images/avatars/8.jpg';
+import { Link } from 'react-router-dom';
+const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
 const AppHeaderDropdown = () => {
   const user = useSelector(state => state.auth.user)
   const isLoading = useSelector(state => state.auth.isLoading);
-    if (isLoading || !user) return null
-     console.log('User image:', user?.image)
-
+  if (isLoading || !user) return null
   return (
     <CDropdown variant="nav-item">
       <CDropdownToggle placement="bottom-end" className="py-0 pe-0" caret={false}>
-        <CAvatar src={user?.image || avatar8} size="md" />
+        <CAvatar src={user?.image ? `${backendUrl}${user.image}` : avatar8} size="md" />
       </CDropdownToggle>
       <CDropdownMenu className="pt-0" placement="bottom-end">
-        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">Account</CDropdownHeader>
+        <CDropdownHeader className="bg-body-secondary fw-semibold mb-2">{user?.fullName}</CDropdownHeader>
         <CDropdownItem href="#">
           <CIcon icon={cilBell} className="me-2" />
           Updates
@@ -67,13 +67,28 @@ const AppHeaderDropdown = () => {
           </CBadge>
         </CDropdownItem>
         <CDropdownHeader className="bg-body-secondary fw-semibold my-2">Settings</CDropdownHeader>
-        <CDropdownItem href="#">
-          <CIcon icon={cilUser} className="me-2" />
-          Profile
+        <CDropdownItem>
+          <Link
+            to="/admin/profile"
+            className="d-flex align-items-center"
+            style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            <CIcon icon={cilUser} className="me-2" />
+            Thông tin cá nhân
+          </Link>
         </CDropdownItem>
-        <CDropdownItem href="#">
-          <CIcon icon={cilSettings} className="me-2" />
-          Settings
+
+
+        <CDropdownItem >
+          <Link
+            to="/forgot-password"
+            state={{ mode: "change" }}
+            className="d-flex align-items-center"
+            style={{ textDecoration: 'none', color: 'inherit', cursor: 'pointer' }}
+          >
+            <CIcon icon={cilLockLocked} className="me-2" />
+            Đổi mật khẩu
+          </Link>
         </CDropdownItem>
         <CDropdownItem href="#">
           <CIcon icon={cilCreditCard} className="me-2" />
