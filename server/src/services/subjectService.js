@@ -51,6 +51,7 @@ const getAllSubjects = async (page = 1, limit = 15, status = null) => {
               include: [
                 {
                   model: User,
+                  as: 'userInfo',
                   attributes: ['id', 'fullName', 'email']
                 }
               ]
