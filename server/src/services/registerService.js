@@ -81,55 +81,65 @@ let handleRegister = async (userData) => {
     }
 };
 
-// Hàm xử lý xác thực mã OTP
 let handleVerifyOTP = async (email, otp) => {
-    return new Promise(async (resolve, reject) => {
-        try {
-            // Kiểm tra thông tin người dùng tạm thời
-            if (!temporaryUsers[email] || (Date.now() - temporaryUsers[email].createdAt) > 300000) { // OTP hết hạn sau 5 phút
-                resolve({
-                    errCode: 2,
-                    message: "Mã OTP không hợp lệ hoặc đã hết hạn."
-                });
-                return;
-            }
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Kiểm tra thông tin người dùng tạm thời
+      const tempUser = temporaryUsers[email];
+      if (!tempUser || (Date.now() - tempUser.createdAt) > 300000) {
+        resolve({ errCode: 2, message: "Mã OTP không hợp lệ hoặc đã hết hạn." });
+        return;
+      }
 
-            // Kiểm tra mã OTP
-            if (temporaryUsers[email].otp !== otp) {
-                resolve({
-                    errCode: 3,
-                    message: "Mã OTP không chính xác. Vui lòng thử lại."
-                });
-                return;
-            }
+      // Kiểm tra mã OTP
+      if (tempUser.otp !== otp) {
+        resolve({ errCode: 3, message: "Mã OTP không chính xác. Vui lòng thử lại." });
+        return;
+      }
 
-            // Lấy dữ liệu người dùng từ bộ nhớ tạm
-            const { password, ...userData } = temporaryUsers[email].data;
+      // Lấy dữ liệu gốc
+      const { password, roleId, ...userData } = tempUser.data;
 
-            // Băm mật khẩu trước khi lưu vào database
-            const hashedPassword = await bcrypt.hash(password, 10);
+      // Băm mật khẩu
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-            // Tạo người dùng mới trong database
-            await db.User.create({
-                ...userData,
-                password: hashedPassword,
-                // roleId đã được lấy từ temporaryUsers
-            });
+      // Tạo user
+      const newUser = await db.User.create({
+        ...userData,
+        roleId,
+        password: hashedPassword,
+      });
 
-            // Xóa người dùng tạm thời sau khi đăng ký thành công
-            delete temporaryUsers[email];
+      // Tạo thêm record Teacher/Student theo roleId
+      if (roleId === 'R1') {
+        await db.Teacher.create({
+          userId: newUser.id,
+          dateOfBirth: null,
+          addressId: null,
+          specialty: null,
+        });
+      } else if (roleId === 'R2') {
+        await db.Student.create({
+          userId: newUser.id,
+          dateOfBirth: null,
+          grade: null,
+          schoolName: null,
+          addressId: null,
+        });
+      }
 
-            resolve({
-                errCode: 0,
-                message: "Đăng ký tài khoản thành công!"
-            });
+      // Xóa tạm
+      delete temporaryUsers[email];
 
-        } catch (e) {
-            console.error("Lỗi khi xác thực OTP:", e);
-            reject(e);
-        }
-    });
+      resolve({ errCode: 0, message: "Đăng ký tài khoản thành công!" });
+
+    } catch (e) {
+      console.error("Lỗi khi xác thực OTP:", e);
+      reject(e);
+    }
+  });
 };
+
 
 export default {
     handleRegister,

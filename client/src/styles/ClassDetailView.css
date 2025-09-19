@@ -1,0 +1,78 @@
+.class-detail-layout {
+  display: flex;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+}
+
+.class-sub-sidebar {
+  width: 240px;
+  border-right: 1px solid #ddd; /* Đường phân cách dọc */
+  padding: 20px 10px;
+  margin-right: 20px;
+  background-color: transparent;
+  border-radius: 0;
+}
+
+.class-sub-sidebar .btn-back {
+  background-color: #7494ec;
+  color: white;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+  width: 100%;
+  text-align: left;
+}
+
+.class-sub-sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.class-sub-sidebar li {
+  display: flex;
+  align-items: center;
+  padding: 10px 8px;
+  cursor: pointer;
+  transition: background 0.2s, font-weight 0.2s, color 0.2s;
+  border-radius: 6px;
+}
+
+.class-sub-sidebar li:hover {
+  background-color: #e0e7ff;
+  font-weight: 500;
+}
+
+.class-sub-sidebar li.active {
+  background-color: #7494ec; /* Màu nền active */
+  color: white;             /* Màu chữ khi active */
+  font-weight: 600;
+}
+
+.class-sub-sidebar li.active .sidebar-icon {
+  color: white; /* Màu icon khi active */
+}
+
+.sidebar-icon {
+  margin-right: 10px;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.class-detail-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+.class-detail-content {
+  flex: 1; /* Chiếm toàn bộ phần còn lại */
+  min-width: 0;
+  border-radius: 8px;
+  overflow-x: auto; /* Giúp cuộn nếu nội dung tràn */
+  box-sizing: border-box;
+}

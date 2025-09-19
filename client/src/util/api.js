@@ -84,6 +84,11 @@ const updateImageApi = (file) => {
     },
   });
 };
+const getSubjectsApi = async ({ page = 1, limit = 15, status = null } = {}) => {
+  const params = { page, limit };
+  if (status) params.status = status; 
+  const res = await axios.get("/v1/api/subjects", { params });
+  return res;
+};
 
-
-export { updateImageApi ,verifyEmailChangeOtpApi, updateProfileApi,registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi };
+export { updateImageApi ,verifyEmailChangeOtpApi, updateProfileApi,registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi};

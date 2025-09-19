@@ -1,11 +1,12 @@
-//user.js
 'use strict';
 import { Model } from 'sequelize';
 
 export default (sequelize, DataTypes) => {
   class User extends Model {
     static associate(models) {
-      // define association here
+      User.hasOne(models.Teacher, { foreignKey: 'userId', as: 'teacherInfo' });
+      User.hasOne(models.Student, { foreignKey: 'userId', as: 'studentInfo' });
+      
     }
   }
 
@@ -20,7 +21,7 @@ export default (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'User',
-    timestamps: true,  // Giúp có createdAt và updateAt
+    timestamps: true,
   });
 
   return User;

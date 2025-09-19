@@ -13,7 +13,9 @@ import CustomerTable from "./pages/CustomerTable";
 import Profile from "./pages/profilePage.jsx";
 import { useColorModes } from '@coreui/react';
 import Layout from "./components/layout/Layout";
-
+import TeacherManagement from "./pages/employeesPage.jsx";
+import ClassList from "./pages/ClassList";
+import ClassDetailPage from "./pages/classDetailViews/ClassDetailPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -39,11 +41,38 @@ function App() {
         <Route path="/otp" element={<OtpPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/admin/profile" element={<Profile />} />
+      {/* học viên */}
         <Route
           path="/admin/hocvien"
           element={
             <Layout>
               <CustomerTable />
+            </Layout>
+          }
+        />
+
+        {/* nhân viên */}
+        <Route
+          path="/admin/nhanvien"
+          element={
+            <Layout>
+              <TeacherManagement />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/classlist"
+          element={
+            <Layout>
+              <ClassList />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/class/:id"
+          element={
+            <Layout>
+              <ClassDetailPage />
             </Layout>
           }
         />

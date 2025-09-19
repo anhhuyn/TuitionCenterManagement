@@ -4,8 +4,8 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class Student extends Model {
     static associate(models) {
-      Student.belongsTo(models.User, { foreignKey: 'userId' });
-      Student.belongsTo(models.Address, { foreignKey: 'addressId' });
+      Student.belongsTo(models.User, { foreignKey: 'userId', as: 'userInfo' });
+      Student.belongsTo(models.Address, { foreignKey: 'addressId', as: 'addressInfo' });
       Student.hasMany(models.ParentContact, { foreignKey: 'studentId' });
       Student.hasMany(models.StudentSubject, { foreignKey: 'studentId' });
     }
@@ -20,6 +20,7 @@ export default (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'Student',
+    tableName: 'students',
     timestamps: true,
   });
 

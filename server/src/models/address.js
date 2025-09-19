@@ -4,7 +4,7 @@ import { Model } from 'sequelize';
 export default (sequelize, DataTypes) => {
   class Address extends Model {
     static associate(models) {
-      Address.hasMany(models.Teacher, { foreignKey: 'addressId' });
+      Address.hasMany(models.Teacher, { foreignKey: 'addressId', as: 'teachers' });
       Address.hasMany(models.Student, { foreignKey: 'addressId' });
     }
   }

@@ -50,7 +50,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Danh sách lớp học',
-        to: '/base/accordion',
+        to: '/admin/classlist',
       },
       {
         component: CNavItem,
@@ -164,10 +164,10 @@ const _nav = [
     icon: <CIcon icon={cilGroup} customClassName="nav-icon" />,
     items: [
       {
-        component: CNavItem,
-        name: 'Danh sách nhân viên',
-        to: '/login',
-      },
+        component: CNavItem,
+        name: 'Danh sách giáo viên',
+        to: '/admin/nhanvien',
+      },
       {
         component: CNavItem,
         name: 'Duyệt lịch nghỉ',

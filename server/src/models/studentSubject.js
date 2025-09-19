@@ -16,6 +16,7 @@ export default (sequelize, DataTypes) => {
   }, {
     sequelize,
     modelName: 'StudentSubject',
+    tableName: 'studentsubjects',
     timestamps: true,
   });
 
