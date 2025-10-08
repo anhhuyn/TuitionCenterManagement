@@ -1,0 +1,264 @@
+/* ================= CALENDAR EVENT ================= */
+.fc-daygrid-event {
+    border: 2px solid #ff7a00 !important;
+    background: #fff !important;
+    color: #ff7a00 !important;
+    border-radius: 4px;
+    font-weight: 600;
+    text-align: center;
+    padding: 4px 6px !important;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.fc-daygrid-event:hover {
+    background: #ff7a00 !important;
+    color: #fff !important;
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+/* Xóa màu mặc định cứng cho timeGrid */
+.fc-timegrid-event {
+    border-radius: 4px;
+    font-weight: 600;
+    text-align: center;
+    padding: 4px 6px !important;
+    transition: all 0.2s ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Giữ hiệu ứng hover chung */
+.fc-timegrid-event:hover {
+    transform: scale(1.05);
+    cursor: pointer;
+}
+
+/* Nếu muốn text trong tháng không bị thụt */
+.fc-daygrid-event .fc-event-title {
+    white-space: normal !important;
+    text-align: center !important;
+}
+
+/* Tô màu nền nhạt hơn cho ngày hiện tại */
+.fc .fc-day-today {
+    background-color: #d1d9ff !important;
+    /* Màu xanh nhạt hơn của #4e73df */
+    color: #4e73df !important;
+    /* Màu chữ xanh đậm */
+    font-weight: 600;
+
+}
+
+/* Nếu muốn chỉnh thêm số ngày trong ô hôm nay */
+.fc .fc-day-today .fc-daygrid-day-number {
+    font-weight: 600;
+    color: #4e73df !important;
+    text-decoration: none !important;
+}
+
+/* Xóa viền và outline khi nút được chọn (active) */
+.fc .fc-button.fc-button-active {
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    color: white !important;
+    /* Nếu muốn chữ trắng */
+}
+
+/* Xóa viền, outline, box-shadow cho nút chuyển tháng trước và sau */
+.fc .fc-prev-button,
+.fc .fc-next-button {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    cursor: pointer;
+}
+
+/* ================= DATE NUMBER ================= */
+.fc .fc-daygrid-day-number {
+    text-decoration: none !important;
+    font-size: 14px;
+    color: #333;
+}
+
+.fc .fc-col-header-cell,
+.fc .fc-col-header-cell *,
+.fc .fc-daygrid-day-header,
+.fc .fc-daygrid-day-header * {
+    background-color: #7494ec !important;
+    color: white !important;
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none !important;
+}
+
+
+/* ================= BUTTON GROUP ================= */
+.calendar-header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+/* ================= BUTTON STYLE ================= */
+.calendar-btn {
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    border: none;
+    cursor: pointer;
+    color: #fff;
+    transition: all 0.2s ease-in-out;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-icon {
+    font-size: 16px;
+    vertical-align: middle;
+}
+
+/* màu nút chính */
+.calendar-btn.edit {
+    background: #f6c23e;
+}
+
+.calendar-btn.add {
+    background: #1cc88a;
+}
+
+.calendar-btn.create {
+    background: #7494ec;
+}
+
+.calendar-btn.delete {
+    background: #e74a3b;
+}
+
+/* hover effect */
+.calendar-btn.edit:hover {
+    background: #dda20a;
+}
+
+.calendar-btn.add:hover {
+    background: #17a673;
+}
+
+.calendar-btn.create:hover {
+    background: #2e59d9;
+}
+
+.calendar-btn.delete:hover {
+    background: #be2617;
+}
+
+/* Container để FullCalendar full width */
+.calendar-container {
+    width: 100%;
+  overflow: visible; /* hoặc gỡ bỏ dòng này nếu không cần */
+  padding: 16px 0;
+}
+.fc-event-title {
+    line-height: 1.4 !important;
+    white-space: normal !important;
+}
+
+
+/* Calendar full width và chiếm hết container */
+.fc {
+    width: 100% !important;
+    height: 100% !important;
+    font-size: 14px;
+}
+
+/* Khi màn hình nhỏ -> chữ và ô nhỏ lại */
+@media (max-width: 768px) {
+    .fc {
+        font-size: 12px;
+    }
+
+    .fc .fc-daygrid-day-number {
+        font-size: 11px;
+    }
+}
+
+.calendar-legend {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.9em;
+  color: #333;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  margin-right: 6px;
+  display: inline-block;
+}
+
+.legend-color.scheduled {
+  background-color: #ff7a00; 
+}
+
+.legend-color.completed {
+  background-color: #7494ec; 
+}
+
+.legend-color.canceled {
+  background-color: #f6c23e; 
+}
+
+/* === Event color by status === */
+/* === Đã lên lịch === */
+.event-scheduled {
+  border: 2px solid #ff7a00 !important;
+  background: #fff !important;
+  color: #ff7a00 !important;
+}
+
+.event-scheduled:hover {
+  background-color: #ff7a00 !important;
+  color: #fff !important;
+}
+
+/* === Đã hoàn thành === */
+.event-completed {
+  border: 2px solid #7494ec !important;
+  background: #fff !important;
+  color: #7494ec !important;
+}
+
+.event-completed:hover {
+  background-color: #7494ec !important;
+  color: #fff !important;
+}
+
+/* === Đã huỷ === */
+.event-canceled {
+  border: 2px solid #f6c23e !important;
+  background: #fff !important;
+  color: #f6c23e !important;
+}
+
+.event-canceled:hover {
+  background-color: #f6c23e !important;
+  color: #fff !important;
+}
+

@@ -28,6 +28,27 @@ const getSubjects = async (req, res) => {
   }
 };
 
+const updateSubject = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedData = req.body;
+
+    const result = await subjectService.updateSubject(id, updatedData);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+
 export default {
-  getSubjects
+  getSubjects,
+  updateSubject
 };

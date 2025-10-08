@@ -129,7 +129,7 @@ export default function ClassList() {
 
             {/* Danh sách lớp */}
             <div className="class-grid">
-                {classes.map((cls, index) => (
+                {filtered.map((cls, index) => (
                     <div
                         key={cls.id}
                         className="class-card"
@@ -146,7 +146,7 @@ export default function ClassList() {
                             />
                             <span
                                 className={`status-badge ${statusBadgeClass[cls.status] || ""}`}
-                                
+
                             >
                                 {statusText[cls.status] || "Không rõ"}
                             </span>
@@ -158,8 +158,7 @@ export default function ClassList() {
                             </p>
                             <p>
                                 Giáo viên:{" "}
-                                {cls.TeacherSubjects[0]?.Teacher?.User?.fullName ||
-                                    "Chưa sắp xếp"}
+                                {cls.TeacherSubjects[0]?.Teacher?.userInfo?.fullName || "Chưa sắp xếp"}
                             </p>
                             <p>
                                 Thanh toán: <b>Thanh toán theo tháng</b>

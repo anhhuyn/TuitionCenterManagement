@@ -41,10 +41,16 @@ let handleDeleteEmployee = async (req, res) => {
   }
 };
 
+// Lấy danh sách giáo viên (chỉ id, userId, fullName, email, specialty)
+const handleGetTeacherBasicList = async (req, res) => {
+  const response = await employeeService.getTeacherBasicList();
+  return res.status(response.errCode === 0 ? 200 : 400).json(response);
+};
 
 export default {
   handleGetAllTeachers,
   handleCreateNewEmployee,
   handleUpdateEmployee,
   handleDeleteEmployee,
+  handleGetTeacherBasicList
 };

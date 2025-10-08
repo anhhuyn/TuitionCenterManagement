@@ -3,69 +3,69 @@ import bcrypt from 'bcryptjs';
 import { saveImage, deleteImage } from "./imageService.js";
 // Định nghĩa roleMapping như cũ
 const roleMapping = {
-    'R1': 'Giáo viên',
-    'R2': 'Học sinh',
-    'R0': 'Admin',
+  'R1': 'Giáo viên',
+  'R2': 'Học sinh',
+  'R0': 'Admin',
 };
 
 const getAllTeachers = async () => {
-    try {
-        const teachers = await db.Teacher.findAll({
-            include: [
-                {
-                    model: db.User,
-                    as: 'userInfo',
-                    where: { roleId: 'R1' },
-                    attributes: ['id', 'email', 'fullName', 'phoneNumber', 'gender', 'image', 'roleId'],
-                },
-                // Thêm include cho bảng Address
-                {
-                    model: db.Address,
-                    as: 'addressInfo',
-                    attributes: ['id','details', 'ward', 'province'], 
-                }
-            ],
-            // Bỏ 'raw: true' và 'nest: true' để có thể truy cập các trường con dễ dàng hơn
-        });
+  try {
+    const teachers = await db.Teacher.findAll({
+      include: [
+        {
+          model: db.User,
+          as: 'userInfo',
+          where: { roleId: 'R1' },
+          attributes: ['id', 'email', 'fullName', 'phoneNumber', 'gender', 'image', 'roleId'],
+        },
+        // Thêm include cho bảng Address
+        {
+          model: db.Address,
+          as: 'addressInfo',
+          attributes: ['id', 'details', 'ward', 'province'],
+        }
+      ],
+      // Bỏ 'raw: true' và 'nest: true' để có thể truy cập các trường con dễ dàng hơn
+    });
 
-        // Ánh xạ lại cấu trúc dữ liệu để lấy các trường bạn yêu cầu
-      const formattedTeachers = teachers.map(teacher => {
-        return {
-          id: teacher.userInfo.id,
-          email: teacher.userInfo.email,
-          fullName: teacher.userInfo.fullName,
-          phoneNumber: teacher.userInfo.phoneNumber,
-          gender: Boolean(teacher.userInfo.gender), // chuẩn: luôn trả về true/false
-          image: teacher.userInfo.image,
-          roleId: teacher.userInfo.roleId,
-          roleName: roleMapping[teacher.userInfo.roleId] || "",
+    // Ánh xạ lại cấu trúc dữ liệu để lấy các trường bạn yêu cầu
+    const formattedTeachers = teachers.map(teacher => {
+      return {
+        id: teacher.userInfo.id,
+        email: teacher.userInfo.email,
+        fullName: teacher.userInfo.fullName,
+        phoneNumber: teacher.userInfo.phoneNumber,
+        gender: Boolean(teacher.userInfo.gender), // chuẩn: luôn trả về true/false
+        image: teacher.userInfo.image,
+        roleId: teacher.userInfo.roleId,
+        roleName: roleMapping[teacher.userInfo.roleId] || "",
 
-          dateOfBirth: teacher.dateOfBirth,
-          specialty: teacher.specialty,
-          address: teacher.addressInfo
-            ? {
-                id: teacher.addressInfo.id,
-                details: teacher.addressInfo.details || "",
-                ward: teacher.addressInfo.ward || "",
-                province: teacher.addressInfo.province || ""
-              }
-            : { id: null, details: "", ward: "", province: "" }
+        dateOfBirth: teacher.dateOfBirth,
+        specialty: teacher.specialty,
+        address: teacher.addressInfo
+          ? {
+            id: teacher.addressInfo.id,
+            details: teacher.addressInfo.details || "",
+            ward: teacher.addressInfo.ward || "",
+            province: teacher.addressInfo.province || ""
+          }
+          : { id: null, details: "", ward: "", province: "" }
 
-        };
-      });
+      };
+    });
 
-        return {
-            errCode: 0,
-            message: 'OK',
-            data: formattedTeachers
-        };
-    } catch (e) {
-        console.error("Lỗi khi lấy danh sách giáo viên:", e);
-        return {
-            errCode: 500,
-            message: "Có lỗi xảy ra từ phía máy chủ!"
-        };
-    }
+    return {
+      errCode: 0,
+      message: 'OK',
+      data: formattedTeachers
+    };
+  } catch (e) {
+    console.error("Lỗi khi lấy danh sách giáo viên:", e);
+    return {
+      errCode: 500,
+      message: "Có lỗi xảy ra từ phía máy chủ!"
+    };
+  }
 };
 
 const createNewEmployee = async (data, file) => {
@@ -75,7 +75,7 @@ const createNewEmployee = async (data, file) => {
     return { errCode: 1, message: "Thiếu các thông tin bắt buộc." };
   }
 
-  // ✅ Parse lại address nếu frontend gửi theo dạng address[details], address[ward], address[province]
+  //  Parse lại address nếu frontend gửi theo dạng address[details], address[ward], address[province]
   if (
     !data.address &&
     (data["address[details]"] || data["address[ward]"] || data["address[province]"])
@@ -198,27 +198,27 @@ const updateEmployeeData = async (data, file) => {
 
     // Update address
     // Update address
-  if (address) {
-    if (teacher.addressInfo) {
-      // Cập nhật địa chỉ nếu đã tồn tại
-      await teacher.addressInfo.update(address, { transaction });
-    } else {
-      // Nếu chưa có thì tạo mới
-      const newAddress = await db.Address.create(
-        {
-          details: address.details || null,
-          ward: address.ward || null,
-          province: address.province || null
-        },
-        { transaction }
-      );
+    if (address) {
+      if (teacher.addressInfo) {
+        // Cập nhật địa chỉ nếu đã tồn tại
+        await teacher.addressInfo.update(address, { transaction });
+      } else {
+        // Nếu chưa có thì tạo mới
+        const newAddress = await db.Address.create(
+          {
+            details: address.details || null,
+            ward: address.ward || null,
+            province: address.province || null
+          },
+          { transaction }
+        );
 
-      await teacher.update(
-        { addressId: newAddress.id },
-        { transaction }
-      );
+        await teacher.update(
+          { addressId: newAddress.id },
+          { transaction }
+        );
+      }
     }
-  }
 
 
     await transaction.commit();
@@ -249,9 +249,42 @@ const deleteEmployee = async (id) => {
   }
 };
 
+const getTeacherBasicList = async () => {
+  try {
+    const teachers = await db.Teacher.findAll({
+      attributes: ["id", "userId", "specialty"],
+      include: [
+        {
+          model: db.User,
+          as: "userInfo",
+          attributes: ["fullName", "email", "phoneNumber", "gender"],
+          where: { roleId: "R1" },
+        },
+      ],
+    });
+
+    const formatted = teachers.map((t) => ({
+      id: t.id,
+      userId: t.userId,
+      fullName: t.userInfo.fullName,
+      email: t.userInfo.email,
+      phoneNumber: t.userInfo.phoneNumber,
+      gender: t.userInfo.gender,
+      specialty: t.specialty,
+    }));
+
+    return { errCode: 0, message: "OK", data: formatted };
+  } catch (e) {
+    console.error("Lỗi khi lấy danh sách giáo viên (basic):", e);
+    return { errCode: 500, message: "Có lỗi xảy ra từ phía máy chủ!" };
+  }
+};
+
+
 export default {
   getAllTeachers,
   createNewEmployee,
   updateEmployeeData,
-  deleteEmployee
+  deleteEmployee,
+  getTeacherBasicList,
 };

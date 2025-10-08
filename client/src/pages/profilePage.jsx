@@ -249,16 +249,16 @@ const Profile = () => {
                 className="profile-input"
                 value={
                   formData.gender === true
-                    ? "female"
+                    ? "male"
                     : formData.gender === false
-                      ? "male"
+                      ? "female"
                       : "undefined"
                 }
                 onChange={(e) => {
                   const val = e.target.value;
                   handleInputChange(
                     "gender",
-                    val === "female" ? true : val === "male" ? false : null
+                    val === "male" ? true : val === "female" ? false : null
                   );
                 }}
               >
@@ -269,9 +269,9 @@ const Profile = () => {
             ) : (
               <p>
                 {user.gender === true
-                  ? "Nữ"
+                  ? "Nam"
                   : user.gender === false
-                    ? "Nam"
+                    ? "Nữ"
                     : "Chưa xác định"}
               </p>
             )}

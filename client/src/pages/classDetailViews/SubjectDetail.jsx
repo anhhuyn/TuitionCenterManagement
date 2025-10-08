@@ -1,26 +1,45 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/SubjectDetail.css";
 import { cilPen } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
+import { getTeacherBasicListApi, updateSubjectApi } from "../../util/api";
+import ConfirmModal from "../../components/modal/ConfirmModal";
 
 export default function SubjectDetail({ classData }) {
-    const teacher = classData.TeacherSubjects[0]?.Teacher?.User;
-    const specialty = classData.TeacherSubjects[0]?.Teacher?.specialty || "Chưa cập nhật";
+    const teacher = classData.TeacherSubjects[0]?.Teacher || null;
+    const userInfo = teacher?.userInfo || null;
+    const specialty = teacher?.specialty || "Chưa cập nhật";
+    const getInitialEditedData = (classData) => {
+        const teacher = classData.TeacherSubjects[0]?.Teacher || null;
+        const userInfo = teacher?.userInfo || null;
+        const specialty = teacher?.specialty || "Chưa cập nhật";
+
+        return {
+            name: classData.name,
+            grade: classData.grade,
+            status: classData.status,
+            sessionsPerWeek: classData.sessionsPerWeek,
+            currentStudents: classData.currentStudents,
+            maxStudents: classData.maxStudents,
+            price: classData.price,
+            note: classData.note || "",
+            teacherId: teacher?.id || "",
+            teacherName: userInfo?.fullName || "",
+            teacherEmail: userInfo?.email || "",
+            specialty,
+            teacherGender: userInfo?.gender === true
+                ? "Nam"
+                : userInfo?.gender === false
+                    ? "Nữ"
+                    : "Chưa cập nhật",
+            teacherPhone: userInfo?.phoneNumber || "",
+        };
+    };
+    const [employeeList, setEmployeeList] = useState([]);
 
     const [isEditing, setIsEditing] = useState(false);
-    const [editedData, setEditedData] = useState({
-        name: classData.name,
-        grade: classData.grade,
-        status: classData.status,
-        sessionsPerWeek: classData.sessionsPerWeek,
-        currentStudents: classData.currentStudents,
-        maxStudents: classData.maxStudents,
-        price: classData.price,
-        note: classData.note || "",
-        teacherName: teacher?.fullName || "",
-        teacherEmail: teacher?.email || "",
-        specialty: specialty,
-    });
+    const [editedData, setEditedData] = useState(() => getInitialEditedData(classData));
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -44,24 +63,98 @@ export default function SubjectDetail({ classData }) {
         }
     };
 
+    useEffect(() => {
+        if (isEditing) {
+            const fetchTeachers = async () => {
+                try {
+                    const res = await getTeacherBasicListApi();
+                    console.log("Dữ liệu giáo viên từ API:", res);
+                    if (res.errCode === 0) {
+                        setEmployeeList(res.data);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi lấy danh sách giáo viên:", error);
+                }
+            };
+
+            fetchTeachers();
+        }
+    }, [isEditing]);
+
+    const handleTeacherChange = (teacherId) => {
+        if (!teacherId) {
+            // Nếu chọn "Chưa sắp xếp"
+            setEditedData({
+                ...editedData,
+                teacherId: null,
+                teacherName: "Chưa sắp xếp",
+                teacherEmail: "",
+                specialty: "",
+                teacherPhone: "",
+                teacherGender: "Chưa cập nhật",
+            });
+            return;
+        }
+        const selected = employeeList.find(emp => emp.id === parseInt(teacherId));
+        if (selected) {
+            setEditedData({
+                ...editedData,
+                teacherId: selected.id,
+                teacherName: selected.fullName,
+                teacherEmail: selected.email,
+                specialty: selected.specialty || "",
+                teacherPhone: selected.phoneNumber || "",
+                teacherGender:
+                    selected.gender === true
+                        ? "Nam"
+                        : selected.gender === false
+                            ? "Nữ"
+                            : "Chưa cập nhật",
+            });
+        }
+    };
+
     const handleChange = (field, value) => {
         setEditedData({ ...editedData, [field]: value });
     };
 
-    const handleUpdate = () => {
-        console.log("Dữ liệu cần cập nhật:", editedData);
-        // TODO: Gửi dữ liệu cập nhật lên API
-        setIsEditing(false); // Tắt chế độ chỉnh sửa
+    const handleUpdate = async () => {
+        try {
+            const payload = {
+                name: editedData.name,
+                grade: editedData.grade,
+                status: editedData.status,
+                sessionsPerWeek: parseInt(editedData.sessionsPerWeek),
+                maxStudents: parseInt(editedData.maxStudents),
+                price: parseFloat(editedData.price),
+                note: editedData.note,
+                teacherId: editedData.teacherId ? editedData.teacherId : null,
+            };
+
+            const res = await updateSubjectApi(classData.id, payload);
+            setIsEditing(false);
+        } catch (error) {
+            console.error("Lỗi khi cập nhật môn học:", error);
+            alert("Cập nhật thất bại. Vui lòng thử lại.");
+        }
     };
+
 
     return (
         <div className="subject-detail-container">
             {/* Nút chỉnh sửa nằm trên cùng góc phải */}
             <div className="top-edit-bar">
-               <button className="edit-button" onClick={() => setIsEditing(!isEditing)}>
-  <CIcon icon={cilPen} className="me-1" /> {isEditing ? "Hủy" : "Chỉnh sửa"}
-</button>
-
+                <button
+                    className="edit-button"
+                    onClick={() => {
+                        if (isEditing) {
+                            setEditedData(getInitialEditedData(classData)); // reset về dữ liệu gốc
+                        }
+                        setIsEditing(!isEditing);
+                    }}
+                >
+                    <CIcon icon={cilPen} className="me-1" /> {isEditing ? "Hủy" : "Chỉnh sửa"}
+                </button>
             </div>
 
             {/* Dòng 1: Thông tin cơ bản */}
@@ -112,42 +205,47 @@ export default function SubjectDetail({ classData }) {
             {/* Dòng 3: Thông tin giáo viên */}
             <div className="section-header">Thông tin giáo viên</div>
 
+            {/* Hàng 1: Tên + Chuyên môn */}
             <div className="row-line">
                 <p>
                     <strong>Tên giáo viên:</strong>{" "}
                     {isEditing ? (
-                        <input
-                            value={editedData.teacherName}
-                            onChange={(e) => handleChange("teacherName", e.target.value)}
-                        />
+                        <select
+                            value={editedData.teacherId || ""}
+                            onChange={(e) => handleTeacherChange(e.target.value)}
+                        >
+                            <option value="">-- Chưa sắp xếp --</option>
+                            {employeeList.map(emp => (
+                                <option key={emp.id} value={emp.id}>
+                                    {emp.fullName}
+                                </option>
+                            ))}
+                        </select>
                     ) : (
                         editedData.teacherName
                     )}
                 </p>
+
                 <p>
-                    <strong>Chuyên môn:</strong>{" "}
-                    {isEditing ? (
-                        <input
-                            value={editedData.specialty}
-                            onChange={(e) => handleChange("specialty", e.target.value)}
-                        />
-                    ) : (
-                        editedData.specialty
-                    )}
+                    <strong>Chuyên môn:</strong> {editedData.specialty}
                 </p>
             </div>
 
+            {/* Hàng 2: Email + Số điện thoại */}
             <div className="row-line">
                 <p>
-                    <strong>Email:</strong>{" "}
-                    {isEditing ? (
-                        <input
-                            value={editedData.teacherEmail}
-                            onChange={(e) => handleChange("teacherEmail", e.target.value)}
-                        />
-                    ) : (
-                        editedData.teacherEmail
-                    )}
+                    <strong>Email:</strong> {editedData.teacherEmail}
+                </p>
+
+                <p>
+                    <strong>Số điện thoại:</strong> {editedData.teacherPhone}
+                </p>
+            </div>
+
+            {/* Hàng 3: Giới tính */}
+            <div className="row-line">
+                <p>
+                    <strong>Giới tính:</strong> {editedData.teacherGender}
                 </p>
             </div>
 
@@ -168,16 +266,13 @@ export default function SubjectDetail({ classData }) {
                     )}
                 </p>
                 <p>
-                    <strong>Số học viên:</strong>{" "}
+                    <strong>{isEditing ? "Số học viên tối đa:" : "Số học viên:"}</strong>{" "}
                     {isEditing ? (
                         <input
-                            type="text"
-                            value={`${editedData.currentStudents} / ${editedData.maxStudents}`}
-                            onChange={(e) => {
-                                const [cur, max] = e.target.value.split("/").map((n) => n.trim());
-                                handleChange("currentStudents", cur);
-                                handleChange("maxStudents", max);
-                            }}
+                            type="number"
+                            value={editedData.maxStudents}
+                            onChange={(e) => handleChange("maxStudents", e.target.value)}
+                            min={editedData.currentStudents || 0}
                         />
                     ) : (
                         `${editedData.currentStudents} / ${editedData.maxStudents}`
@@ -213,13 +308,31 @@ export default function SubjectDetail({ classData }) {
                 </p>
             </div>
 
-            {isEditing && (
-                <div className="row-line" style={{ justifyContent: "flex-end" }}>
-                    <button className="edit-button" onClick={handleUpdate}>
-                        Cập nhật
-                    </button>
-                </div>
+            {
+                isEditing && (
+                    <div className="row-line" style={{ justifyContent: "flex-end" }}>
+                        <button
+                            className="edit-button"
+                            onClick={() => setShowConfirmModal(true)} //  mở modal
+                        >
+                            Cập nhật
+                        </button>
+                    </div>
+                )
+            }
+            {showConfirmModal && (
+                <ConfirmModal
+                    title="Xác nhận cập nhật"
+                    message="Bạn có chắc chắn muốn cập nhật thông tin môn học này?"
+                    cancelText="Hủy"
+                    confirmText="Xác nhận"
+                    onCancel={() => setShowConfirmModal(false)}
+                    onConfirm={() => {
+                        handleUpdate();            
+                        setShowConfirmModal(false);  
+                    }}
+                />
             )}
-        </div>
+        </div >
     );
 }

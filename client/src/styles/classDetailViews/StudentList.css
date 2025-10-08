@@ -1,0 +1,25 @@
+.student-list-container {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.student-list-container h3 {
+  margin-bottom: 16px;
+}
+
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.student-table th,
+.student-table td {
+  border: 1px solid #e0e0e0;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.student-table th {
+  background: #f9f9f9;
+}

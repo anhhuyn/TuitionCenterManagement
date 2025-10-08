@@ -6,6 +6,8 @@ import { cilCalendar, cilChart, cilUser, cilList, cilBook, cilFolder, cilCheckCi
 import CIcon from "@coreui/icons-react";
 
 import SubjectDetail from "./SubjectDetail";
+import StudentList from "./StudentList";
+import CustomCalendar from "./CustomCalendar";
 
 const sideMenu = [
   { label: "Chi tiết môn học", icon: cilDescription },
@@ -24,6 +26,8 @@ const sideMenu = [
 
 const componentMap = {
   "Chi tiết môn học": SubjectDetail,
+  "Học viên": StudentList, 
+  "Lịch học": (props) => <CustomCalendar subjectId={props.classData.id} />,
 
   // ... các component khác
 };

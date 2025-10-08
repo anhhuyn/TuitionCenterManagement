@@ -1,6 +1,6 @@
 import React from 'react';
 import './ConfirmModal.css';
-import { FaQuestionCircle } from 'react-icons/fa'; // ⬅️ Dùng icon từ react-icons (có thể thay icon)
+import { FaQuestionCircle } from 'react-icons/fa'; 
 
 const ConfirmModal = ({
   title = "Xác nhận cập nhật",
@@ -12,7 +12,7 @@ const ConfirmModal = ({
 }) => {
   return (
     <div className="otp-modal-overlay">
-      {/* 🔽 Icon động phía trên */}
+      {/*  Icon động phía trên */}
       <div className="modal-icon">
         <FaQuestionCircle />
       </div>

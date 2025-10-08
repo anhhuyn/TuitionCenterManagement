@@ -52,7 +52,7 @@ const getAllSubjects = async (page = 1, limit = 15, status = null) => {
                 {
                   model: User,
                   as: 'userInfo',
-                  attributes: ['id', 'fullName', 'email']
+                  attributes: ['id', 'fullName', 'email', 'gender', 'phoneNumber'] 
                 }
               ]
             }
@@ -77,6 +77,89 @@ const getAllSubjects = async (page = 1, limit = 15, status = null) => {
   }
 };
 
+const updateSubject = async (id, updatedData) => {
+  const t = await db.sequelize.transaction();
+
+  try {
+    const {
+      name,
+      grade,
+      price,
+      status,
+      maxStudents,
+      sessionsPerWeek,
+      note,
+      teacherId,     // có thể null hoặc ""
+      salaryRate     // frontend có thể gửi, nếu không thì default = 0
+    } = updatedData;
+
+    // 1. Tìm subject
+    const subject = await Subject.findByPk(id, { transaction: t });
+    if (!subject) throw new Error('Không tìm thấy môn học');
+
+    // 2. Update subject
+    await subject.update({
+      name,
+      grade,
+      price,
+      status,
+      maxStudents,
+      sessionsPerWeek,
+      note,
+    }, { transaction: t });
+
+    // Chuẩn hoá teacherId
+    const teacherIdNorm =
+      teacherId === null || teacherId === undefined || teacherId === ""
+        ? null
+        : parseInt(teacherId, 10);
+
+    // 3. Update TeacherSubject
+    const existingTeacherSubject = await TeacherSubject.findOne({
+      where: { subjectId: id },
+      transaction: t,
+    });
+
+    if (existingTeacherSubject) {
+      if (teacherIdNorm === null) {
+        // Bỏ gán giáo viên → xoá quan hệ
+        await existingTeacherSubject.destroy({ transaction: t });
+      } else {
+        // Cập nhật teacherId + giữ salaryRate cũ nếu không truyền
+        const newSalary =
+          typeof salaryRate !== "undefined" && salaryRate !== null
+            ? salaryRate
+            : existingTeacherSubject.salaryRate || 0;
+
+        await existingTeacherSubject.update(
+          { teacherId: teacherIdNorm, salaryRate: newSalary },
+          { transaction: t }
+        );
+      }
+    } else {
+      if (teacherIdNorm !== null) {
+        // Chưa có thì tạo mới → luôn truyền salaryRate
+        const newSalary =
+          typeof salaryRate !== "undefined" && salaryRate !== null
+            ? salaryRate
+            : 0;
+
+        await TeacherSubject.create(
+          { teacherId: teacherIdNorm, subjectId: id, salaryRate: newSalary },
+          { transaction: t }
+        );
+      }
+    }
+
+    await t.commit();
+    return { success: true, message: "Cập nhật môn học thành công." };
+  } catch (error) {
+    await t.rollback();
+    throw new Error(error.message);
+  }
+};
+
 export default {
-  getAllSubjects
+  getAllSubjects,
+  updateSubject
 };
