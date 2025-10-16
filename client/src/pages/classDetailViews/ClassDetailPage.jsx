@@ -8,6 +8,9 @@ import CIcon from "@coreui/icons-react";
 import SubjectDetail from "./SubjectDetail";
 import StudentList from "./StudentList";
 import CustomCalendar from "./CustomCalendar";
+import AttendanceStudent from "./AttendanceStudent";
+import MaterialList from "./MaterialList";
+import AssignmentList from "./AssignmentList";
 
 const sideMenu = [
   { label: "Chi tiết môn học", icon: cilDescription },
@@ -26,8 +29,11 @@ const sideMenu = [
 
 const componentMap = {
   "Chi tiết môn học": SubjectDetail,
-  "Học viên": StudentList, 
+  "Học viên": StudentList,
   "Lịch học": (props) => <CustomCalendar subjectId={props.classData.id} />,
+  "Điểm danh": AttendanceStudent,
+  "Tài liệu": MaterialList,
+  "Bài tập": AssignmentList,
 
   // ... các component khác
 };

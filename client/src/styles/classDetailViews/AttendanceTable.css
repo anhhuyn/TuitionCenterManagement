@@ -1,0 +1,342 @@
+/* ========== BỐ CỤC CHUNG ========== */
+.attendance-table-container {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 10px;
+}
+
+.attendance-table-wrapper {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.sessions-scroll {
+  overflow-x: auto;
+  overflow-y: visible; 
+  width: calc(100% - 180px);
+}
+
+
+/* ========== BẢNG ========== */
+.attendance-table,
+.student-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Segoe UI", sans-serif;
+  font-size: 15px;
+}
+
+.attendance-table * {
+  font-family: "Segoe UI", sans-serif;
+}
+
+
+.attendance-table {
+  min-width: fit-content;
+}
+
+.attendance-table th,
+.attendance-table td,
+.student-table th,
+.student-table td {
+  border: 1px solid #ddd;
+  text-align: center;
+  vertical-align: middle;
+  padding: 10px;
+  background-color: #fff;
+}
+
+.attendance-table th {
+  background-color: #f9fafb;
+  font-weight: 600;
+  color: #333;
+  padding: 0;
+}
+
+.student-table td,
+.student-table th {
+  text-align: left;
+  font-weight: 600;
+}
+
+/* ========== CỘT HỌC VIÊN ========== */
+.student-column {
+  flex: 0 0 180px;
+  background-color: #fff;
+  border-right: 1px solid #ddd;
+}
+
+.student-name,
+.attendance-table th.student-name-header,
+.attendance-table td.sticky-col {
+  width: 250px;
+  max-width: 180px;
+  position: sticky;
+  left: 0;
+  z-index: 3;
+  background-color: #fff;
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05);
+  min-width: 270px;
+  text-align: center;
+  font-weight: 600;
+  color: #222;
+}
+
+/* ========== HEADER BUỔI HỌC ========== */
+.session-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+
+.active-session {
+  background-color: #d1d9ff;
+}
+
+.future-session {
+  background-color: #f7f7f7;
+  border: 1px solid #ddd;
+  opacity: 0.8;
+}
+
+.session-info {
+  font-weight: 600;
+  color: #000;
+}
+
+.session-date {
+  font-size: 13px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* ========== NÚT "ĐIỂM DANH TẤT CẢ" ========== */
+.btn-mark-all {
+  margin-top: 6px;
+  padding: 4px 8px;
+  background-color: #7494ec;
+  border: 1px solid #7494ec;
+  border-radius: 2px;
+  color: #fff;
+  font-size: 10px;
+  cursor: pointer;
+  transition: 0.2s ease;
+}
+
+.btn-mark-all:hover {
+  background-color: #5f7de0;
+}
+
+/* ========== Ô ĐIỂM DANH ========== */
+.attendance-cell {
+  background-color: #fff;
+  position: relative;
+  overflow: visible;
+}
+
+.session-colored {
+  background-color: #d1d9ff;
+}
+
+.attendance-cell-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  box-sizing: border-box;
+  min-height: 42px;
+  position: relative;
+  width: 100%;
+}
+
+/* ========== DROPDOWN ========== */
+.status-select {
+  flex-grow: 1;
+  width: calc(100% - 36px);
+  margin-right: 8px;
+  min-width: 160px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.status-select:focus {
+  outline: none; 
+  border-color: #7494ec; 
+  box-shadow: 0 0 0 2px rgba(116, 148, 236, 0.2); 
+}
+
+
+.status-select:disabled {
+  background-color: #f3f3f3;
+  cursor: not-allowed;
+}
+
+/* ========== NÚT SỬA GHI CHÚ ========== */
+.edit-btn {
+  position: absolute;
+  right: -4px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  z-index: 2;
+  color: #ff7a00;
+  transition: color 0.2s ease;
+}
+
+.edit-btn:hover {
+  color: #007bff;
+}
+
+.edit-btn.has-note {
+  color: #2D782D;
+}
+
+/* ========== POPUP GHI CHÚ ========== */
+.note-popup {
+  position: absolute;
+  top: 105%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  border-radius: 8px;
+  padding: 10px;
+  width: 180px;
+  z-index: 10;
+}
+
+.note-popup textarea {
+  width: 100%;
+  min-height: 60px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 6px;
+  font-size: 14px;
+  resize: none;
+}
+
+.btn-save-note {
+  margin-top: 6px;
+  width: 100%;
+  background-color: #7494ec;
+  color: #fff;
+  border: none;
+  padding: 5px 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: 0.2s ease;
+}
+
+.btn-save-note:hover {
+  background-color: #5f7de0;
+}
+.attendance-table th.session-col,
+.attendance-table td.session-col {
+  width: 240px;          /* đủ chỗ cho dropdown */
+  min-width: 240px;      /* vẫn cố định bố cục */
+  max-width: 300px;
+  text-align: center;
+  overflow: visible;     /* ⚡ cho phép phần tử con (như combobox) tràn ra */
+  position: relative;    /* để dropdown tính vị trí từ ô */
+}
+
+
+.session-info {
+  white-space: nowrap;
+  text-align: center;
+}
+/* Thay thế CSS cũ của .month-selector bằng đoạn dưới: */
+
+.month-selector {
+  margin-bottom: 20px;
+  padding: 10px 16px;
+  background-color: #f9fafb;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  font-family: "Segoe UI", sans-serif;
+}
+
+/* Style cho các select giống .search-box / .tab */
+.month-selector {
+  margin-bottom: 20px;
+  padding: 0 10px; /* Bỏ padding để thanh ngắn lại */
+  background-color: transparent; /* Bỏ background */
+  border: none; /* Bỏ border */
+  box-shadow: none; /* Bỏ shadow */
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: "Segoe UI", sans-serif;
+  width: fit-content; /* Thanh co lại vừa với nội dung */
+}
+
+/* Style cho các select giữ nguyên hoặc bạn có thể chỉnh nhỏ lại */
+.month-selector select {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  color: #333;
+  cursor: pointer;
+  transition: border-color 0.2s ease;
+  min-width: 120px;
+}
+
+.month-selector select:focus {
+  border-color: #7494ec;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(116, 148, 236, 0.2);
+}
+
+.attendance-table td.session-colored {
+  background-color: #d1d9ff;
+}
+
+/* Force no vertical scrollbar on the table container / sessions scroll */
+.attendance-table-container,
+.sessions-scroll {
+  overflow-y: visible !important;
+  max-height: none !important;
+  height: auto !important;
+}
+
+/* Make sure popup on body has high z-index and responsive width */
+.note-popup-portal {
+  position: absolute;
+  transform: translateX(-50%);
+  background: #fff;
+  border: 1px solid #ccc;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+  width: 320px; /* 📏 tăng từ 220px → 320px */
+  max-width: calc(100vw - 40px); /* vẫn giới hạn để không tràn màn hình */
+  z-index: 2147483647;
+}
+
+/* optional: ensure body scroll remains usable */
+body {
+  -webkit-overflow-scrolling: touch;
+}
+

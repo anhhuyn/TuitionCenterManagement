@@ -188,15 +188,100 @@ const updateSessionApi = (sessionId, updatedData) => {
   return axios.put(`/v1/api/session/${sessionId}`, updatedData);
 };
 
-export const createSessionApi = (data) =>
+const createSessionApi = (data) =>
   axios.post(`/v1/api/manual-session`, data);
 
+
+const getAttendanceBySubjectIdApi = async (subjectId) => {
+  return await axios.get(`/v1/api/subject/${subjectId}/attendance`);
+};
+
+// Cập nhật trạng thái điểm danh
+const updateAttendanceStatusApi = async (sessionId, studentId, status) => {
+  return await axios.put(`/v1/api/attendance/status`, { sessionId, studentId, status });
+};
+
+// Cập nhật ghi chú điểm danh
+const updateAttendanceNoteApi = async (sessionId, studentId, note) => {
+  return await axios.put(`/v1/api/attendance/note`, { sessionId, studentId, note });
+};
+
+// lấy tài liệu theo môn học
+const getMaterialsBySubjectIdApi = async (subjectId) => {
+  try {
+    const res = await axios.get(`/v1/api/materials/subject/${subjectId}`);
+    return res; // đã được xử lý interceptor nên là res.data
+  } catch (err) {
+    console.error("Lỗi khi gọi API getMaterialsBySubjectIdApi:", err);
+    return { success: false, data: [] };
+  }
+};
+
+// Thêm mới tài liệu
+const createMaterialApi = async (formData) => {
+  try {
+    const res = await axios.post("/v1/api/materials", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res; // interceptor đã xử lý sẵn .data
+  } catch (err) {
+    console.error("Lỗi khi gọi API createMaterialApi:", err);
+    throw err;
+  }
+};
+
+const updateMaterialApi = async (materialId, formData) => {
+  const res = await axios.put(`/v1/api/materials/${materialId}/file`, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
+  return res;
+};
+
+const deleteMaterialApi = (materialId) => {
+  return axios.delete(`/v1/api/materials/${materialId}`);
+};
+
+const getAssignmentsBySubjectIdApi = async (subjectId) => {
+  try {
+    const res = await axios.get(`/v1/api/assignments/subject/${subjectId}`);
+    return res.data || [];
+  } catch (error) {
+    console.error("Lỗi API getAssignmentsBySubjectIdApi:", error);
+    return [];
+  }
+};
+
+// Xóa bài tập theo ID
+const deleteAssignmentApi = async (assignmentId) => {
+  try {
+    const res = await axios.delete(`/v1/api/assignments/${assignmentId}`);
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi API deleteAssignmentApi:", error);
+    throw error;
+  }
+};
+
 export {
+  deleteAssignmentApi,
+  getAssignmentsBySubjectIdApi,
+  deleteMaterialApi,
+  updateMaterialApi,
+  createMaterialApi,
+  getMaterialsBySubjectIdApi,
+  updateAttendanceStatusApi,
+  updateAttendanceNoteApi,
+  getAttendanceBySubjectIdApi,
+  createSessionApi,
   updateSessionApi,
   fetchSessionById,
-  deleteSessionApi, 
+  deleteSessionApi,
   getScheduleBySubjectId,
   getRoomsApi,
-  createManualSessionApi, 
+  createManualSessionApi,
   addStudentToSubjectApi, getStudentsByGradeApi, removeStudentFromSubjectApi, getStudentsBySubjectIdApi, getTeacherBasicListApi, updateSubjectApi, updateImageApi, verifyEmailChangeOtpApi, updateProfileApi, registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi
 };

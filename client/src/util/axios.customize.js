@@ -18,16 +18,16 @@ instance.interceptors.request.use(function (config) {
 });
 
 // Add a response interceptor
-instance.interceptors.response.use(function (response) {
-  // Any status code that lie within the range of 2xx cause this function to trigger
-  // Do something with response data
-  if (response && response.data) return response.data;
-  return response;
-}, function (error) {
-  // Any status codes that falls outside the range of 2xx cause this function to trigger
-  // Do something with response error
-  if (error?.response?.data) return error?.response?.data;
-  return Promise.reject(error);
-});
+instance.interceptors.response.use(
+  function (response) {
+    if (response && response.data) return response.data;
+    return response;
+  },
+  function (error) {
+    // Giữ nguyên error để frontend catch được
+    return Promise.reject(error);
+  }
+);
+
 
 export default instance;

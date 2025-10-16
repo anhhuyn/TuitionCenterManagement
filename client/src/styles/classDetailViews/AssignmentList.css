@@ -1,0 +1,255 @@
+/* 🎨 Màu chủ đạo */
+:root {
+  --primary: #7494ec;
+  --text: #333;
+  --muted: #666;
+  --danger: #d9534f;
+  --bg: #fff;
+}
+
+/* ===== VÙNG CHUNG ===== */
+.assignment-list-container {
+  padding: 20px;
+}
+
+/* ===== HEADER ===== */
+.assignment-header {
+  margin-bottom: 15px;
+}
+
+.header-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.header-title {
+  font-size: 1.2rem;
+  font-weight: normal;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assignment-count {
+  font-size: 1rem;
+}
+
+.add-assignment-button {
+  background-color: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 7px 16px;
+  font-size: 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.add-assignment-button:hover {
+  background-color: #5c7ddc;
+}
+
+/* Bộ lọc tháng */
+.filter-controls {
+  margin-top: 10px;
+}
+
+.month-input {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+.month-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(116, 148, 236, 0.3);
+  outline: none;
+}
+
+/* ===== DANH SÁCH BÀI TẬP ===== */
+.assignment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.assignment-item {
+  position: relative;
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 25px;
+  border-bottom: 1px solid #e0e0e0; /* 🔹 Đường phân cách giữa các bài */
+}
+
+/* ===== NÚT 3 CHẤM ===== */
+.options-menu {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.options-button {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #555;
+  cursor: pointer;
+  border-radius: 50%;
+  padding: 4px 8px;
+}
+
+.options-button:hover {
+  background-color: #f0f0f0;
+}
+
+.menu-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--bg);
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 150px;
+  z-index: 100;
+}
+
+.menu-dropdown button {
+  background: none;
+  border: none;
+  padding: 10px;
+  font-size: 0.9rem;
+  text-align: left;
+  cursor: pointer;
+  color: var(--text);
+  transition: background-color 0.2s;
+}
+
+.menu-dropdown button:hover {
+  background-color: #f7f9fc;
+  color: var(--primary);
+}
+
+.menu-dropdown .delete-option {
+  color: var(--danger);
+}
+
+.menu-dropdown .delete-option:hover {
+  background-color: #fde8e8;
+}
+
+/* ===== NỘI DUNG ===== */
+.assignment-header-line {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.assignment-info-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.assignment-requirement-box {
+  background-color: #e8f0fe;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.assignment-requirement-box strong {
+  color: var(--muted);
+  display: block;
+  margin-bottom: 15px;
+  font-size: 13px;
+  font-weight: normal;
+}
+
+/* File đính kèm nằm trong khung xanh */
+.assignment-requirement-box .attachment-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 13px;
+}
+
+.assignment-requirement-box .attachment-link:hover {
+  text-decoration: underline;
+}
+
+.assignment-requirement-box p,
+.assignment-requirement-box .attachment-link {
+  margin-left: 18px;
+  display: block;
+}
+
+.assignment-requirement-box p {
+  margin-top: 4px;
+  margin-bottom: 6px;
+  line-height: 1.5;
+}
+
+
+/* ===== TRẠNG THÁI ===== */
+.loading-text,
+.empty-state p {
+  text-align: center;
+  padding: 20px;
+  color: #555;
+  font-style: italic;
+}
+
+.empty-state {
+  background-color: var(--bg);
+  border: 1px solid var(--primary);
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+  /* ===== PHẦN ĐẦU MỖI BÀI TẬP ===== */
+.assignment-header-line {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.assignment-header-line svg {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+/* ===== DÒNG THÔNG TIN NGÀY ===== */
+.assignment-info-row {
+  display: flex;
+  justify-content: flex-start;
+  
+  font-size: 12px;
+  color: #444;
+  margin-bottom: 10px;
+}
+
+.assignment-info-row span {
+  display: inline-block;
+  min-width: 260px; /* Cố định độ rộng cho các nhãn để canh thẳng */
+}
