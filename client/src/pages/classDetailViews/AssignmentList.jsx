@@ -3,6 +3,7 @@ import { getAssignmentsBySubjectIdApi, deleteAssignmentApi } from "../../util/ap
 import "../../styles/classDetailViews/AssignmentList.css";
 import { FiDownload, FiEdit2, FiTrash2, FiBook } from "react-icons/fi";
 import ConfirmModal from "../../components/modal/ConfirmModal";
+import AssignmentModal from "./AssignmentModal";
 
 
 // Hàm tiện ích để lấy tên tháng tiếng Việt
@@ -50,6 +51,8 @@ export default function AssignmentList({ classData }) {
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
   // State mới để quản lý việc mở/đóng menu 3 chấm
   const [showMenuId, setShowMenuId] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [editAssignment, setEditAssignment] = useState(null);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -105,12 +108,11 @@ export default function AssignmentList({ classData }) {
     }
   };
 
-  const handleEdit = (id) => {
-    alert(`Sửa bài tập có ID: ${id}`);
+  const handleEdit = (assignment) => {
+    setEditAssignment(assignment);
+    setShowModal(true);
     setShowMenuId(null);
-    // TODO: Thêm logic điều hướng đến trang sửa bài tập
   };
-
   return (
     <div className="assignment-list-container">
       <div className="assignment-header">
@@ -123,7 +125,13 @@ export default function AssignmentList({ classData }) {
           </div>
 
           {/* Nút thêm bài tập */}
-          <button className="add-assignment-button" onClick={() => alert('Thêm bài tập')}>
+          <button
+            className="add-assignment-button"
+            onClick={() => {
+              setEditAssignment(null);
+              setShowModal(true);
+            }}
+          >
             + Thêm bài
           </button>
         </div>
@@ -172,7 +180,7 @@ export default function AssignmentList({ classData }) {
                 </button>
                 {showMenuId === item.id && (
                   <div className="menu-dropdown">
-                    <button onClick={() => handleEdit(item.id)}>
+                    <button onClick={() => handleEdit(item)}>
                       <FiEdit2 style={{ marginRight: "6px" }} />
                       Sửa
                     </button>
@@ -234,6 +242,22 @@ export default function AssignmentList({ classData }) {
           confirmText="Xóa"
           onCancel={() => setShowConfirm(false)}
           onConfirm={confirmDelete}
+        />
+      )}
+      {showModal && (
+        <AssignmentModal
+          onClose={() => {
+            setShowModal(false);
+            setEditAssignment(null);
+          }}
+          onUploadSuccess={async () => {
+            const data = await getAssignmentsBySubjectIdApi(classData.id);
+            setAssignments(data);
+            return data; 
+          }}
+          subjectId={classData.id}
+          editMode={!!editAssignment}
+          initialData={editAssignment}
         />
       )}
     </div>

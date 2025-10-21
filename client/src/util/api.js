@@ -266,7 +266,40 @@ const deleteAssignmentApi = async (assignmentId) => {
   }
 };
 
+// Tạo mới assignment
+const createAssignmentApi = async (formData) => {
+  try {
+    const res = await axios.post(`/v1/api/assignments`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi API createAssignmentApi:", error);
+    throw error;
+  }
+};
+
+// Cập nhật assignment
+const updateAssignmentApi = async (assignmentId, formData) => {
+  try {
+    const res = await axios.put(`/v1/api/assignments/${assignmentId}`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Lỗi API updateAssignmentApi:", error);
+    throw error;
+  }
+};
+
+
 export {
+  createAssignmentApi,
+  updateAssignmentApi,
   deleteAssignmentApi,
   getAssignmentsBySubjectIdApi,
   deleteMaterialApi,
