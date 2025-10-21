@@ -296,8 +296,12 @@ const updateAssignmentApi = async (assignmentId, formData) => {
   }
 };
 
+const getSubjectByIdApi = async (id) => {
+    return await axios.get(`v1/api/subjects/${id}`);
+};
 
 export {
+  getSubjectByIdApi,
   createAssignmentApi,
   updateAssignmentApi,
   deleteAssignmentApi,

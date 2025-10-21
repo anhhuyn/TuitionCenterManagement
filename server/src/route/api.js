@@ -31,6 +31,8 @@ router.post('/profile/update', verifyToken, userController.updateProfile);
 router.post('/profile/verify-email-otp', verifyToken, userController.verifyEmailChangeOtp);
 router.put('/profile/image', verifyToken, upload.single('image'), userController.updateImageProfile);
 router.get('/subjects', subjectController.getSubjects);
+router.post('/subjects', subjectController.createSubject);
+router.get('/subjects/:id', subjectController.getSubjectById);
 router.put('/subjects/:id', subjectController.updateSubject);
 
 router.get("/employees", employeeController.handleGetAllTeachers);

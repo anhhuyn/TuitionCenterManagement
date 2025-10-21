@@ -159,7 +159,120 @@ const updateSubject = async (id, updatedData) => {
   }
 };
 
+const createSubject = async (data) => {
+  const t = await db.sequelize.transaction();
+
+  try {
+    const {
+      name,
+      grade,
+      price,
+      status,
+      maxStudents,
+      sessionsPerWeek,
+      note,
+      image,
+      teacherId
+    } = data;
+
+    // 1️⃣ Tạo subject mới
+    const newSubject = await Subject.create(
+      {
+        name,
+        grade,
+        price,
+        status: status || "active",
+        maxStudents: maxStudents || 30,
+        sessionsPerWeek: sessionsPerWeek || 1,
+        note: note || null,
+        image: image || null,
+      },
+      { transaction: t }
+    );
+
+    // 2️⃣ Nếu có teacher → thêm vào TeacherSubject
+    const teacherIdNorm =
+      teacherId === null || teacherId === undefined || teacherId === ""
+        ? null
+        : parseInt(teacherId, 10);
+
+    if (teacherIdNorm !== null) {
+      await TeacherSubject.create(
+        {
+          teacherId: teacherIdNorm,
+          subjectId: newSubject.id
+        },
+        { transaction: t }
+      );
+    }
+
+    await t.commit();
+
+    return {
+      success: true,
+      message: "Tạo môn học mới thành công.",
+      subject: newSubject,
+    };
+  } catch (error) {
+    await t.rollback();
+    throw new Error(error.message);
+  }
+};
+
+const getSubjectById = async (id) => {
+  try {
+    const subject = await Subject.findByPk(id, {
+      attributes: [
+        'id',
+        'name',
+        'price',
+        'grade',
+        'status',
+        'maxStudents',
+        'sessionsPerWeek',
+        'image',
+        'note',
+        [
+          db.sequelize.literal(`(
+            SELECT COUNT(*)
+            FROM studentsubjects AS ss
+            WHERE ss.subjectId = Subject.id
+          )`),
+          'currentStudents'
+        ]
+      ],
+      include: [
+        {
+          model: TeacherSubject,
+          attributes: ['salaryRate'],
+          include: [
+            {
+              model: Teacher,
+              attributes: ['id', 'specialty'],
+              include: [
+                {
+                  model: User,
+                  as: 'userInfo',
+                  attributes: ['id', 'fullName', 'email', 'gender', 'phoneNumber']
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    });
+
+    if (!subject) throw new Error('Không tìm thấy môn học');
+
+    return subject;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
 export default {
   getAllSubjects,
-  updateSubject
+  updateSubject,
+  createSubject,
+  getSubjectById,
 };

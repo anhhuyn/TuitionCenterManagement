@@ -2,44 +2,46 @@ import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/SubjectDetail.css";
 import { cilPen } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import { getTeacherBasicListApi, updateSubjectApi } from "../../util/api";
+import { getSubjectByIdApi, getTeacherBasicListApi, updateSubjectApi } from "../../util/api";
 import ConfirmModal from "../../components/modal/ConfirmModal";
+import { useParams } from "react-router-dom";
 
-export default function SubjectDetail({ classData }) {
-    const teacher = classData.TeacherSubjects[0]?.Teacher || null;
-    const userInfo = teacher?.userInfo || null;
-    const specialty = teacher?.specialty || "Chưa cập nhật";
-    const getInitialEditedData = (classData) => {
-        const teacher = classData.TeacherSubjects[0]?.Teacher || null;
+export default function SubjectDetail() {
+    const { id } = useParams();
+    const [classData, setClassData] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [employeeList, setEmployeeList] = useState([]);
+    const [isEditing, setIsEditing] = useState(false);
+    const [editedData, setEditedData] = useState(null);
+    const [showConfirmModal, setShowConfirmModal] = useState(false);
+
+    const getInitialEditedData = (data) => {
+        const teacher = data.TeacherSubjects[0]?.Teacher || null;
         const userInfo = teacher?.userInfo || null;
         const specialty = teacher?.specialty || "Chưa cập nhật";
 
         return {
-            name: classData.name,
-            grade: classData.grade,
-            status: classData.status,
-            sessionsPerWeek: classData.sessionsPerWeek,
-            currentStudents: classData.currentStudents,
-            maxStudents: classData.maxStudents,
-            price: classData.price,
-            note: classData.note || "",
+            name: data.name,
+            grade: data.grade,
+            status: data.status,
+            sessionsPerWeek: data.sessionsPerWeek,
+            currentStudents: data.currentStudents,
+            maxStudents: data.maxStudents,
+            price: data.price,
+            note: data.note || "",
             teacherId: teacher?.id || "",
             teacherName: userInfo?.fullName || "",
             teacherEmail: userInfo?.email || "",
             specialty,
-            teacherGender: userInfo?.gender === true
-                ? "Nam"
-                : userInfo?.gender === false
-                    ? "Nữ"
-                    : "Chưa cập nhật",
+            teacherGender:
+                userInfo?.gender === true
+                    ? "Nam"
+                    : userInfo?.gender === false
+                        ? "Nữ"
+                        : "Chưa cập nhật",
             teacherPhone: userInfo?.phoneNumber || "",
         };
     };
-    const [employeeList, setEmployeeList] = useState([]);
-
-    const [isEditing, setIsEditing] = useState(false);
-    const [editedData, setEditedData] = useState(() => getInitialEditedData(classData));
-    const [showConfirmModal, setShowConfirmModal] = useState(false);
 
     const getStatusClass = (status) => {
         switch (status) {
@@ -63,6 +65,30 @@ export default function SubjectDetail({ classData }) {
         }
     };
 
+   
+    useEffect(() => {
+        setLoading(true);
+        setClassData(null); 
+
+        const fetchSubjectDetail = async () => {
+            try {
+                const res = await getSubjectByIdApi(id);
+                if (res.success && res.data) {
+                    setClassData(res.data);
+                    setEditedData(getInitialEditedData(res.data));
+                } else {
+                    console.error("Không có dữ liệu môn học hoặc API thất bại.");
+                }
+            } catch (err) {
+                console.error("Lỗi khi tải chi tiết môn học:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchSubjectDetail();
+    }, [id]); 
+
     useEffect(() => {
         if (isEditing) {
             const fetchTeachers = async () => {
@@ -83,7 +109,6 @@ export default function SubjectDetail({ classData }) {
 
     const handleTeacherChange = (teacherId) => {
         if (!teacherId) {
-            // Nếu chọn "Chưa sắp xếp"
             setEditedData({
                 ...editedData,
                 teacherId: null,
@@ -139,6 +164,8 @@ export default function SubjectDetail({ classData }) {
         }
     };
 
+    if (loading) return <div className="loading-text">Đang tải dữ liệu...</div>;
+    if (!classData) return <div className="error-text">Không tìm thấy môn học</div>;
 
     return (
         <div className="subject-detail-container">
@@ -328,8 +355,8 @@ export default function SubjectDetail({ classData }) {
                     confirmText="Xác nhận"
                     onCancel={() => setShowConfirmModal(false)}
                     onConfirm={() => {
-                        handleUpdate();            
-                        setShowConfirmModal(false);  
+                        handleUpdate();
+                        setShowConfirmModal(false);
                     }}
                 />
             )}

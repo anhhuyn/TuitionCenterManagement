@@ -47,8 +47,46 @@ const updateSubject = async (req, res) => {
   }
 };
 
+const createSubject = async (req, res) => {
+  try {
+    const data = req.body;
+
+    const result = await subjectService.createSubject(data);
+
+    return res.status(201).json({
+      success: true,
+      message: result.message,
+      data: result.subject,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+const getSubjectById = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const subject = await subjectService.getSubjectById(id);
+
+    return res.status(200).json({
+      success: true,
+      data: subject,
+    });
+  } catch (error) {
+    return res.status(404).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
 
 export default {
   getSubjects,
-  updateSubject
+  updateSubject,
+  createSubject,
+  getSubjectById,
 };
