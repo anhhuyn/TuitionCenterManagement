@@ -13,7 +13,7 @@ import {
   cilUser,
 } from "@coreui/icons";
 import FilterPanel from "../components/modal/FilterPanel.jsx";
-import Layout from "../components/layout/Layout";
+import "../components/modal/SearchBox.css";
 import {
   CModal,
   CModalHeader,
@@ -28,8 +28,22 @@ import {
 
 const TeacherManagement = () => {
   const [teachers, setTeachers] = useState([]);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  //mới thêm
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10); // số nhân viên mỗi trang
+  const [pagination, setPagination] = useState({ total: 0, totalPages: 0 });
+
+  // state filter gửi lên backend
+  const [filters, setFilters] = useState({
+    name: "",
+    gender: "",
+    specialty: ""
+  });
+
 
   // search & filter
   const [search, setSearch] = useState("");
@@ -65,25 +79,29 @@ const [detailEmployee, setDetailEmployee] = useState(null);
 
   // fetch dữ liệu
   useEffect(() => {
-    const fetchTeachers = async () => {
-      try {
-        const response = await axios.get(
-          "http://localhost:8088/v1/api/employees"
-        );
-        if (response.data.errCode === 0) {
-          setTeachers(response.data.data);
-        } else {
-          setError(response.data.message);
-        }
-      } catch (err) {
-        setError("Không thể kết nối đến server. Vui lòng thử lại sau.");
-        console.error("Lỗi khi fetch data:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+const fetchTeachers = async () => {
+  try {
+    const response = await axios.get(
+      `http://localhost:8088/v1/api/employees?page=${page}&limit=${limit}&name=${filters.name}&gender=${filters.gender}&specialty=${filters.specialty}`
+    );
+    if (response.data.errCode === 0) {
+      setTeachers(response.data.data);
+      setPagination(response.data.pagination);
+    } else {
+      setError(response.data.message);
+    }
+  } catch (err) {
+    setError("Không thể kết nối đến server. Vui lòng thử lại sau.");
+    console.error("Lỗi khi fetch data:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
     fetchTeachers();
-  }, []);
+}, [page, limit, filters]);
+
 
   // click ngoài filter -> đóng panel
   useEffect(() => {
@@ -159,16 +177,21 @@ const [detailEmployee, setDetailEmployee] = useState(null);
   };
 
   // mở modal sửa nhân viên
-  const handleEdit = (teacher) => {
-    setEditMode(true);
-    setCurrentId(teacher.id);
-    setNewEmployee({
-      ...teacher,
-      password: "", // không hiển thị mật khẩu cũ
-      address: teacher.address || { details: "", ward: "", province: "" },
-    });
-    setShowModal(true);
-  };
+const handleEdit = async (teacher) => {
+  setEditMode(true);
+  setCurrentId(teacher.id);
+  setNewEmployee({
+    ...teacher,
+    password: "",
+    address: teacher.address || { details: "", ward: "", province: "" },
+  });
+  setShowModal(true);
+
+  await fetchProvinces();
+  if (teacher.address?.province) {
+    await fetchWardsByProvince(teacher.address.province);
+  }
+};
 
   // mở modal thêm mới
   const handleAdd = () => {
@@ -187,6 +210,7 @@ const [detailEmployee, setDetailEmployee] = useState(null);
       address: { details: "", ward: "", province: "" },
     });
     setShowModal(true);
+    fetchProvinces();
   };
 
   const handleSubmit = async () => {
@@ -221,7 +245,9 @@ const [detailEmployee, setDetailEmployee] = useState(null);
       alert(editMode ? "Cập nhật nhân viên thành công!" : "Thêm nhân viên thành công!");
 
       // ✅ Refetch lại toàn bộ danh sách từ backend
-      const refreshed = await axios.get("http://localhost:8088/v1/api/employees");
+      const refreshed = await axios.get(
+        `http://localhost:8088/v1/api/employees?page=${page}&limit=${limit}`
+      );
       if (refreshed.data.errCode === 0) {
         setTeachers(refreshed.data.data);
       }
@@ -256,6 +282,87 @@ const handleDelete = async (id) => {
   }
 };
 
+// Xuất Excel
+const handleExportExcel = () => {
+  try {
+    // Gọi trực tiếp API xuất Excel
+    window.open("http://localhost:8088/v1/api/employees/export/excel", "_blank");
+  } catch (err) {
+    console.error("Lỗi xuất Excel:", err);
+    alert("Không thể xuất Excel!");
+  }
+};
+const handleRowClick = (teacher) => {
+  setDetailEmployee(teacher);
+  setShowDetailModal(true);
+};
+
+const [provinces, setProvinces] = useState([]);
+const [wards, setWards] = useState([]);
+const [loadingProvince, setLoadingProvince] = useState(false);
+const [loadingWard, setLoadingWard] = useState(false);
+
+const fetchProvinces = async () => {
+  setLoadingProvince(true);
+  try {
+    const res = await fetch("https://vietnamlabs.com/api/vietnamprovince");
+    const data = await res.json();
+    if (data.success) setProvinces(data.data);
+  } catch (error) {
+    console.error("Lỗi khi tải danh sách tỉnh:", error);
+  } finally {
+    setLoadingProvince(false);
+  }
+};
+
+const fetchWardsByProvince = async (provinceName) => {
+  if (!provinceName) return;
+  setLoadingWard(true);
+  try {
+    const res = await fetch(
+      `https://vietnamlabs.com/api/vietnamprovince?province=${encodeURIComponent(provinceName)}`
+    );
+    const data = await res.json();
+    if (data.success && data.data.wards) {
+      setWards(data.data.wards);
+    }
+  } catch (error) {
+    console.error("Lỗi khi tải phường/xã:", error);
+  } finally {
+    setLoadingWard(false);
+  }
+};
+
+// 🔹 Xóa nhiều nhân viên được chọn
+const handleDeleteMultiple = async () => {
+  if (selected.length === 0) {
+    alert("Vui lòng chọn ít nhất một nhân viên để xóa!");
+    return;
+  }
+
+  if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selected.length} nhân viên này không?`)) return;
+
+  try {
+    const response = await axios.post(
+      "http://localhost:8088/v1/api/employees/delete-multiple",
+      { ids: selected }
+    );
+
+    if (response.data.errCode === 0) {
+      alert(response.data.message);
+      // Cập nhật lại danh sách
+      setTeachers(teachers.filter((t) => !selected.includes(t.id)));
+      setSelected([]);
+    } else {
+      alert(response.data.message);
+    }
+  } catch (error) {
+    console.error("Lỗi khi xóa nhiều nhân viên:", error);
+    alert("Đã xảy ra lỗi khi xóa nhiều nhân viên!");
+  }
+};
+
+
   return (
     <>
       <div className="table-container">
@@ -269,28 +376,49 @@ const handleDelete = async (id) => {
               >
                 <CIcon icon={cilFilter} />
               </button>
-              {showFilter && <FilterPanel />}
+              {showFilter && (
+                <div className="filter-panel-container">
+                  <FilterPanel
+                    type="employee" 
+                    filters={filters}
+                    onChange={(newFilters) => {
+                      setFilters(newFilters);
+                      setPage(1); // reset về trang 1 khi filter thay đổi
+                    }}
+                  />
+                </div>
+              )}
             </div>
+
 
             <div className="search-wrapper">
               <CIcon icon={cilSearch} className="search-icon" />
               <input
                 type="text"
-                placeholder="Tra cứu nhân viên"
+                placeholder="     Tra cứu nhân viên"
                 className="search-box"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                value={filters.name}
+                onChange={(e) => {
+                  setFilters({ ...filters, name: e.target.value });
+                  setPage(1);
+                }}
               />
             </div>
+
           </div>
 
           <div className="right-tools">
-            <button className="btn-excel">
+            <button className="btn-excel" onClick={handleExportExcel}>
               <CIcon icon={cilSpreadsheet} /> Xuất Excel
             </button>
-            <button className="btn-import">
-              <CIcon icon={cilCloudUpload} /> Import
+              <button
+              className={`btn-delete-all ${selected.length > 0 ? "active" : "disabled"}`}
+              onClick={handleDeleteMultiple}
+              disabled={selected.length === 0}
+            >
+              <CIcon icon={cilTrash} /> Xóa tất cả
             </button>
+
             <button className="btn-add" onClick={handleAdd}>
               + Thêm nhân viên
             </button>
@@ -309,7 +437,7 @@ const handleDelete = async (id) => {
                   onChange={handleSelectAll}
                 />
               </th>
-              <th>Hình ảnh</th>
+    
               <th>Họ và Tên</th>
               <th>Email</th>
               <th>Số điện thoại</th>
@@ -335,58 +463,49 @@ const handleDelete = async (id) => {
               </tr>
             ) : filteredTeachers.length > 0 ? (
               filteredTeachers.map((teacher) => (
-                <tr key={teacher.id}>
-                  <td>
-                    <input
-                      type="checkbox"
-                      className="custom-checkbox"
-                      checked={selected.includes(teacher.id)}
-                      onChange={() => handleSelectRow(teacher.id)}
-                    />
-                  </td>
-                  <td className="product-cell">
-                    {teacher.image ? (
-                      <img
-                        src={`${import.meta.env.VITE_BACKEND_URL}/${teacher.image}`}
-                        alt={teacher.fullName}
-                        style={{
-                          width: "40px",
-                          height: "40px",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                        }}
-                      />
-                    ) : (
-                      <CIcon icon={cilUser} size="lg" />
-                    )}
-                  </td>
-                  <td>{teacher.fullName}</td>
-                  <td>{teacher.email}</td>
-                  <td>{teacher.phoneNumber}</td>
-                  <td>{teacher.gender ? "Nam" : "Nữ"}</td>
-                  <td>{teacher.dateOfBirth}</td>
-                  <td>{teacher.specialty}</td>
-                  <td>{teacher.roleName}</td>
-                  <td className="action-cell">
-                    <button
-                      className="btn-detail"
-                      onClick={() => {
-                        setDetailEmployee(teacher);
-                        setShowDetailModal(true);
-                      }}
-                    >
-                      <CIcon icon={cilUser} />
-                    </button>
-                    <button className="btn-edit" onClick={() => handleEdit(teacher)}>
-                      <CIcon icon={cilPencil} />
-                    </button>
-                    <button className="btn-delete" onClick={() => handleDelete(teacher.id)}>
-                      <CIcon icon={cilTrash} />
-                    </button>
-
-                  </td>
-                </tr>
-              ))
+              <tr
+                key={teacher.id}
+                onClick={(e) => {
+                  // tránh click vào checkbox hoặc nút chức năng bị trigger row click
+                  if (
+                    e.target.closest("button") || 
+                    e.target.closest("input[type='checkbox']")
+                  ) return;
+                  handleRowClick(teacher);
+                }}
+                style={{ cursor: "pointer" }}
+              >
+                <td>
+                  <input
+                    type="checkbox"
+                    className="custom-checkbox"
+                    checked={selected.includes(teacher.id)}
+                    onChange={() => handleSelectRow(teacher.id)}
+                  />
+                </td>
+                <td>{teacher.fullName}</td>
+                <td>{teacher.email}</td>
+                <td>{teacher.phoneNumber}</td>
+                <td>{teacher.gender ? "Nam" : "Nữ"}</td>
+                <td>{teacher.dateOfBirth}</td>
+                <td>{teacher.specialty}</td>
+                <td>{teacher.roleName}</td>
+                <td className="action-cell">
+                  <button
+                    className="btn-edit"
+                    onClick={() => handleEdit(teacher)}
+                  >
+                    <CIcon icon={cilPencil} />
+                  </button>
+                  <button
+                    className="btn-delete"
+                    onClick={() => handleDelete(teacher.id)}
+                  >
+                    <CIcon icon={cilTrash} />
+                  </button>
+                </td>
+              </tr>
+            ))
             ) : (
               <tr>
                 <td colSpan="10" className="text-center">
@@ -396,6 +515,56 @@ const handleDelete = async (id) => {
             )}
           </tbody>
         </table>
+      {/* Phân trang */}
+{pagination && (
+<div className="pagination">
+  {/* Nút trái */}
+  <button
+    className="arrow"
+    onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+    disabled={page === 1}
+  >
+    &lt;
+  </button>
+
+  {/* Render số trang */}
+  {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+    .filter((p) => {
+      if (pagination.totalPages <= 5) return true; // nếu tổng trang <= 5 thì hiện hết
+      if (p === 1 || p === pagination.totalPages) return true; // luôn hiện trang đầu + cuối
+      if (p >= page - 1 && p <= page + 1) return true; // hiện trang xung quanh current
+      return false;
+    })
+    .map((p, idx, arr) => {
+      const prev = arr[idx - 1];
+      return (
+        <React.Fragment key={p}>
+          {/* Chèn dấu ... nếu bị nhảy cách */}
+          {prev && p - prev > 1 && <span className="dots">...</span>}
+          <button
+            className={`page-btn ${page === p ? "active" : ""}`}
+            onClick={() => setPage(p)}
+          >
+            {p}
+          </button>
+        </React.Fragment>
+      );
+    })}
+
+  {/* Nút phải */}
+  <button
+    className="arrow"
+    onClick={() =>
+      setPage((prev) => Math.min(prev + 1, pagination.totalPages))
+    }
+    disabled={page === pagination.totalPages}
+  >
+    &gt;
+  </button>
+</div>
+
+)}
+
       </div>
 
       {/* Modal thêm/sửa nhân viên */}
@@ -405,135 +574,177 @@ const handleDelete = async (id) => {
             {editMode ? "Chỉnh sửa nhân viên" : "Thêm nhân viên mới"}
           </CModalTitle>
         </CModalHeader>
-        <CModalBody>
-          <CForm className="row g-3">
-            {/* Hình đại diện */}
-            <div className="col-12 mb-3">
-              <label className="form-label">Hình đại diện</label>
-              <input
-                type="file"
-                name="image"
-                className="form-control"
-                onChange={handleImageChange}
-              />
-            </div>
+<CModalBody>
+  <div className="row">
+    {/* Cột trái: Ảnh đại diện */}
+    <div className="col-md-3 d-flex flex-column align-items-center">
+      <label className="fw-bold mb-2">Ảnh đại diện</label>
+      <div className="avatar-upload border rounded-circle d-flex align-items-center justify-content-center mb-2" style={{width:"120px", height:"120px", overflow:"hidden"}}>
+        {newEmployee.image ? (
+          <img
+            src={
+              typeof newEmployee.image === "string"
+                ? `${import.meta.env.VITE_BACKEND_URL}/${newEmployee.image}`
+                : URL.createObjectURL(newEmployee.image)
+            }
+            alt="Avatar"
+            className="w-100 h-100"
+            style={{objectFit:"cover"}}
+          />
+        ) : (
+          <div className="text-muted small text-center">Chưa có ảnh</div>
+        )}
+      </div>
+      <input
+        type="file"
+        name="image"
+        className="form-control"
+        onChange={handleImageChange}
+      />
+    </div>
 
-            {/* Họ tên & Email */}
-            <div className="col-md-6">
-              <CFormInput
-                required
-                name="fullName"
-                label="Họ tên"
-                value={newEmployee.fullName}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormInput
-                required
-                name="email"
-                label="Địa chỉ Email"
-                value={newEmployee.email}
-                onChange={handleChange}
-              />
-            </div>
+    {/* Cột phải: Thông tin */}
+    <div className="col-md-9">
+      {/* Thông tin cơ bản */}
+      <h6 className="fw-bold text-primary mt-2">Thông tin cơ bản</h6>
+      <div className="row">
+        <div className="col-md-6">
+          <CFormInput
+            required
+            name="fullName"
+            label="Họ và tên"
+            value={newEmployee.fullName}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormInput
+            required
+            name="email"
+            label="Email"
+            value={newEmployee.email}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormInput
+            name="phoneNumber"
+            label="Số điện thoại"
+            value={newEmployee.phoneNumber}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormInput
+            type="date"
+            name="dateOfBirth"
+            label="Ngày sinh"
+            value={newEmployee.dateOfBirth}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormSelect
+            name="gender"
+            label="Giới tính"
+            value={newEmployee.gender?.toString()}
+            onChange={handleChange}
+          >
+            <option value="true">Nam</option>
+            <option value="false">Nữ</option>
+          </CFormSelect>
+        </div>
+        <div className="col-md-6">
+          <CFormInput
+            type="password"
+            name="password"
+            label="Mật khẩu"
+            value={newEmployee.password}
+            onChange={handleChange}
+            placeholder={editMode ? "Để trống nếu không đổi" : ""}
+          />
+        </div>
+      </div>
 
-            {/* SĐT & Mật khẩu */}
-            <div className="col-md-6">
-              <CFormInput
-                required
-                name="phoneNumber"
-                label="Số điện thoại"
-                value={newEmployee.phoneNumber}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormInput
-                type="password"
-                name="password"
-                label="Mật khẩu"
-                value={newEmployee.password}
-                onChange={handleChange}
-                placeholder={editMode ? "Để trống nếu không đổi" : ""}
-              />
-            </div>
+      {/* Địa chỉ */}
+      <h6 className="fw-bold text-primary mt-3">Địa chỉ</h6>
+      <div className="row">
+        <div className="col-md-12">
+          <CFormInput
+            name="details"
+            label="Địa chỉ chi tiết"
+            value={newEmployee.address.details}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormSelect
+            name="province"
+            label="Tỉnh/Thành phố"
+            value={newEmployee.address.province}
+            onChange={(e) => {
+              const province = e.target.value;
+              setNewEmployee({
+                ...newEmployee,
+                address: { ...newEmployee.address, province, ward: "" },
+              });
+              fetchWardsByProvince(province);
+            }}
+          >
+            <option value="">-- Chọn tỉnh/thành phố --</option>
+            {provinces.map((p) => (
+              <option key={p.id} value={p.province}>{p.province}</option>
+            ))}
+          </CFormSelect>
+        </div>
+        <div className="col-md-6">
+          <CFormSelect
+            name="ward"
+            label="Phường/Xã"
+            value={newEmployee.address.ward}
+            onChange={(e) =>
+              setNewEmployee({
+                ...newEmployee,
+                address: { ...newEmployee.address, ward: e.target.value },
+              })
+            }
+          >
+            <option value="">-- Chọn phường/xã --</option>
+            {wards.map((w, i) => (
+              <option key={i} value={w.name}>{w.name}</option>
+            ))}
+          </CFormSelect>
+        </div>
+      </div>
 
-            {/* Ngày sinh & Giới tính */}
-            <div className="col-md-6">
-              <CFormInput
-                type="date"
-                name="dateOfBirth"
-                label="Ngày sinh"
-                value={newEmployee.dateOfBirth}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormSelect
-                name="gender"
-                label="Giới tính"
-                value={newEmployee.gender?.toString()}   // ép thành "true"/"false"
-                onChange={handleChange}
-              >
-                <option value="true">Nam</option>
-                <option value="false">Nữ</option>
-              </CFormSelect>
+      {/* Chuyên môn & Vai trò */}
+      <h6 className="fw-bold text-primary mt-3">Thông tin công việc</h6>
+      <div className="row">
+        <div className="col-md-6">
+          <CFormInput
+            name="specialty"
+            label="Chuyên môn"
+            value={newEmployee.specialty}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-6">
+          <CFormSelect
+            name="roleId"
+            label="Vai trò"
+            value={newEmployee.roleId}
+            onChange={handleChange}
+          >
+            <option value="R0">Admin</option>
+            <option value="R1">Teacher</option>
+            <option value="R2">Student</option>
+          </CFormSelect>
+        </div>
+      </div>
+    </div>
+  </div>
+</CModalBody>
 
-            </div>
-
-            {/* Chuyên môn & Vai trò */}
-            <div className="col-md-6">
-              <CFormInput
-                name="specialty"
-                label="Chuyên môn"
-                value={newEmployee.specialty}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormSelect
-                name="roleId"
-                label="Vai trò"
-                value={newEmployee.roleId}
-                onChange={handleChange}
-              >
-                <option value="R0">Admin</option>
-                <option value="R1">Teacher</option>
-                <option value="R2">Student</option>
-              </CFormSelect>
-            </div>
-
-            {/* Địa chỉ */}
-            <div className="col-12">
-              <h6>Địa chỉ</h6>
-            </div>
-            <div className="col-md-12">
-              <CFormInput
-                name="details"
-                label="Địa chỉ chi tiết"
-                value={newEmployee.address.details}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormInput
-                name="ward"
-                label="Phường/Xã"
-                value={newEmployee.address.ward}
-                onChange={handleChange}
-              />
-            </div>
-            <div className="col-md-6">
-              <CFormInput
-                name="province"
-                label="Tỉnh/Thành phố"
-                value={newEmployee.address.province}
-                onChange={handleChange}
-              />
-            </div>
-          </CForm>
-        </CModalBody>
         <CModalFooter>
           <CButton color="secondary" onClick={() => setShowModal(false)}>
             Hủy
@@ -544,65 +755,109 @@ const handleDelete = async (id) => {
         </CModalFooter>
       </CModal>
       
-
-        <CModal
+<CModal
   visible={showDetailModal}
   onClose={() => setShowDetailModal(false)}
   size="lg"
+  alignment="center"
+  className="employee-detail-modal" 
 >
-  <CModalHeader>
-    <CModalTitle>Chi tiết nhân viên</CModalTitle>
+  <CModalHeader className="bg-success text-white">
+    <CModalTitle>👨‍🏫 Thông tin chi tiết nhân viên</CModalTitle>
   </CModalHeader>
-  <CModalBody>
-    {detailEmployee && (
-      <div className="cv-detail">
-        {/* Bố cục 2 cột */}
-        <div className="cv-left">
-          {detailEmployee.image ? (
-            <img
-              src={`${import.meta.env.VITE_BACKEND_URL}/${detailEmployee.image}`}
-              alt={detailEmployee.fullName}
-              className="cv-avatar"
-            />
-          ) : (
-            <div className="cv-avatar-placeholder">No Image</div>
-          )}
 
-          <h4>{detailEmployee.fullName}</h4>
-          <p><b>Email:</b> {detailEmployee.email}</p>
-          <p><b>SĐT:</b> {detailEmployee.phoneNumber}</p>
-          <p><b>Vai trò:</b> {detailEmployee.roleName}</p>
-        </div>
-
-        <div className="cv-right">
-          <div className="detail-section">
-            <h6>Thông tin cá nhân</h6>
-            <p><b>Ngày sinh:</b> {detailEmployee.dateOfBirth}</p>
-            <p><b>Giới tính:</b> {detailEmployee.gender ? "Nam" : "Nữ"}</p>
-            <p>
-              <b>Địa chỉ:</b> {detailEmployee.address?.details},{" "}
-              {detailEmployee.address?.ward},{" "}
-              {detailEmployee.address?.province}
-            </p>
+  <CModalBody className="bg-light">
+    {detailEmployee ? (
+      <div className="p-4">
+        <div className="row g-4">
+          {/* Cột trái - Ảnh và thông tin cơ bản */}
+          <div className="col-md-4 text-center">
+            <div className="card shadow-sm border-0 rounded-4 p-3">
+              <img
+                src={
+                  detailEmployee.image
+                    ? `${import.meta.env.VITE_BACKEND_URL}/${detailEmployee.image}`
+                    : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+                }
+                alt={detailEmployee.fullName}
+                className="rounded-circle mx-auto mb-3"
+                style={{
+                  width: "140px",
+                  height: "140px",
+                  objectFit: "cover",
+                  border: "4px solid #28a745",
+                }}
+              />
+              <h5 className="fw-bold text-success mb-1">
+                {detailEmployee.fullName}
+              </h5>
+              <p className="text-muted small">
+                💼 {detailEmployee.roleName || "Nhân viên"}
+              </p>
+            </div>
           </div>
 
-          <div className="detail-section">
-            <h6>Chuyên môn</h6>
-            <p>{detailEmployee.specialty || "—"}</p>
+          {/* Cột phải - Thông tin chi tiết */}
+          <div className="col-md-8">
+            {/* Thông tin cá nhân */}
+            <div className="card shadow-sm border-0 rounded-4 p-3 mb-3">
+              <h6 className="fw-bold text-success mb-3">📋 Thông tin cá nhân</h6>
+              <div className="row mb-2">
+                <div className="col-sm-6">
+                  <strong>Email:</strong> {detailEmployee.email || "—"}
+                </div>
+                <div className="col-sm-6">
+                  <strong>SĐT:</strong> {detailEmployee.phoneNumber || "—"}
+                </div>
+              </div>
+              <div className="row mb-2">
+                <div className="col-sm-6">
+                  <strong>Ngày sinh:</strong> {detailEmployee.dateOfBirth || "—"}
+                </div>
+                <div className="col-sm-6">
+                  <strong>Giới tính:</strong>{" "}
+                  {detailEmployee.gender ? "Nam" : "Nữ"}
+                </div>
+              </div>
+              <div className="mb-2">
+                <strong>Địa chỉ:</strong>{" "}
+                {detailEmployee.address
+                  ? `${detailEmployee.address.details}, ${detailEmployee.address.ward}, ${detailEmployee.address.province}`
+                  : "—"}
+              </div>
+            </div>
+
+            {/* Chuyên môn */}
+            <div className="card shadow-sm border-0 rounded-4 p-3">
+              <h6 className="fw-bold text-success mb-2">🎯 Chuyên môn</h6>
+              <p className="mb-0">
+                {detailEmployee.specialty ? (
+                  <span>{detailEmployee.specialty}</span>
+                ) : (
+                  <span className="text-muted fst-italic">
+                    Chưa có thông tin chuyên môn
+                  </span>
+                )}
+              </p>
+            </div>
           </div>
         </div>
       </div>
+    ) : (
+      <p>Đang tải thông tin...</p>
     )}
   </CModalBody>
-  <CModalFooter>
+
+  <CModalFooter className="bg-white border-top-0">
     <CButton
-      color="primary"
+      color="success"
+      variant="outline"
       onClick={() => {
         setShowDetailModal(false);
         handleEdit(detailEmployee);
       }}
     >
-      Chỉnh sửa
+      ✏️ Chỉnh sửa
     </CButton>
     <CButton color="secondary" onClick={() => setShowDetailModal(false)}>
       Đóng

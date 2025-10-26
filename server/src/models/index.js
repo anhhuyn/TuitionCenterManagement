@@ -20,6 +20,7 @@ import studentAssignmentModel from './studentassignment.js';
 import materialModel from './material.js';
 import teacherAttendanceModel from './teacherattendance.js';
 import feedbackModel from './feedback.js';
+import teacherPaymentDetailModel from './teacherpaymentdetail.js'; // ✅ Thêm dòng này
 
 // Kết nối Sequelize
 const sequelize = new Sequelize('tuitioncentermanagement', 'root', '12345', {
@@ -40,6 +41,7 @@ db.Student = studentModel(sequelize, Sequelize.DataTypes);
 db.StudentSubject = studentSubjectModel(sequelize, Sequelize.DataTypes);
 db.Subject = subjectModel(sequelize, Sequelize.DataTypes);
 db.TeacherPayment = teacherPaymentModel(sequelize, Sequelize.DataTypes);
+db.TeacherPaymentDetail = teacherPaymentDetailModel(sequelize, Sequelize.DataTypes); // ✅ Thêm dòng này
 db.TeacherSubject = teacherSubjectModel(sequelize, Sequelize.DataTypes);
 db.Room = roomModel(sequelize, Sequelize.DataTypes);
 db.Session = sessionModel(sequelize, Sequelize.DataTypes);

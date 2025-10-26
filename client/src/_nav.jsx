@@ -175,14 +175,20 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Cấu hình lương',
-        to: '/404',
+        name: 'Thỏa thuận giáo viên',
+        to: '/admin/teacher-payments',
       },
       {
         component: CNavItem,
-        name: 'Bảng lương',
-        to: '/500',
+        name: 'Bảng lương chính thức',
+        to: '/admin/teacher-main-payments',
       },
+      {
+        component: CNavItem,
+        name: 'Tạo bảng lương',
+        to: "/admin/teacher-main-payments/create",
+      },
+
     ],
   },
 

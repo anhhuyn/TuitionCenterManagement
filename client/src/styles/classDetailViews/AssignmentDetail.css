@@ -1,0 +1,196 @@
+.assignment-detail-container {
+  padding: 24px;
+  font-family: "Inter", sans-serif;
+  
+  min-height: 100vh;
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.back-button {
+  background: transparent;
+  border: none;
+  color: #7494ec;
+  font-size: 15px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+.back-button:hover {
+  opacity: 0.7;
+}
+
+.edit-button {
+  background-color: #7494ec;
+  color: white;
+  border: none;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  transition: 0.3s;
+}
+.edit-button:hover {
+  background-color: #5b7ee0;
+}
+
+.page-title {
+  font-size: 20px;
+  margin-bottom: 20px;
+}
+
+/* ==== Danh sách học sinh dạng hàng ==== */
+.student-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.student-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 12px;
+  padding: 12px 18px;
+  box-shadow: 0 2px 8px rgba(116, 148, 236, 0.15);
+  transition: transform 0.2s;
+}
+.student-row:hover {
+  transform: translateY(-2px);
+}
+
+.student-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1.5;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: #7494ec22;
+  color: #7494ec;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+}
+
+.assginstudent-name {
+  font-weight: 500;
+  text-align: left;
+}
+.student-index {
+  font-size: 12px;
+  color: #888;
+}
+
+.student-status {
+  flex: 1;
+  text-align: center;
+}
+
+.student-feedback {
+  flex: 1.5;
+  text-align: left;
+}
+
+.assignment-status-badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-weight: 500;
+  text-transform: capitalize;
+  font-size: 14px;
+}
+
+
+/* Chưa làm (pending) */
+.assignment-status-badge.pending {
+  background-color: #ffecec;
+  color: #ef4444;
+}
+
+/* Chưa hoàn thành (incomplete) */
+.assignment-status-badge.incomplete {
+  background-color: #fff6e5;
+  color: #f59e0b;
+}
+
+/* Hoàn thành (submitted) */
+.assignment-status-badge.submitted {
+  background-color: #e8efff;
+  color: #7494ec;
+}
+
+
+.status-select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.feedback-input {
+  width: 100%;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.feedback-text {
+  color: #555;
+  font-style: italic;
+}
+
+.loading-text,
+.empty-text {
+  font-style: italic;
+  text-align: center;
+  margin-top: 20px;
+  color: #555;
+}
+
+/* === FILTER BAR === */
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.tab {
+  padding: 6px 14px;
+  background: #f3f4f6;
+  cursor: pointer;
+  font-size: 14px;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  transition: 0.2s;
+}
+
+.tab:hover {
+  background: #e5e7eb;
+}
+
+.tab.active {
+  background: #7494ec;
+  color: #fff;
+}

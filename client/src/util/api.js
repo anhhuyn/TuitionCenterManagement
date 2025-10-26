@@ -89,6 +89,31 @@ const getSubjectsApi = async ({ page = 1, limit = 15, status = null } = {}) => {
   return res;
 };
 
+const createSubjectApi = async (formData) => {
+  try {
+    const res = await axios.post("/v1/api/subjects", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res; // interceptor đã xử lý trả về res.data
+  } catch (error) {
+    console.error("Lỗi API createSubjectApi:", error);
+    throw error;
+  }
+};
+
+// Xóa môn học theo id
+const deleteSubjectApi = async (id) => {
+  try {
+    const res = await axios.delete(`/v1/api/subjects/${id}`);
+    return res; // interceptor đã xử lý trả về res.data
+  } catch (error) {
+    console.error("Lỗi API deleteSubjectApi:", error);
+    throw error;
+  }
+};
+
 // Lấy danh sách giáo viên cơ bản
 const getTeacherBasicListApi = async () => {
   const res = await axios.get("/v1/api/teachers/basic");
@@ -297,10 +322,102 @@ const updateAssignmentApi = async (assignmentId, formData) => {
 };
 
 const getSubjectByIdApi = async (id) => {
-    return await axios.get(`v1/api/subjects/${id}`);
+    return await axios.get(`/v1/api/subjects/${id}`);
+};
+
+// Gán assignment cho học sinh theo assignmentId
+const assignToStudentsApi = async (assignmentId) => {
+  try {
+    const res = await axios.post(`/v1/api/assign/${assignmentId}`);
+    return res;
+  } catch (error) {
+    console.error("Lỗi API assignToStudentsApi:", error);
+    throw error;
+  }
+};
+
+// Lấy danh sách học sinh đã được gán assignment
+const getStudentAssignmentsByAssignmentIdApi = async (assignmentId) => {
+  try {
+    const res = await axios.get(`/v1/api/by-assignment/${assignmentId}`);
+    return res;
+  } catch (error) {
+    console.error("Lỗi API getStudentAssignmentsByAssignmentIdApi:", error);
+    throw error;
+  }
+};
+
+const updateStudentAssignmentApi = async (assignmentId, data) => {
+  try {
+    const res = await axios.put(`/v1/api/assign/update/${assignmentId}`, data);
+    return res;
+  } catch (error) {
+    console.error("Lỗi API updateStudentAssignmentApi:", error);
+    throw error;
+  }
+};
+// Lấy danh sách thỏa thuận (teacher-subject)
+const getAllTeacherSubjectsApi = async () => {
+  try {
+    const res = await axios.get("/v1/api/teacher-subjects");
+    return res.data || [];
+  } catch (err) {
+    console.error("Lỗi khi gọi API getAllTeacherSubjectsApi:", err);
+    return [];
+  }
+};
+const getTeacherSubjectByIdApi = async (id) => {
+  try {
+    const res = await axios.get(`/v1/api/teacher-subjects/${id}`);
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API getTeacherSubjectByIdApi:", err);
+    throw err;
+  }
+};
+
+const createTeacherSubjectApi = async (data) => {
+  try {
+    const res = await axios.post("/v1/api/teacher-subjects", data);
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API createTeacherSubjectApi:", err);
+    throw err; // Quan trọng: ném lỗi ra ngoài để component có thể bắt và hiển thị thông báo trùng lặp (409)
+  }
+};
+// Cập nhật thỏa thuận (teacher-subject)
+const updateTeacherSubjectApi = async (id, data) => {
+  try {
+    const res = await axios.put(`/v1/api/teacher-subjects/${id}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API updateTeacherSubjectApi:", err);
+    throw err; // Ném lỗi ra để component có thể bắt
+  }
+};
+
+// 📅 Lấy danh sách lương theo tháng & năm
+const getTeacherPaymentsByMonth = (month, year) => {
+  return axios.get(`/v1/api/teacher-payments?month=${month}&year=${year}`);
+};
+
+// 💾 Tạo bảng lương
+const createTeacherPayments = (data) => {
+  return axios.post("/v1/api/teacher-payments", data);
+};
+
+// 🔍 Lấy chi tiết lương 1 giáo viên
+const getTeacherSalaryDetail = (teacherId, month, year) => {
+  return axios.get(`/v1/api/teacher-payments/${teacherId}?month=${month}&year=${year}`);
+};
+
+// 💰 Thanh toán lương giáo viên
+const payTeacherSalary = (teacherId, month, year) => {
+  return axios.put(`/v1/api/teacher-payments/${teacherId}/pay`, { month, year });
 };
 
 export {
+  createSubjectApi, deleteSubjectApi,
   getSubjectByIdApi,
   createAssignmentApi,
   updateAssignmentApi,
@@ -320,5 +437,18 @@ export {
   getScheduleBySubjectId,
   getRoomsApi,
   createManualSessionApi,
-  addStudentToSubjectApi, getStudentsByGradeApi, removeStudentFromSubjectApi, getStudentsBySubjectIdApi, getTeacherBasicListApi, updateSubjectApi, updateImageApi, verifyEmailChangeOtpApi, updateProfileApi, registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi
+  addStudentToSubjectApi, getStudentsByGradeApi, removeStudentFromSubjectApi, getStudentsBySubjectIdApi, getTeacherBasicListApi, updateSubjectApi, updateImageApi, verifyEmailChangeOtpApi, updateProfileApi, registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi,
+  updateStudentAssignmentApi,
+  assignToStudentsApi,
+  getStudentAssignmentsByAssignmentIdApi,
+  getAllTeacherSubjectsApi,
+  getTeacherSubjectByIdApi,
+  createTeacherSubjectApi,
+  updateTeacherSubjectApi,
+
+  getTeacherPaymentsByMonth,
+  createTeacherPayments,
+  getTeacherSalaryDetail,
+  payTeacherSalary,
 };
+

@@ -1,13 +1,33 @@
-.filter-panel {
+/* ========== Filter Container (bên ngoài) ========== */
+.filter-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.filter-panel-container {
   position: absolute;
-  top: 45px; /* nằm ngay dưới nút lọc */
+  top: 110%;
   left: 0;
-  width: 450px;
+  z-index: 1000;
   background: #fff;
+  border: 1px solid #ddd;
   border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-  padding: 16px;
-  z-index: 100;
+  padding: 12px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  min-width: 250px;
+}
+
+/* ========== Bên trong panel ========== */
+.filter-panel {
+  background: #fff;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.filter-panel h6 {
+  font-weight: 600;
+  color: #0d6efd;
+  margin-bottom: 10px;
 }
 
 .filter-row {
@@ -28,16 +48,27 @@
   font-weight: 500;
 }
 
+.filter-item input,
 .filter-item select {
   padding: 6px 10px;
   border: 1px solid #ddd;
   border-radius: 6px;
+  font-size: 0.9rem;
 }
 
+.filter-item input:focus,
+.filter-item select:focus {
+  outline: none;
+  border-color: #0d6efd;
+  box-shadow: 0 0 4px rgba(13,110,253,0.25);
+}
+
+/* ========== Nút hành động ========== */
 .filter-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
+  margin-top: 12px;
 }
 
 .btn-reset {

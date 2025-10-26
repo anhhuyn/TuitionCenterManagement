@@ -4,7 +4,7 @@ import "../../styles/classDetailViews/AssignmentList.css";
 import { FiDownload, FiEdit2, FiTrash2, FiBook } from "react-icons/fi";
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import AssignmentModal from "./AssignmentModal";
-
+import { useNavigate } from "react-router-dom";
 
 // Hàm tiện ích để lấy tên tháng tiếng Việt
 const getMonthName = (monthIndex) => {
@@ -43,6 +43,7 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 const yearOptions = generateYears();
 
 export default function AssignmentList({ classData }) {
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -164,10 +165,9 @@ export default function AssignmentList({ classData }) {
       ) : (
         <ul className="assignment-list">
           {filteredAssignments.map((item) => (
-            <li key={item.id} className="assignment-item">
-
-
-
+            <li key={item.id} className="assignment-item" 
+            onClick={() => navigate(`/admin/assignment/${item.id}`)} // 👈 thêm dòng này
+            style={{ cursor: "pointer" }}>
               {/* Nút 3 chấm (Menu Options) ở góc trên bên phải */}
               <div className="options-menu">
                 <button

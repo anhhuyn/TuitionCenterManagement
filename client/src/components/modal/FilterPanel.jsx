@@ -1,52 +1,76 @@
 import React from "react";
 import "./FilterPanel.css";
 
-export default function FilterPanel({ onClose }) {
+const FilterPanel = ({ type = "student", filters, onChange }) => {
+  const handleChange = (e) => {
+    onChange({ ...filters, [e.target.name]: e.target.value });
+  };
+
   return (
     <div className="filter-panel">
-      <div className="filter-row">
-        <div className="filter-item">
-          <label>Sắp xếp</label>
-          <select>
-            <option>Sắp xếp dữ liệu</option>
-            <option>Tăng dần</option>
-            <option>Giảm dần</option>
-          </select>
-        </div>
-        <div className="filter-item">
-          <label>Trạng thái</label>
-          <select>
-            <option>Chọn trạng thái</option>
-            <option>Đang học</option>
-            <option>Bảo lưu</option>
-            <option>Đã nghỉ</option>
-          </select>
-        </div>
+      {/* 🔹 Bộ lọc chung cho cả học viên và nhân viên */}
+      <div className="filter-item">
+        <label>Giới tính</label>
+        <select name="gender" value={filters.gender || ""} onChange={handleChange}>
+          <option value="">Tất cả</option>
+          <option value="true">Nam</option>
+          <option value="false">Nữ</option>
+        </select>
       </div>
 
-      <div className="filter-row">
-        <div className="filter-item">
-          <label>Tình trạng học</label>
-          <select>
-            <option>Chọn tình trạng học</option>
-            <option>Còn hạn</option>
-            <option>Hết hạn</option>
-          </select>
-        </div>
-        <div className="filter-item">
-          <label>Tư vấn viên</label>
-          <select>
-            <option>Chọn tư vấn viên</option>
-            <option>Nguyễn Văn A</option>
-            <option>Trần Thị B</option>
-          </select>
-        </div>
-      </div>
+      {/* 🔸 Nếu là học viên */}
+      {type === "student" && (
+        <>
+          <div className="filter-item">
+            <label>Lớp</label>
+            <input
+              type="text"
+              name="grade"
+              value={filters.grade || ""}
+              onChange={handleChange}
+              placeholder="VD: 12A1"
+            />
+          </div>
 
-      <div className="filter-actions">
-        <button className="btn-reset">Khôi phục</button>
-        <button className="btn-apply">Áp dụng</button>
-      </div>
+          <div className="filter-item">
+            <label>Trường</label>
+            <input
+              type="text"
+              name="schoolName"
+              value={filters.schoolName || ""}
+              onChange={handleChange}
+              placeholder="VD: THPT Nguyễn Trãi"
+            />
+          </div>
+
+          <div className="filter-item">
+            <label>Môn học</label>
+            <input
+              type="text"
+              name="subject"
+              value={filters.subject || ""}
+              onChange={handleChange}
+              placeholder="VD: Toán, Lý..."
+            />
+          </div>
+        </>
+      )}
+
+      {/* 🔸 Nếu là nhân viên */}
+      {type === "employee" && (
+        <div className="filter-item">
+          <label>Chuyên môn</label>
+          <input
+            type="text"
+            name="specialty"
+            value={filters.specialty || ""}
+            onChange={handleChange}
+            placeholder="VD: Giảng dạy, Quản lý..."
+          />
+        </div>
+      )}
     </div>
   );
-}
+};
+
+export default FilterPanel;

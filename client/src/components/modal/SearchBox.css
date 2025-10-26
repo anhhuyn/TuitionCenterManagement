@@ -1,0 +1,23 @@
+.search-wrapper {
+  position: relative;
+  display: inline-block;
+  width: 250px; /* hoặc 100% nếu muốn full */
+}
+
+.search-icon {
+  position: absolute;
+  left: 10px; /* khoảng cách từ mép trái */
+  top: 50%;
+  transform: translateY(-50%);
+  color: #888;
+  pointer-events: none; /* để click không bị icon chặn */
+}
+
+.search-box {
+  width: 100%;
+  padding: 8px 12px;
+  padding-left: 35px; /* chừa chỗ cho icon */
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  outline: none;
+}

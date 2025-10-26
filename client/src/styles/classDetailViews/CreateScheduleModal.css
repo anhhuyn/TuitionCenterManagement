@@ -68,3 +68,15 @@
 }
 
 
+/* Quy tắc này có độ ưu tiên cao hơn để ghi đè .modal { width: 400px... } */
+/* Nó chỉ áp dụng cho modal có class 'student-detail-modal' */
+.student-detail-modal {
+    width: auto !important; /* Loại bỏ giới hạn 400px trên chính modal */
+    max-width: 90vw !important; /* Giữ lại giới hạn tối đa theo viewport */
+}
+
+/* Quy tắc này là để mở rộng khung chứa nội dung bên trong */
+.student-detail-modal .modal-dialog {
+    max-width: 1200px !important; /* Đặt kích thước lớn cho khung chứa (như XL) */
+    width: 90vw !important; 
+}

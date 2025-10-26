@@ -4,10 +4,12 @@ import CIcon from "@coreui/icons-react";
 import { cilFilter, cilPeople, cilChevronLeft, cilChevronRight } from "@coreui/icons";
 import "../styles/ClassList.css";
 import { useNavigate } from "react-router-dom";
+import ClassModal from "./ClassModal";
 
 const colors = ["#EDE9FE", "#DBEAFE", "#EBFCEF", "#FFFDE7", "#FFF5F5"];
 
 export default function ClassList() {
+    const [showAddModal, setShowAddModal] = useState(false);
     const [classes, setClasses] = useState([]);
     const [search, setSearch] = useState("");
     const [filter, setFilter] = useState("Tất cả");
@@ -123,7 +125,7 @@ export default function ClassList() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <button className="btn-add">+ Tạo lớp</button>
+                    <button className="btn-add" onClick={() => setShowAddModal(true)}>+ Tạo lớp</button>
                 </div>
             </div>
 
@@ -139,8 +141,11 @@ export default function ClassList() {
                         <div className="banner">
                             <img
                                 src={
-                                    cls.image ||
-                                    "https://llv.edu.vn/media/2018/11/BLOG-PHOTO-Back-to-School-stationery-v1-20170115-1.jpg"
+                                    cls.image
+                                        ? cls.image.startsWith("http")
+                                            ? cls.image
+                                            : `${import.meta.env.VITE_BACKEND_URL}${cls.image}`
+                                        : "https://llv.edu.vn/media/2018/11/BLOG-PHOTO-Back-to-School-stationery-v1-20170115-1.jpg"
                                 }
                                 alt={cls.name}
                             />
@@ -230,6 +235,26 @@ export default function ClassList() {
                     <CIcon icon={cilChevronRight} />
                 </button>
             </div>
+            <ClassModal
+                show={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onSuccess={() => {
+                    setShowAddModal(false);
+                    // reload lại danh sách lớp sau khi thêm mới
+                    const fetchClasses = async () => {
+                        const status = filterStatusMap[filter];
+                        const res = await getSubjectsApi({ page, limit, status });
+                        if (res.success) {
+                            setClasses(res.data);
+                            setStats(res.stats);
+                            setTotal(res.total);
+                            setLimit(res.limit);
+                            setTotalPages(res.totalPages);
+                        }
+                    };
+                    fetchClasses();
+                }}
+            />
         </div>
     );
 }

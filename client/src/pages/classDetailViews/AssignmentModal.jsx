@@ -3,6 +3,7 @@ import {
     createAssignmentApi,
     updateAssignmentApi,
     getScheduleBySubjectId,
+    assignToStudentsApi
 } from "../../util/api";
 import "../../styles/classDetailViews/MaterialModal.css";
 
@@ -76,6 +77,14 @@ export default function AssignmentModal({
             }
 
             if (res) {
+                if (!editMode && res?.id) {
+                    try {
+                        const assignRes = await assignToStudentsApi(res.id); 
+                        
+                    } catch (assignErr) {
+                        console.error("Lỗi khi gán assignment cho học sinh:", assignErr);
+                    }
+                }
                 const refreshed = await onUploadSuccess();
                 onClose();
             }

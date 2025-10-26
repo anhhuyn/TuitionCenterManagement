@@ -49,7 +49,12 @@ const updateSubject = async (req, res) => {
 
 const createSubject = async (req, res) => {
   try {
-    const data = req.body;
+    const data = req.body || {}; 
+    const file = req.file;
+
+    if (file) {
+      data.image = `/uploads/subjects/${file.filename}`;
+    }
 
     const result = await subjectService.createSubject(data);
 
@@ -84,9 +89,28 @@ const getSubjectById = async (req, res) => {
   }
 };
 
+const deleteSubject = async (req, res) => {
+  try {
+    const id = req.params.id;
+
+    const result = await subjectService.deleteSubject(id);
+
+    return res.status(200).json({
+      success: true,
+      message: result.message,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 export default {
   getSubjects,
   updateSubject,
   createSubject,
   getSubjectById,
+  deleteSubject,  
 };

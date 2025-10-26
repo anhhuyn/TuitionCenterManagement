@@ -5,6 +5,7 @@ export default (sequelize, DataTypes) => {
   class TeacherPayment extends Model {
     static associate(models) {
       TeacherPayment.belongsTo(models.Teacher, { foreignKey: 'teacherId' });
+      TeacherPayment.hasMany(models.TeacherPaymentDetail, {  foreignKey: "paymentId"   });
     }
   }
 

@@ -102,3 +102,18 @@ input, select, textarea {
 .edit-button:hover {
   background-color: #5f7de0;
 }
+
+.delete-button {
+  background-color: #e53935; /* màu đỏ */
+  color: #fff;               /* chữ trắng */
+  border: none;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s;
+}
+
+.delete-button:hover {
+  background-color: #c62828; /* đỏ đậm khi hover */
+}

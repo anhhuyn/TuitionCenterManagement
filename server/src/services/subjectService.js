@@ -270,9 +270,42 @@ const getSubjectById = async (id) => {
   }
 };
 
+const deleteSubject = async (id) => {
+  const t = await db.sequelize.transaction();
+
+  try {
+    // 1. Tìm subject
+    const subject = await Subject.findByPk(id, { transaction: t });
+    if (!subject) throw new Error('Không tìm thấy môn học');
+
+    // 2. Xóa các TeacherSubject liên quan
+    await TeacherSubject.destroy({
+      where: { subjectId: id },
+      transaction: t
+    });
+
+    // 3. (Tuỳ) Nếu có bảng studentsubjects, xóa luôn quan hệ với học sinh
+    await db.StudentSubject.destroy({
+      where: { subjectId: id },
+      transaction: t
+    });
+
+    // 4. Xóa môn học
+    await subject.destroy({ transaction: t });
+
+    await t.commit();
+
+    return { success: true, message: 'Xóa môn học thành công.' };
+  } catch (error) {
+    await t.rollback();
+    throw new Error(error.message);
+  }
+};
+
 export default {
   getAllSubjects,
   updateSubject,
   createSubject,
   getSubjectById,
+  deleteSubject, 
 };

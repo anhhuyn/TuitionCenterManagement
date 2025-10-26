@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/SubjectDetail.css";
 import { cilPen } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import { getSubjectByIdApi, getTeacherBasicListApi, updateSubjectApi } from "../../util/api";
+import { getSubjectByIdApi, getTeacherBasicListApi, updateSubjectApi, deleteSubjectApi } from "../../util/api";
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import { useParams } from "react-router-dom";
 
@@ -14,6 +14,7 @@ export default function SubjectDetail() {
     const [isEditing, setIsEditing] = useState(false);
     const [editedData, setEditedData] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const getInitialEditedData = (data) => {
         const teacher = data.TeacherSubjects[0]?.Teacher || null;
@@ -43,6 +44,16 @@ export default function SubjectDetail() {
         };
     };
 
+    const handleDelete = async () => {
+        try {
+            const res = await deleteSubjectApi(classData.id);
+            window.location.href = "/admin/classlist";
+        } catch (error) {
+            console.error("Xóa môn học thất bại:", error);
+            alert("Xóa môn học thất bại. Vui lòng thử lại.");
+        }
+    };
+
     const getStatusClass = (status) => {
         switch (status) {
             case "active":
@@ -65,10 +76,10 @@ export default function SubjectDetail() {
         }
     };
 
-   
+
     useEffect(() => {
         setLoading(true);
-        setClassData(null); 
+        setClassData(null);
 
         const fetchSubjectDetail = async () => {
             try {
@@ -87,7 +98,7 @@ export default function SubjectDetail() {
         };
 
         fetchSubjectDetail();
-    }, [id]); 
+    }, [id]);
 
     useEffect(() => {
         if (isEditing) {
@@ -182,6 +193,16 @@ export default function SubjectDetail() {
                 >
                     <CIcon icon={cilPen} className="me-1" /> {isEditing ? "Hủy" : "Chỉnh sửa"}
                 </button>
+
+                {/* Nút xóa môn học */}
+                <button
+                    className="delete-button"
+                    style={{ marginLeft: "10px", backgroundColor: "#e53935", color: "#fff" }}
+                    onClick={() => setShowDeleteModal(true)}
+                >
+                    Xóa môn học
+                </button>
+
             </div>
 
             {/* Dòng 1: Thông tin cơ bản */}
@@ -357,6 +378,19 @@ export default function SubjectDetail() {
                     onConfirm={() => {
                         handleUpdate();
                         setShowConfirmModal(false);
+                    }}
+                />
+            )}
+            {showDeleteModal && (
+                <ConfirmModal
+                    title="Xác nhận xóa"
+                    message="Bạn có chắc chắn muốn xóa môn học này? Hành động này không thể hoàn tác."
+                    cancelText="Hủy"
+                    confirmText="Xác nhận"
+                    onCancel={() => setShowDeleteModal(false)}
+                    onConfirm={() => {
+                        handleDelete();
+                        setShowDeleteModal(false);
                     }}
                 />
             )}

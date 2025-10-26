@@ -16,6 +16,16 @@ import Layout from "./components/layout/Layout";
 import TeacherManagement from "./pages/employeesPage.jsx";
 import ClassList from "./pages/ClassList";
 import ClassDetailPage from "./pages/classDetailViews/ClassDetailPage";
+import AssignmentDetail from "./pages/classDetailViews/AssignmentDetail";
+import TeacherPaymentList from "./pages/teacherPayment/TeacherPaymentList.jsx";
+import TeacherDetail from "./pages/teacherPayment/TeacherDetail.jsx";
+import ManageTeacherSubject from "./pages/teacherPayment/ManageTeacherSubject.jsx";
+
+import TeacherMainPaymentList from "./pages/teacherMainPayments/TeacherMainPaymentList.jsx";
+import TeacherMainPaymentDetail from "./pages/teacherMainPayments/TeacherMainPaymentDetail.jsx";
+import TeacherMainPaymentCreate from "./pages/teacherMainPayments/TeacherMainPaymentCreate.jsx";
+
+
 
 function App() {
   const dispatch = useDispatch();
@@ -73,6 +83,74 @@ function App() {
           element={
             <Layout>
               <ClassDetailPage />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/assignment/:assignmentId"
+          element={
+            <Layout>
+              <AssignmentDetail />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/teacher-payments"
+          element={
+            <Layout>
+              <TeacherPaymentList />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/teacher-payments/:id"
+          element={
+            <Layout>
+              <TeacherDetail />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/teacher-payments/create"
+          element={
+            <Layout>
+              <ManageTeacherSubject />
+            </Layout>
+          }
+        />
+          <Route 
+          path="/admin/teacher-payments/edit/:id" 
+          element={
+            <Layout>
+              <ManageTeacherSubject />
+            </Layout>
+          } 
+        />
+
+
+
+      {/* 🧾 Lương tổng hàng tháng (Main Payments) */}
+        <Route
+          path="/admin/teacher-main-payments"
+          element={
+            <Layout>
+              <TeacherMainPaymentList />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/teacher-main-payments/create"
+          element={
+            <Layout>
+              <TeacherMainPaymentCreate />
+            </Layout>
+          }
+        />
+        <Route
+          path="/admin/teacher-main-payments/:id"
+          element={
+            <Layout>
+              <TeacherMainPaymentDetail />
             </Layout>
           }
         />

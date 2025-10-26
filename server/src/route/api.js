@@ -14,10 +14,14 @@ import subjectScheduleController from "../controllers/subjectScheduleController.
 import roomController from "../controllers/roomController.js";
 import attendanceController from '../controllers/attendanceController.js';
 import materialController from '../controllers/materialController.js';
+import studentAssignmentController from '../controllers/studentAssignmentController.js';
+import teacherPaymentController from "../controllers/teacherPaymentController.js";
+import teacherMainPaymentController from "../controllers/teacherMainPaymentController.js";
+import uploadSubjectImage from '../middleware/uploadSubjectImage.js';
+
 import multer from 'multer';
 import assignmentController from '../controllers/assignmentController.js';
 import uploadAssignment from '../middleware/uploadAssignment.js';
-
 let router = express.Router();
 
 router.post('/login', loginController.handleLogin);
@@ -31,7 +35,8 @@ router.post('/profile/update', verifyToken, userController.updateProfile);
 router.post('/profile/verify-email-otp', verifyToken, userController.verifyEmailChangeOtp);
 router.put('/profile/image', verifyToken, upload.single('image'), userController.updateImageProfile);
 router.get('/subjects', subjectController.getSubjects);
-router.post('/subjects', subjectController.createSubject);
+router.post('/subjects', uploadSubjectImage.single('image'), subjectController.createSubject);
+router.delete('/subjects/:id', subjectController.deleteSubject);
 router.get('/subjects/:id', subjectController.getSubjectById);
 router.put('/subjects/:id', subjectController.updateSubject);
 
@@ -51,7 +56,36 @@ router.put("/employees/:id", upload.single("image"), (req, res) => {
 // Xóa nhân viên
 router.delete("/employees/:id", employeeController.handleDeleteEmployee);
 
+
+// 🔹 Xóa nhiều giáo viên cùng lúc
+router.post("/employees/delete-multiple", employeeController.handleDeleteMultipleTeachers);
+// Xuất Excel danh sách nhân viên
+router.get("/employees/export/excel", employeeController.handleExportTeachersExcel);
+
+
 router.get("/teachers/basic", employeeController.handleGetTeacherBasicList);
+
+
+// Lấy danh sách học viên
+router.get("/students", studentController.handleGetAllStudents);
+// Thêm học viên mới (có upload ảnh)
+router.post("/students", upload.single("image"), studentController.handleCreateNewStudent);
+// Cập nhật thông tin học viên (có upload ảnh)
+router.put("/students/:id", upload.single("image"), (req, res) => {
+  if (!req.body) req.body = {};
+  req.body.id = req.params.id;
+  return studentController.handleUpdateStudent(req, res);
+});
+// 🔹 Xóa nhiều học viên cùng lúc
+router.delete("/students", studentController.handleDeleteMultipleStudents);
+
+// Xóa học viên
+router.delete("/students/:id", studentController.handleDeleteStudent);
+// 🔹 Lấy thông tin chi tiết 1 học viên
+router.get("/students/:id", studentController.handleGetStudentById);
+
+// ✅ Xuất Excel danh sách học viên
+router.get("/students/export/excel", studentController.handleExportStudentsExcel);
 
 // Lấy danh sách học sinh theo môn học
 router.get("/subject-students/:subjectId", studentSubjectController.getStudentsBySubjectId);
@@ -113,6 +147,23 @@ router.post('/assignments', uploadAssignment.single('file'), assignmentControlle
 router.put('/assignments/:assignmentId', uploadAssignment.single('file'), assignmentController.updateAssignment); //  Cập nhật bài tập
 
 router.delete('/assignments/:assignmentId', assignmentController.deleteAssignment); //  Xóa bài tập
+
+router.post('/assign/:assignmentId', studentAssignmentController.assignToStudents);
+router.get('/by-assignment/:assignmentId', studentAssignmentController.getStudentAssignmentsByAssignmentId);
+router.put("/assign/update/:assignmentId", studentAssignmentController.updateStudentAssignment);
+
+
+router.get("/teacher-subjects", teacherPaymentController.getAllTeacherSubjects);
+router.get("/teacher-subjects/search", teacherPaymentController.searchTeacherSubjects);
+router.get("/teacher-subjects/:id", teacherPaymentController.getTeacherSubjectById);
+router.post("/teacher-subjects", teacherPaymentController.createTeacherSubject);
+router.put("/teacher-subjects/:id", teacherPaymentController.updateTeacherSubject);
+router.delete("/teacher-subjects/:id", teacherPaymentController.deleteTeacherSubject);
+
+router.get("/teacher-payments", teacherMainPaymentController.handleGetTeacherSalaries);
+router.post("/teacher-payments", teacherMainPaymentController.handleCreateTeacherPayments);
+router.get("/teacher-payments/:teacherId", teacherMainPaymentController.handleGetTeacherSalaryDetail);
+router.put("/teacher-payments/:teacherId/pay", teacherMainPaymentController.handlePayTeacherSalary);
 
 
 router.get("/auth/me", verifyToken, (req, res) => {
