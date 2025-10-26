@@ -22,11 +22,12 @@ let handleLogin = async (req, res) => {
         { expiresIn: '1h' }
       );
 
-       // Gửi token trong cookie (httpOnly để bảo mật, không cho client JS truy cập)
+      // Gửi token trong cookie (httpOnly để bảo mật, không cho client JS truy cập)
       res.cookie('token', token, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production', // chỉ dùng HTTPS khi deploy
-        sameSite: 'strict',
+        secure: process.env.NODE_ENV === 'production' ? true : false,
+        sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax', // 👈 sửa lại
+        path: '/',
         maxAge: 60 * 60 * 1000 // 1 giờ (ms)
       });
 
@@ -58,6 +59,24 @@ let handleLogin = async (req, res) => {
   }
 };
 
+// Hàm xử lý ĐĂNG XUẤT
+let handleLogout = (req, res) => {
+  try {
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production' ? true : false,
+      sameSite: process.env.NODE_ENV === 'production' ? 'None' : 'Lax',
+      path: '/',
+    });
+
+    return res.status(200).json({ message: "Đăng xuất thành công!" });
+  } catch (error) {
+    console.error("Lỗi khi logout:", error);
+    return res.status(500).json({ message: "Không thể đăng xuất!" });
+  }
+};
+
 export default {
   handleLogin,
+  handleLogout
 };

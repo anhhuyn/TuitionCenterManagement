@@ -25,6 +25,7 @@ import uploadAssignment from '../middleware/uploadAssignment.js';
 let router = express.Router();
 
 router.post('/login', loginController.handleLogin);
+router.post("/logout", loginController.handleLogout);
 router.post('/register', registerController.handleRegister);
 router.post("/verify-otp", registerController.handleVerifyOTP);
 router.post("/forgot-password", forgotPasswordController.requestOTP);
