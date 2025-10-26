@@ -1,4 +1,4 @@
-.modal-overlay {
+.create-schedule-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -8,10 +8,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 2000; /* tăng lên cao hơn calendar */
+  z-index: 2000;
 }
 
-.modal {
+.create-schedule-modal {
   background: white !important;
   padding: 20px !important;
   border-radius: 10px !important;
@@ -25,58 +25,54 @@
   display: block !important;
 }
 
-
-.modal h2 {
+.create-schedule-modal h2 {
   margin-bottom: 15px;
   font-size: 18px;
 }
 
-.modal label {
+.create-schedule-modal label {
   display: block;
   margin-bottom: 10px;
 }
 
-.modal input,
-.modal select {
+.create-schedule-modal input,
+.create-schedule-modal select {
   width: 100%;
   padding: 6px;
   margin-top: 4px;
 }
 
-.modal-actions {
+.create-schedule-actions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
   margin-top: 15px;
 }
 
-.modal-actions button {
+.create-schedule-actions button {
   padding: 6px 12px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
 }
 
-.modal-actions button:first-child {
+.create-schedule-actions button:first-child {
   background: #7494ec;
   color: white;
 }
 
-.modal-actions button:last-child {
+.create-schedule-actions button:last-child {
   background: #dc3545;
   color: white;
 }
 
-
-/* Quy tắc này có độ ưu tiên cao hơn để ghi đè .modal { width: 400px... } */
-/* Nó chỉ áp dụng cho modal có class 'student-detail-modal' */
-.student-detail-modal {
-    width: auto !important; /* Loại bỏ giới hạn 400px trên chính modal */
-    max-width: 90vw !important; /* Giữ lại giới hạn tối đa theo viewport */
+/* Dành riêng cho modal chi tiết sinh viên (nếu có dùng chung) */
+.create-schedule-student-detail-modal {
+  width: auto !important;
+  max-width: 90vw !important;
 }
 
-/* Quy tắc này là để mở rộng khung chứa nội dung bên trong */
-.student-detail-modal .modal-dialog {
-    max-width: 1200px !important; /* Đặt kích thước lớn cho khung chứa (như XL) */
-    width: 90vw !important; 
+.create-schedule-student-detail-modal .create-schedule-modal-dialog {
+  max-width: 1200px !important;
+  width: 90vw !important;
 }

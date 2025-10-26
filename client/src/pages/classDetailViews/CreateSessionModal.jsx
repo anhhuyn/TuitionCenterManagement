@@ -23,7 +23,6 @@ export default function CreateSessionModal({
 
   const [rooms, setRooms] = useState([]);
 
-  // Lấy danh sách phòng từ API
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -36,7 +35,6 @@ export default function CreateSessionModal({
     fetchRooms();
   }, []);
 
-  // Preload dữ liệu khi chỉnh sửa
   useEffect(() => {
     if (initialData) {
       setFormData({
@@ -57,11 +55,9 @@ export default function CreateSessionModal({
     }
   }, [initialData]);
 
-  // Xử lý khi bấm Lưu
   const handleSubmit = async () => {
     const { sessionDate, startTime, endTime, roomId, status } = formData;
 
-    // --- Kiểm tra hợp lệ ---
     if (!sessionDate) {
       alert("Vui lòng chọn ngày học!");
       return;
@@ -76,49 +72,40 @@ export default function CreateSessionModal({
       return;
     }
 
-    const isSameDay =
-      sessionStart.getFullYear() === now.getFullYear() &&
-      sessionStart.getMonth() === now.getMonth() &&
-      sessionStart.getDate() === now.getDate();
+    if (!isEdit) {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
 
-    // Nếu đang **tạo mới**: KHÔNG cho tạo buổi hôm nay có giờ đã trôi qua
-    if (!isEdit && isSameDay && sessionStart <= now) {
-      alert("Không thể tạo buổi học trong ngày hôm nay có giờ đã trôi qua!");
-      return;
+      if (sessionStart < today) {
+        alert("Không thể tạo buổi học trong quá khứ!");
+        return;
+      }
+
+      const isSameDay =
+        sessionStart.getFullYear() === today.getFullYear() &&
+        sessionStart.getMonth() === today.getMonth() &&
+        sessionStart.getDate() === today.getDate();
+
+      if (isSameDay && sessionStart <= new Date()) {
+        alert("Không thể tạo buổi học trong ngày hôm nay có giờ đã trôi qua!");
+        return;
+      }
     }
 
-    // Nếu đang **chỉnh sửa**: cho phép nhưng cảnh báo (hoặc yêu cầu xác nhận)
-    if (isEdit && sessionStart <= now) {
-      const proceed = window.confirm(
-        "Buổi học này đã trôi qua. Bạn vẫn muốn lưu thay đổi? (Thao tác này sẽ cập nhật thông tin của buổi đã trôi qua.)"
-      );
-      if (!proceed) return;
-    }
-
-    // --- Gọi API ---
     try {
       let res;
       if (isEdit && initialData?.id) {
         res = await updateSessionApi(initialData.id, formData);
       } else {
-        res = await createSessionApi({
-          subjectId,
-          ...formData,
-        });
+        res = await createSessionApi({ subjectId, ...formData });
       }
 
-      // ✅ Nếu API trả lỗi 500 mà interceptor không throw,
-      //    thì res có thể là object lỗi thay vì dữ liệu hợp lệ
       if (res?.status === 500 || res?.error || res?.message?.includes("Error")) {
-        const msg =
-          res?.error ||
-          res?.message ||
-          "Có lỗi xảy ra khi lưu buổi học!";
+        const msg = res?.error || res?.message || "Có lỗi xảy ra khi lưu buổi học!";
         alert(msg);
         return;
       }
 
-      // ✅ Nếu thành công
       onSuccess();
       onClose();
     } catch (error) {
@@ -144,8 +131,8 @@ export default function CreateSessionModal({
   };
 
   return (
-    <div className="modal-overlay">
-      <div className="modal">
+    <div className="create-schedule-overlay">
+      <div className="create-schedule-modal">
         <h2>{isEdit ? "Chỉnh sửa buổi học" : "Thêm buổi học thủ công"}</h2>
 
         <label>
@@ -215,7 +202,7 @@ export default function CreateSessionModal({
           </select>
         </label>
 
-        <div className="modal-actions">
+        <div className="create-schedule-actions">
           <button onClick={handleSubmit}>
             {isEdit ? "Cập nhật" : "Tạo"}
           </button>

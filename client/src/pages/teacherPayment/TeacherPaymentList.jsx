@@ -4,18 +4,19 @@ import {
   CCard,
   CCardBody,
   CCardHeader,
-  CRow,
-  CCol,
   CButton,
   CSpinner,
 } from '@coreui/react'
 import { useNavigate } from 'react-router-dom'
-import { cilTrash } from '@coreui/icons'
-import CIcon from '@coreui/icons-react'
+import { FiTrash2, FiPlus, FiEdit2, FiEye } from 'react-icons/fi'
+import '../../styles/TeacherPaymentList.css'
+import ConfirmModal from '../../components/modal/ConfirmModal' // ✅ thêm dòng này
 
 const TeacherPaymentList = () => {
   const [teacherSubjects, setTeacherSubjects] = useState([])
   const [loading, setLoading] = useState(true)
+  const [showConfirmModal, setShowConfirmModal] = useState(false)
+  const [subjectToDelete, setSubjectToDelete] = useState(null)
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -27,35 +28,40 @@ const TeacherPaymentList = () => {
       const res = await axios.get('http://localhost:8088/v1/api/teacher-subjects')
       setTeacherSubjects(res.data)
     } catch (error) {
-      console.error('❌ Lỗi khi tải dữ liệu:', error)
+      console.error('Lỗi khi tải dữ liệu:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  // ✅ Hàm tạo mới
+  // Hàm tạo mới
   const handleCreateNew = () => {
     navigate('/admin/teacher-payments/create')
   }
 
-  // ✅ Hàm chỉnh sửa
+  // Hàm chỉnh sửa
   const handleEdit = (id) => {
     navigate(`/admin/teacher-payments/edit/${id}`)
   }
 
-  // 🗑️ Hàm xóa thỏa thuận
-  const handleDelete = async (id) => {
-    const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa thỏa thuận này không?')
-    if (!confirmDelete) return
+  // ✅ Mở modal xác nhận xóa
+  const confirmDelete = (id) => {
+    setSubjectToDelete(id)
+    setShowConfirmModal(true)
+  }
 
+  // ✅ Xóa sau khi người dùng xác nhận
+  const handleConfirmDelete = async () => {
+    if (!subjectToDelete) return
     try {
-      await axios.delete(`http://localhost:8088/v1/api/teacher-subjects/${id}`)
-      alert('🗑️ Xóa thỏa thuận thành công!')
-      // Cập nhật lại danh sách sau khi xóa
-      setTeacherSubjects((prev) => prev.filter((item) => item.id !== id))
+      await axios.delete(`http://localhost:8088/v1/api/teacher-subjects/${subjectToDelete}`)
+      setTeacherSubjects((prev) => prev.filter((item) => item.id !== subjectToDelete))
     } catch (error) {
-      console.error('❌ Lỗi khi xóa thỏa thuận:', error)
+      console.error('Lỗi khi xóa thỏa thuận:', error)
       alert('Xóa thất bại. Vui lòng thử lại.')
+    } finally {
+      setShowConfirmModal(false)
+      setSubjectToDelete(null)
     }
   }
 
@@ -72,84 +78,66 @@ const TeacherPaymentList = () => {
     <div className="teacher-payment-container">
       {/* Tiêu đề và nút thêm */}
       <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold text-primary mb-0">👩‍🏫 Danh sách giáo viên & môn dạy</h2>
-        <CButton color="success" onClick={handleCreateNew}>
-          ➕ Thêm Thỏa Thuận Mới
+        <h2 className="fw-bold mb-0"></h2>
+        <CButton
+          color="success"
+          onClick={handleCreateNew}
+          className="d-flex align-items-center gap-2"
+        >
+          <FiPlus /> Thêm Thỏa Thuận Mới
         </CButton>
       </div>
 
-      <CRow>
+      {/* GRID */}
+      <div className="teacher-payment-grid">
         {teacherSubjects.length === 0 ? (
           <p className="text-center text-muted">Không có dữ liệu</p>
         ) : (
           teacherSubjects.map((item) => (
-            <CCol xs={12} sm={6} md={4} lg={3} key={item.id} className="mb-4">
-              <CCard
-                className="shadow-sm border-0 position-relative"
-                style={{
-                  borderRadius: '18px',
-                  background: 'linear-gradient(180deg, #ffffff, #f7f9ff)',
-                }}
-              >
-                {/* 🗑️ Nút Delete ở góc phải */}
+            <div key={item.id} className="teacher-card">
+              <CCard className="shadow-sm border-0 position-relative">
                 <CButton
                   color="danger"
                   size="sm"
                   variant="ghost"
-                  className="position-absolute"
-                  style={{
-                    top: '10px',
-                    right: '10px',
-                    zIndex: 10,
-                    borderRadius: '50%',
-                  }}
-                  onClick={() => handleDelete(item.id)}
+                  className="delete-btn"
+                  onClick={() => confirmDelete(item.id)} // ✅ mở modal thay vì xóa ngay
                 >
-                  <CIcon icon={cilTrash} size="lg" />
+                  <FiTrash2 />
                 </CButton>
 
-                <CCardHeader
-                  className="fw-semibold"
-                  style={{
-                    background: '#5B72F2',
-                    color: '#fff',
-                    fontSize: '1rem',
-                    padding: '0.8rem',
-                    borderTopLeftRadius: '18px',
-                    borderTopRightRadius: '18px',
-                  }}
-                >
+                <CCardHeader className="fw-semibold text-center">
                   {item.subjectName || 'Không rõ'} – Lớp {item.grade || '?'}
                 </CCardHeader>
 
                 <CCardBody className="py-4 px-3">
                   <div className="d-flex flex-column align-items-center">
                     <img
-                      src={item.teacherAvatar || '/default-avatar.png'}
-                      alt={item.teacherName}
+                      src={
+                        item.teacherAvatar && item.teacherAvatar.trim() !== ''
+                          ? item.teacherAvatar
+                          : '/default-avatar.png'
+                      }
+                      alt={item.teacherName || 'Avatar'}
                       className="rounded-circle shadow-sm mb-3"
+                      onError={(e) => {
+                        if (e.target.src.indexOf('default-avatar.png') === -1) {
+                          e.target.src = '/default-avatar.png'
+                        }
+                      }}
                       style={{
                         width: '90px',
                         height: '90px',
                         objectFit: 'cover',
-                        border: '3px solid #fff',
-                        boxShadow: '0 4px 8px rgba(0,0,0,0.15)',
                       }}
-                      onError={(e) => (e.target.src = '/default-avatar.png')}
                     />
 
-                    <h6 className="fw-bold text-dark mb-1">{item.teacherName || 'Chưa rõ'}</h6>
+                    <h6 className="fw-bold text-dark mb-1">
+                      {item.teacherName || 'Chưa rõ'}
+                    </h6>
                     <p className="text-muted small mb-3">{item.email || '—'}</p>
 
-                    <div
-                      className="info-box text-start p-3 w-100 mb-3"
-                      style={{
-                        background: '#eef1ff',
-                        borderRadius: '12px',
-                        fontSize: '0.95rem',
-                        lineHeight: '1.6',
-                      }}
-                    >
+                    <div className="info-box text-start w-100 mb-3">
                       <p className="mb-2">
                         <strong className="text-secondary">Chuyên môn:</strong>{' '}
                         <span className="text-dark">{item.specialty || '—'}</span>
@@ -169,27 +157,44 @@ const TeacherPaymentList = () => {
                         color="primary"
                         variant="outline"
                         size="sm"
+                        className="d-flex align-items-center gap-1"
                         onClick={() => navigate(`/admin/teacher-payments/${item.id}`)}
                       >
-                        Xem chi tiết
+                        <FiEye /> Xem chi tiết
                       </CButton>
 
                       <CButton
                         color="warning"
                         variant="outline"
                         size="sm"
+                        className="d-flex align-items-center gap-1"
                         onClick={() => handleEdit(item.id)}
                       >
-                        ✏️ Sửa
+                        <FiEdit2 /> Chỉnh sửa
                       </CButton>
                     </div>
                   </div>
                 </CCardBody>
               </CCard>
-            </CCol>
+            </div>
           ))
         )}
-      </CRow>
+      </div>
+
+      {/* ✅ Modal xác nhận xóa */}
+      {showConfirmModal && (
+        <ConfirmModal
+          title="Xác nhận xóa thỏa thuận"
+          message="Bạn có chắc chắn muốn xóa thỏa thuận này không?"
+          cancelText="Hủy"
+          confirmText="Xóa"
+          onCancel={() => {
+            setShowConfirmModal(false)
+            setSubjectToDelete(null)
+          }}
+          onConfirm={handleConfirmDelete}
+        />
+      )}
     </div>
   )
 }

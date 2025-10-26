@@ -1,0 +1,33 @@
+.form-styled label {
+  font-size: 15px;
+  color: #444;
+}
+
+.form-styled input,
+.form-styled select {
+  border-radius: 8px !important;
+  padding: 10px !important;
+  font-size: 15px;
+}
+
+.form-styled small {
+  display: block;
+  margin-top: 4px;
+}
+
+.card {
+  border-radius: 12px !important;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4a77f7, #3461d9);
+}
+
+button.btn {
+  min-width: 130px;
+  font-weight: 500;
+}
+
+button.btn-primary {
+  box-shadow: 0 2px 8px rgba(52, 97, 217, 0.3);
+}

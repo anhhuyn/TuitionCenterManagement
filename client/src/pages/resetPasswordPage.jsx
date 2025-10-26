@@ -60,8 +60,6 @@ const ResetPasswordPage = () => {
       <div className="form-box login">
         <div className="form-content">
           <Form layout="vertical" onFinish={onFinish}>
-            <h1>Đặt lại mật khẩu</h1>
-
             <Form.Item
               name="newPassword"
               rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới!" }]}

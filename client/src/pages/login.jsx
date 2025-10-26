@@ -97,13 +97,13 @@ const LoginPage = () => {
                   name="email"
                   rules={[{ required: true, message: "Please input your email!" }]}
                 >
-                  <Input placeholder="Email" />
+                  <Input id="login-email" placeholder="Email" />
                 </Form.Item>
                 <Form.Item
                   name="password"
                   rules={[{ required: true, message: "Please input your password!" }]}
                 >
-                  <Input.Password placeholder="Password" />
+                  <Input.Password id="login-password" placeholder="Password" />
                 </Form.Item>
                 <div className="forgot-link">
                   <a
@@ -142,13 +142,13 @@ const LoginPage = () => {
                   name="email"
                   rules={[{ required: true, type: "email", message: "Please input a valid email!" }]}
                 >
-                  <Input placeholder="Email" />
+                  <Input id="register-email" placeholder="Email" />
                 </Form.Item>
                 <Form.Item
                   name="password"
                   rules={[{ required: true, message: "Please input your password!" }]}
                 >
-                  <Input.Password placeholder="Password" />
+                  <Input.Password id="register-password" placeholder="Password" />
                 </Form.Item>
                 <Form.Item
                   name="role"
@@ -178,14 +178,26 @@ const LoginPage = () => {
             <div className="toggle-panel toggle-left">
               <h1>Welcome!</h1>
               <p>Don't have an account?</p>
-              <button className="btn-outline" onClick={() => navigate("/register")}>
+              <button
+                className="btn-outline"
+                onClick={() => {
+                  navigate("/register");
+                  setIsActive(true);
+                }}
+              >
                 Register
               </button>
             </div>
             <div className="toggle-panel toggle-right">
               <h1>Welcome Back!</h1>
               <p>Already have an account?</p>
-              <button className="btn-outline" onClick={() => setIsActive(false)}>
+              <button
+                className="btn-outline"
+                onClick={() => {
+                  navigate("/login");
+                  setIsActive(false);
+                }}
+              >
                 Login
               </button>
             </div>

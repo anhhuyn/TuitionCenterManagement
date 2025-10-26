@@ -161,7 +161,7 @@ export default function StudentList({ classData }) {
             <CIcon icon={cilSearch} className="search-icon" />
             <input
               type="text"
-              placeholder="Tìm học sinh..."
+              placeholder="     Tìm học sinh..."
               className="search-box"
               value={search}
               onChange={(e) => setSearch(e.target.value)}

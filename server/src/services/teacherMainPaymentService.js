@@ -3,7 +3,7 @@ import { Op, Sequelize } from "sequelize";
 import dayjs from "dayjs";
 
 /**
- * 🧮 Tính lương giáo viên trong 1 tháng
+ * Tính lương giáo viên trong 1 tháng
  * @param {Number} month - Tháng cần tính lương (1-12)
  * @param {Number} year - Năm cần tính lương
  * @returns Danh sách giáo viên cùng tổng tiền và chi tiết từng môn
@@ -84,6 +84,7 @@ export const calculateTeacherSalaryByMonth = async (month, year) => {
         const totalMoney = totalHours * parseFloat(salaryRate);
 
         teacherData.subjects.push({
+          subjectId: ts.Subject.id,
           subjectName: ts.Subject.name,
           salaryRate,
           totalSessions: sessions.length,
@@ -105,39 +106,68 @@ export const calculateTeacherSalaryByMonth = async (month, year) => {
 };
 
 /**
- * 💾 Lưu lương giáo viên vào bảng TeacherPayment
+ * Lưu lương giáo viên vào bảng TeacherPayment
  */
 export const createTeacherPayments = async (month, year, notes = "") => {
-  const salaries = await calculateTeacherSalaryByMonth(month, year);
-  const payments = [];
-
-  for (const teacher of salaries) {
-    // Tạo bảng lương tổng
-    const newPayment = await db.TeacherPayment.create({
-      teacherId: teacher.teacherId,
-      amount: teacher.totalAmount,
-      paymentDate: new Date(),
-      status: "unpaid",
-      notes: `Lương tháng ${month}/${year}. ${notes}`,
+  try {
+    // 🔍 Kiểm tra xem tháng/năm đó đã có bảng lương chưa
+    const existingPayments = await db.TeacherPayment.findAll({
+      where: {
+        notes: { [Op.like]: `%Lương tháng ${month}/${year}%` },
+      },
     });
 
-    // Tạo chi tiết từng môn
-    for (const subj of teacher.subjects) {
-      await db.TeacherPaymentDetail.create({
-        paymentId: newPayment.id,
-        subjectId: subj.subjectId,
-        totalHours: subj.totalHours,
-        totalSessions: subj.totalSessions,
-        salaryRate: subj.salaryRate,
-        totalMoney: subj.totalMoney,
-      });
+    if (existingPayments.length > 0) {
+      return {
+        errCode: 1,
+        message: `Bảng lương cho tháng ${month}/${year} đã được tạo trước đó.`,
+      };
     }
 
-    payments.push(newPayment);
-  }
+    // Tính lương
+    const salaries = await calculateTeacherSalaryByMonth(month, year);
+    const payments = [];
 
-  return payments;
+    // Tạo từng bảng lương
+    for (const teacher of salaries) {
+      const newPayment = await db.TeacherPayment.create({
+        teacherId: teacher.teacherId,
+        amount: teacher.totalAmount,
+        paymentDate: new Date(),
+        status: "unpaid",
+        notes: `Lương tháng ${month}/${year}. ${notes}`,
+      });
+
+      // 💾 Thêm chi tiết lương theo môn
+      for (const subj of teacher.subjects) {
+        await db.TeacherPaymentDetail.create({
+          paymentId: newPayment.id,
+          subjectId: subj.subjectId,
+          totalHours: subj.totalHours,
+          totalSessions: subj.totalSessions,
+          salaryRate: subj.salaryRate,
+          totalMoney: subj.totalMoney,
+        });
+      }
+
+      payments.push(newPayment);
+    }
+
+    return {
+      errCode: 0,
+      message: `✅ Tạo thành công bảng lương cho tháng ${month}/${year} (${payments.length} giáo viên).`,
+      data: payments,
+    };
+  } catch (error) {
+    console.error("Lỗi khi tạo bảng lương:", error);
+    return {
+      errCode: 2,
+      message: "❌ Có lỗi xảy ra khi tạo bảng lương.",
+      error: error.message,
+    };
+  }
 };
+
 
 export const payTeacherSalary = async (teacherId, month, year) => {
   try {
@@ -203,21 +233,36 @@ export const getTeacherSalaryDetail = async (teacherId, month, year) => {
 
     if (!payment) return null;
 
+    // ✅ Gom nhóm theo subjectId trước
+    const subjectMap = {};
+
+    for (const d of payment.TeacherPaymentDetails) {
+      const key = d.subjectId || "no-subject";
+      if (!subjectMap[key]) {
+        subjectMap[key] = {
+          subjectId: d.subjectId,
+          subjectName: d.Subject?.name || "Không có môn",
+          salaryRate: d.salaryRate,
+          totalSessions: d.totalSessions,
+          totalHours: d.totalHours,
+          totalMoney: d.totalMoney,
+        };
+      } else {
+        subjectMap[key].totalSessions += d.totalSessions;
+        subjectMap[key].totalHours += d.totalHours;
+        subjectMap[key].totalMoney += d.totalMoney;
+      }
+    }
+
+    // ✅ Trả kết quả 1 lần duy nhất
     return {
       teacherId: payment.teacherId,
       fullName: payment.Teacher.userInfo.fullName,
       email: payment.Teacher.userInfo.email,
       phoneNumber: payment.Teacher.userInfo.phoneNumber,
-      status: payment.status, // ✅ trạng thái thật
+      status: payment.status,
       totalAmount: payment.amount,
-      subjects: payment.TeacherPaymentDetails.map((d) => ({
-        subjectId: d.subjectId,
-        subjectName: d.Subject.name || "Không có môn",
-        salaryRate: d.salaryRate,
-        totalSessions: d.totalSessions,
-        totalHours: d.totalHours,
-        totalMoney: d.totalMoney,
-      })),
+      subjects: Object.values(subjectMap), // Danh sách môn sau khi gộp
     };
   } catch (error) {
     console.error("Lỗi khi lấy chi tiết lương:", error);

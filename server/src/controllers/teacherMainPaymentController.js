@@ -3,7 +3,7 @@ import db from "../models/index.js";
 import { Op } from "sequelize";
 
 /**
- * 📅 Lấy danh sách lương giáo viên theo tháng & năm
+ * Lấy danh sách lương giáo viên theo tháng & năm
  * GET /api/teacher-payments?month=10&year=2025
  */
 const handleGetTeacherSalaries = async (req, res) => {
@@ -45,6 +45,7 @@ const handleCreateTeacherPayments = async (req, res) => {
   try {
     const { month, year, notes } = req.body;
 
+    // ✅ Kiểm tra dữ liệu đầu vào
     if (!month || !year) {
       return res.status(400).json({
         errCode: 1,
@@ -52,30 +53,47 @@ const handleCreateTeacherPayments = async (req, res) => {
       });
     }
 
-    const data = await teacherMainPaymentService.createTeacherPayments(
+    // ✅ Gọi service
+    const result = await teacherMainPaymentService.createTeacherPayments(
       parseInt(month),
       parseInt(year),
       notes || ""
     );
 
+    // ⚙️ Kiểm tra kết quả trả về từ service
+    if (result.errCode === 1) {
+      // Đã tồn tại bảng lương
+      return res.status(409).json({
+        errCode: 1,
+        message: result.message,
+      });
+    }
+
+    if (result.errCode !== 0) {
+      // Lỗi khác trong service
+      return res.status(500).json({
+        errCode: result.errCode,
+        message: result.message || "Lỗi không xác định khi tạo bảng lương!",
+      });
+    }
+
+    // ✅ Thành công
     return res.status(201).json({
       errCode: 0,
-      message: `Tạo bảng lương tháng ${month}/${year} thành công!`,
-      data,
+      message: result.message || `Tạo bảng lương tháng ${month}/${year} thành công!`,
+      data: result.data,
     });
   } catch (error) {
     console.error("❌ Lỗi khi tạo bảng lương:", error);
     return res.status(500).json({
       errCode: 500,
       message: "Lỗi server khi tạo bảng lương giáo viên!",
+      error: error.message,
     });
   }
 };
 
-/**
- * 🔍 Xem chi tiết lương 1 giáo viên trong tháng cụ thể
- * GET /api/teacher-payments/:teacherId?month=10&year=2025
- */
+
 const handleGetTeacherSalaryDetail = async (req, res) => {
     try {
     const { teacherId } = req.params;

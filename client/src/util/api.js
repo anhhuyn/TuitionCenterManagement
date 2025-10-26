@@ -48,16 +48,12 @@ const fetchUserFromToken = async (dispatch) => {
 
   try {
     const res = await axios.get("/v1/api/auth/me", { withCredentials: true });
-    console.log("Response from /auth/me:", res);
-
-    // res là data rồi, không phải res.data
     if (res && res.user) {
       dispatch(loginSuccess(res.user));
     } else {
       dispatch(setLoading(false));
     }
   } catch (error) {
-    console.error(error);
     dispatch(setLoading(false));
   }
 };
@@ -369,7 +365,7 @@ const getAllTeacherSubjectsApi = async () => {
 const getTeacherSubjectByIdApi = async (id) => {
   try {
     const res = await axios.get(`/v1/api/teacher-subjects/${id}`);
-    return res.data;
+    return res;
   } catch (err) {
     console.error("Lỗi khi gọi API getTeacherSubjectByIdApi:", err);
     throw err;

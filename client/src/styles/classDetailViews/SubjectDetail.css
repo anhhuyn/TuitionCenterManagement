@@ -7,8 +7,8 @@
   padding: 10px 15px;
   margin-top: 20px;
   border-radius: 2px;
-  width: 100%;              
-  box-sizing: border-box;  
+  width: 100%;
+  box-sizing: border-box;
   color: #000;
 }
 
@@ -51,9 +51,10 @@
 }
 
 .row-line strong {
-  color: #4b5563; 
+  color: #4b5563;
   font-weight: 400;
 }
+
 .header-with-button {
   display: flex;
   justify-content: space-between;
@@ -69,13 +70,18 @@
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+  align-items: center;
+  /* căn giữa theo chiều dọc */
+  justify-content: center;
 }
 
 .edit-button:hover {
   background-color: #5f7de0;
 }
 
-input, select, textarea {
+input,
+select,
+textarea {
   padding: 6px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -83,6 +89,7 @@ input, select, textarea {
   font-size: 14px;
   box-sizing: border-box;
 }
+
 .top-edit-bar {
   display: flex;
   justify-content: flex-end;
@@ -104,8 +111,10 @@ input, select, textarea {
 }
 
 .delete-button {
-  background-color: #e53935; /* màu đỏ */
-  color: #fff;               /* chữ trắng */
+  background-color: #e53935;
+  /* màu đỏ */
+  color: #fff;
+  /* chữ trắng */
   border: none;
   padding: 6px 12px;
   border-radius: 4px;
@@ -115,5 +124,6 @@ input, select, textarea {
 }
 
 .delete-button:hover {
-  background-color: #c62828; /* đỏ đậm khi hover */
+  background-color: #c62828;
+  /* đỏ đậm khi hover */
 }

@@ -4,6 +4,7 @@ import {
   getAttendanceBySubjectIdApi,
   updateAttendanceStatusApi,
   updateAttendanceNoteApi,
+  updateSessionApi,
 } from "../../util/api";
 import "../../styles/classDetailViews/AttendanceTable.css";
 import { FaEdit } from "react-icons/fa";
@@ -160,6 +161,7 @@ export default function AttendanceStudent({ classData }) {
           else attendances.push({ sessionId, status: "present", note: "" });
           return { ...student, attendances };
         });
+        checkAndUpdateSessionStatus(sessionId, updated);
         return updated;
       });
 
@@ -191,6 +193,24 @@ export default function AttendanceStudent({ classData }) {
     selectedYear
   );
   const today = new Date();
+
+  // Nếu có ít nhất 1 học viên có mặt => cập nhật session sang "completed"
+const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
+  const sessionData = updatedData.students.map((s) =>
+    s.attendances.find((a) => a.sessionId === sessionId)
+  );
+  const hasPresent = sessionData.some((a) => a?.status === "present");
+
+  if (hasPresent) {
+    try {
+      await updateSessionApi(sessionId, { status: "completed" });
+      console.log(`Session ${sessionId} đã chuyển sang completed`);
+    } catch (err) {
+      console.error(`Lỗi khi cập nhật trạng thái session ${sessionId}:`, err);
+    }
+  }
+};
+
 
   return (
     <div>
@@ -314,6 +334,7 @@ export default function AttendanceStudent({ classData }) {
                                       status: newStatus,
                                       note: "",
                                     });
+                                    checkAndUpdateSessionStatus(session.sessionId, updated);
                                   return updated;
                                 });
 

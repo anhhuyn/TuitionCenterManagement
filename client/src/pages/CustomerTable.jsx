@@ -9,6 +9,7 @@ import {
   cilSearch,
   cilCloudUpload,
 } from "@coreui/icons";
+import { FiPhone, FiCalendar, FiUser } from 'react-icons/fi';
 import FilterPanel from "../components/modal/FilterPanel";
 import axios from "axios";
 import {
@@ -31,17 +32,17 @@ export default function CustomerTable() {
   const [loading, setLoading] = useState(true);
   const filterRef = useRef(null);
 
-  // 🟢 Bộ lọc nâng cao
+  // Bộ lọc nâng cao
   const [filters, setFilters] = useState({
     subject: "",
     grade: "",
     gender: "",
     schoolName: "",
   });
-  // 🧭 Phân trang
-const [currentPage, setCurrentPage] = useState(1);
-const [totalPages, setTotalPages] = useState(1);
-const limit = 10; // số dòng mỗi trang
+  // Phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const limit = 10; // số dòng mỗi trang
 
   // 🟢 Modal thêm / sửa học viên
   const [showModal, setShowModal] = useState(false);
@@ -51,7 +52,7 @@ const limit = 10; // số dòng mỗi trang
   // 🟢 Modal xem chi tiết học viên
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [studentDetail, setStudentDetail] = useState(null);
-
+  // Sắp xếp theo tên (asc: A-Z, desc: Z-A)
 
   const [newStudent, setNewStudent] = useState({
     fullName: "",
@@ -101,9 +102,9 @@ const limit = 10; // số dòng mỗi trang
     }
   };
 
-useEffect(() => {
-  fetchStudents();
-}, [filters, search, currentPage]);
+  useEffect(() => {
+    fetchStudents();
+  }, [filters, search, currentPage]);
 
 
   // 🔒 Đóng filter khi click ra ngoài
@@ -137,16 +138,41 @@ useEffect(() => {
     }
   };
 
-  // 🔍 Lọc theo họ tên, email, trường, phụ huynh
-  const filteredData = students.filter(
-    (row) =>
-      row.fullName?.toLowerCase().includes(search.toLowerCase()) ||
-      row.email?.toLowerCase().includes(search.toLowerCase()) ||
-      row.schoolName?.toLowerCase().includes(search.toLowerCase()) ||
-      row.parents?.some((p) =>
-        p.fullName?.toLowerCase().includes(search.toLowerCase())
-      )
-  );
+  // Hàm tách họ, tên lót, tên (Thêm vào đây)
+  const splitNameParts = (fullName) => {
+    const parts = fullName?.trim().split(" ") || [];
+    const name = parts[parts.length - 1] || ""; // Tên cuối
+    const middle = parts.slice(1, parts.length - 1).join(" "); // Tên lót (các từ ở giữa)
+    const last = parts[0] || ""; // Họ
+    return { name, middle, last };
+  };
+
+  // 🔍 Lọc và Sắp xếp theo họ tên, email, trường, phụ huynh
+  const filteredData = students
+    .filter(
+      (row) =>
+        row.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+        row.email?.toLowerCase().includes(search.toLowerCase()) ||
+        row.schoolName?.toLowerCase().includes(search.toLowerCase()) ||
+        row.parents?.some((p) =>
+          p.fullName?.toLowerCase().includes(search.toLowerCase())
+        )
+    )
+    .sort((a, b) => {
+      const nameA = splitNameParts(a.fullName);
+      const nameB = splitNameParts(b.fullName);
+
+      // 1. So sánh tên cuối (Ví dụ: An trước Anh)
+      const nameCompare = nameA.name.localeCompare(nameB.name, "vi", { sensitivity: "base" });
+      if (nameCompare !== 0) return nameCompare;
+
+      // 2. Nếu tên cuối giống, so sánh tên lót (Ví dụ: Xuân trước Văn)
+      const middleCompare = nameA.middle.localeCompare(nameB.middle, "vi", { sensitivity: "base" });
+      if (middleCompare !== 0) return middleCompare;
+
+      // 3. Nếu tên lót cũng giống, so sánh họ (Ví dụ: Trần trước Nguyễn)
+      return nameA.last.localeCompare(nameB.last, "vi", { sensitivity: "base" });
+    });
 
   // 🟢 Xử lý input thay đổi
   const handleChange = (e) => {
@@ -188,21 +214,21 @@ useEffect(() => {
   };
 
   // 🟢 Mở modal sửa học viên
-const handleEdit = async (student) => {
-  setEditMode(true);
-  setCurrentId(student.id);
-  setNewStudent({
-    ...student,
-    address: student.address || { details: "", ward: "", province: "" },
-    parents: student.parents?.length ? student.parents : [{ fullName: "", phoneNumber: "" }],
-  });
-  setShowModal(true);
+  const handleEdit = async (student) => {
+    setEditMode(true);
+    setCurrentId(student.id);
+    setNewStudent({
+      ...student,
+      address: student.address || { details: "", ward: "", province: "" },
+      parents: student.parents?.length ? student.parents : [{ fullName: "", phoneNumber: "" }],
+    });
+    setShowModal(true);
 
-  await fetchProvinces();
-  if (student.address?.province) {
-    await fetchWardsByProvince(student.address.province);
-  }
-};
+    await fetchProvinces();
+    if (student.address?.province) {
+      await fetchWardsByProvince(student.address.province);
+    }
+  };
 
 
 
@@ -275,175 +301,175 @@ const handleEdit = async (student) => {
   const [loadingWard, setLoadingWard] = useState(false);
 
   const fetchProvinces = async () => {
-  setLoadingProvince(true);
-  try {
-    const res = await fetch("https://vietnamlabs.com/api/vietnamprovince");
-    const data = await res.json();
-    if (data.success) setProvinces(data.data);
-  } catch (error) {
-    console.error("Lỗi khi tải danh sách tỉnh:", error);
-  } finally {
-    setLoadingProvince(false);
-  }
-};
-const fetchWardsByProvince = async (provinceName) => {
-  if (!provinceName) return;
-  setLoadingWard(true);
-  try {
-    const res = await fetch(
-      `https://vietnamlabs.com/api/vietnamprovince?province=${encodeURIComponent(provinceName)}`
-    );
-    const data = await res.json();
-    if (data.success && data.data.wards) {
-      setWards(data.data.wards);
+    setLoadingProvince(true);
+    try {
+      const res = await fetch("https://vietnamlabs.com/api/vietnamprovince");
+      const data = await res.json();
+      if (data.success) setProvinces(data.data);
+    } catch (error) {
+      console.error("Lỗi khi tải danh sách tỉnh:", error);
+    } finally {
+      setLoadingProvince(false);
     }
-  } catch (error) {
-    console.error("Lỗi khi tải phường/xã:", error);
-  } finally {
-    setLoadingWard(false);
-  }
-};
-
-const [pagination, setPagination] = useState({
-  total: 0,
-  totalPages: 1,
-  page: 1,
-  limit: 10,
-});
-
-// 🗑️ Xóa nhiều học viên được chọn
-const handleDeleteSelected = async () => {
-  if (selected.length === 0) {
-    alert("Vui lòng chọn ít nhất một học viên để xóa!");
-    return;
-  }
-
-  if (!window.confirm(`Bạn có chắc muốn xóa ${selected.length} học viên đã chọn không?`)) return;
-
-  try {
-    const res = await axios.delete("http://localhost:8088/v1/api/students", {
-      data: { ids: selected },
-    });
-
-    if (res.data.errCode === 0) {
-      alert("✅ Đã xóa các học viên được chọn!");
-      setStudents(students.filter((s) => !selected.includes(s.id)));
-      setSelected([]);
-    } else {
-      alert(res.data.message || "❌ Không thể xóa học viên!");
-    }
-  } catch (err) {
-    console.error("Lỗi khi xóa nhiều học viên:", err);
-    alert("⚠️ Lỗi kết nối khi xóa nhiều học viên!");
-  }
-};
-
-const handleViewDetail = async (id) => {
-  try {
-    const res = await axios.get(`http://localhost:8088/v1/api/students/${id}`);
-    if (res.data.errCode === 0) {
-      setStudentDetail(res.data.data);
-      setShowDetailModal(true);
-    } else {
-      alert("❌ Không tìm thấy thông tin học viên!");
-    }
-  } catch (err) {
-    console.error("Lỗi khi xem chi tiết học viên:", err);
-    alert("⚠️ Lỗi kết nối khi lấy thông tin chi tiết!");
-  }
-};
-
-const handleExportStudentsExcel = async () => {
-  try {
-    const res = await axios.get(
-      "http://localhost:8088/v1/api/students/export/excel",
-      {
-        params: {
-          name: search || undefined,
-          subject: filters.subject || undefined,
-          grade: filters.grade || undefined,
-          schoolName: filters.schoolName || undefined,
-          gender: filters.gender || undefined,
-        },
-        responseType: "blob", // 🧩 Quan trọng: nhận dạng file nhị phân
+  };
+  const fetchWardsByProvince = async (provinceName) => {
+    if (!provinceName) return;
+    setLoadingWard(true);
+    try {
+      const res = await fetch(
+        `https://vietnamlabs.com/api/vietnamprovince?province=${encodeURIComponent(provinceName)}`
+      );
+      const data = await res.json();
+      if (data.success && data.data.wards) {
+        setWards(data.data.wards);
       }
-    );
+    } catch (error) {
+      console.error("Lỗi khi tải phường/xã:", error);
+    } finally {
+      setLoadingWard(false);
+    }
+  };
 
-    // 🧩 Tạo link download tạm thời
-    const url = window.URL.createObjectURL(new Blob([res.data]));
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "danh-sach-hoc-vien.xlsx");
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
-  } catch (err) {
-    console.error("Lỗi khi xuất Excel:", err);
-    alert("⚠️ Xuất Excel thất bại!");
-  }
-};
+  const [pagination, setPagination] = useState({
+    total: 0,
+    totalPages: 1,
+    page: 1,
+    limit: 10,
+  });
+
+  // 🗑️ Xóa nhiều học viên được chọn
+  const handleDeleteSelected = async () => {
+    if (selected.length === 0) {
+      alert("Vui lòng chọn ít nhất một học viên để xóa!");
+      return;
+    }
+
+    if (!window.confirm(`Bạn có chắc muốn xóa ${selected.length} học viên đã chọn không?`)) return;
+
+    try {
+      const res = await axios.delete("http://localhost:8088/v1/api/students", {
+        data: { ids: selected },
+      });
+
+      if (res.data.errCode === 0) {
+        alert("✅ Đã xóa các học viên được chọn!");
+        setStudents(students.filter((s) => !selected.includes(s.id)));
+        setSelected([]);
+      } else {
+        alert(res.data.message || "❌ Không thể xóa học viên!");
+      }
+    } catch (err) {
+      console.error("Lỗi khi xóa nhiều học viên:", err);
+      alert("⚠️ Lỗi kết nối khi xóa nhiều học viên!");
+    }
+  };
+
+  const handleViewDetail = async (id) => {
+    try {
+      const res = await axios.get(`http://localhost:8088/v1/api/students/${id}`);
+      if (res.data.errCode === 0) {
+        setStudentDetail(res.data.data);
+        setShowDetailModal(true);
+      } else {
+        alert("❌ Không tìm thấy thông tin học viên!");
+      }
+    } catch (err) {
+      console.error("Lỗi khi xem chi tiết học viên:", err);
+      alert("⚠️ Lỗi kết nối khi lấy thông tin chi tiết!");
+    }
+  };
+
+  const handleExportStudentsExcel = async () => {
+    try {
+      const res = await axios.get(
+        "http://localhost:8088/v1/api/students/export/excel",
+        {
+          params: {
+            name: search || undefined,
+            subject: filters.subject || undefined,
+            grade: filters.grade || undefined,
+            schoolName: filters.schoolName || undefined,
+            gender: filters.gender || undefined,
+          },
+          responseType: "blob", // 🧩 Quan trọng: nhận dạng file nhị phân
+        }
+      );
+
+      // 🧩 Tạo link download tạm thời
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "danh-sach-hoc-vien.xlsx");
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Lỗi khi xuất Excel:", err);
+      alert("⚠️ Xuất Excel thất bại!");
+    }
+  };
 
   return (
     <div className="table-container">
-        {/* Thanh trên */}
-        <div className="top-bar">
-          <div className="left-tools">
-            {/* Nút Filter */}
-            <div className="filter-wrapper" ref={filterRef}>
-              <button
-                className="btn-filter"
-                onClick={() => setShowFilter(!showFilter)}
-              >
-                <CIcon icon={cilFilter} />
-              </button>
+      {/* Thanh trên */}
+      <div className="top-bar">
+        <div className="left-tools">
+          {/* Nút Filter */}
+          <div className="filter-wrapper" ref={filterRef}>
+            <button
+              className="btn-filter"
+              onClick={() => setShowFilter(!showFilter)}
+            >
+              <CIcon icon={cilFilter} />
+            </button>
 
-              {/* Panel lọc mở ra */}
-              {showFilter && (
-                <div className="filter-panel-container">
-                  <FilterPanel
-                    type="student" // 👈 loại student
-                    filters={filters}
-                    onChange={(newFilters) => {
-                      setFilters(newFilters);
-                    }}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* Ô tìm kiếm */}
-            <div className="search-wrapper">
-              <CIcon icon={cilSearch} className="search-icon" />
-              <input
-                type="text"
-                placeholder="     Nhập tên học viên"
-                className="search-box"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </div>
+            {/* Panel lọc mở ra */}
+            {showFilter && (
+              <div className="filter-panel-container">
+                <FilterPanel
+                  type="student" // 👈 loại student
+                  filters={filters}
+                  onChange={(newFilters) => {
+                    setFilters(newFilters);
+                  }}
+                />
+              </div>
+            )}
           </div>
 
-                    <div className="right-tools">
-            {/* 🟢 Xuất Excel */}
-            <button className="btn-excel" onClick={handleExportStudentsExcel}>
-              <CIcon icon={cilSpreadsheet} /> Xuất Excel
-            </button>
+          {/* Ô tìm kiếm */}
+          <div className="search-wrapper">
 
-            {/* 🗑️ Xóa tất cả học viên được chọn */}
-            <button
-              className="btn-delete-all"
-              onClick={handleDeleteSelected}
-              disabled={selected.length === 0}
-            >
-              <CIcon icon={cilTrash} /> Xóa tất cả
-            </button>
-            <button className="btn-add" onClick={handleAdd}>
-              + Thêm học viên
-            </button>
+            <input
+              type="text"
+              placeholder="Nhập tên học viên"
+              className="search-box"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
           </div>
         </div>
+
+        <div className="right-tools">
+          {/* 🟢 Xuất Excel */}
+          <button className="btn-excel" onClick={handleExportStudentsExcel}>
+            <CIcon icon={cilSpreadsheet} /> Xuất Excel
+          </button>
+
+          {/* 🗑️ Xóa tất cả học viên được chọn */}
+          <button
+            className="btn-delete-all"
+            onClick={handleDeleteSelected}
+            disabled={selected.length === 0}
+          >
+            <CIcon icon={cilTrash} /> Xóa tất cả
+          </button>
+          <button className="btn-add" onClick={handleAdd}>
+            + Thêm học viên
+          </button>
+        </div>
+      </div>
 
 
       {/* Bảng dữ liệu */}
@@ -514,411 +540,418 @@ const handleExportStudentsExcel = async () => {
           </tbody>
 
         </table>
-        
+
       )}
-      
-{/* 🧭 Phân trang nâng cao */}
-{pagination && (
-  <div className="pagination">
-    {/* Nút trái */}
-    <button
-      className="arrow"
-      onClick={() =>
-        setCurrentPage((prev) => Math.max(prev - 1, 1))
-      }
-      disabled={currentPage === 1}
-    >
-      &lt;
-    </button>
 
-    {/* Render số trang */}
-    {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
-      .filter((p) => {
-        if (pagination.totalPages <= 5) return true; // nếu tổng trang <=5 thì hiện hết
-        if (p === 1 || p === pagination.totalPages) return true; // luôn hiện trang đầu + cuối
-        if (p >= currentPage - 1 && p <= currentPage + 1) return true; // hiện trang gần current
-        return false;
-      })
-      .map((p, idx, arr) => {
-        const prev = arr[idx - 1];
-        return (
-          <React.Fragment key={p}>
-            {/* chèn dấu ... nếu bị nhảy cách */}
-            {prev && p - prev > 1 && <span className="dots">...</span>}
-            <button
-              className={`page-btn ${currentPage === p ? "active" : ""}`}
-              onClick={() => setCurrentPage(p)}
-            >
-              {p}
-            </button>
-          </React.Fragment>
-        );
-      })}
+      {/* 🧭 Phân trang nâng cao */}
+      {pagination && (
+        <div className="pagination">
+          {/* Nút trái */}
+          <button
+            className="arrow"
+            onClick={() =>
+              setCurrentPage((prev) => Math.max(prev - 1, 1))
+            }
+            disabled={currentPage === 1}
+          >
+            &lt;
+          </button>
 
-    {/* Nút phải */}
-    <button
-      className="arrow"
-      onClick={() =>
-        setCurrentPage((prev) =>
-          Math.min(prev + 1, pagination.totalPages)
-        )
-      }
-      disabled={currentPage === pagination.totalPages}
-    >
-      &gt;
-    </button>
-  </div>
-)}
+          {/* Render số trang */}
+          {Array.from({ length: pagination.totalPages }, (_, i) => i + 1)
+            .filter((p) => {
+              if (pagination.totalPages <= 5) return true; // nếu tổng trang <=5 thì hiện hết
+              if (p === 1 || p === pagination.totalPages) return true; // luôn hiện trang đầu + cuối
+              if (p >= currentPage - 1 && p <= currentPage + 1) return true; // hiện trang gần current
+              return false;
+            })
+            .map((p, idx, arr) => {
+              const prev = arr[idx - 1];
+              return (
+                <React.Fragment key={p}>
+                  {/* chèn dấu ... nếu bị nhảy cách */}
+                  {prev && p - prev > 1 && <span className="dots">...</span>}
+                  <button
+                    className={`page-btn ${currentPage === p ? "active" : ""}`}
+                    onClick={() => setCurrentPage(p)}
+                  >
+                    {p}
+                  </button>
+                </React.Fragment>
+              );
+            })}
+
+          {/* Nút phải */}
+          <button
+            className="arrow"
+            onClick={() =>
+              setCurrentPage((prev) =>
+                Math.min(prev + 1, pagination.totalPages)
+              )
+            }
+            disabled={currentPage === pagination.totalPages}
+          >
+            &gt;
+          </button>
+        </div>
+      )}
 
 
 
       {/* Modal thêm/sửa học viên */}
       <CModal visible={showModal} onClose={() => setShowModal(false)} size="lg">
-      <CModalHeader>
-        <CModalTitle>
-          {editMode ? "✏️ Cập nhật thông tin học viên" : "➕ Thêm học viên mới"}
-        </CModalTitle>
-      </CModalHeader>
-      <CModalBody>
-  <div className="p-3 rounded-lg bg-light">
-    <div className="row g-4 align-items-start">
-      {/* 🖼️ Cột trái - Ảnh đại diện */}
-      <div className="col-md-4 text-center">
-        <div
-          className="border rounded-3 p-3 bg-white shadow-sm"
-          style={{ minHeight: "270px" }}
-        >
-          <label className="form-label fw-semibold">Ảnh đại diện</label>
-          <div className="d-flex justify-content-center">
-            <img
-              src={
-                newStudent.image
-                  ? typeof newStudent.image === "string"
-                    ? newStudent.image.startsWith("http")
-                      ? newStudent.image
-                      : `http://localhost:8088/${newStudent.image}`  // ✅ Thêm host nếu thiếu
-                    : URL.createObjectURL(newStudent.image)
-                  : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-              }
-              alt="Preview"
-              className="rounded-circle mb-3"
-              style={{
-                width: "130px",
-                height: "130px",
-                objectFit: "cover",
-                border: "3px solid #ddd",
-              }}
-            />
+        <CModalHeader>
+          <CModalTitle>
+            {editMode ? "Cập nhật thông tin học viên" : "Thêm học viên mới"}
+          </CModalTitle>
+        </CModalHeader>
+        <CModalBody>
+          <div className="p-3 rounded-lg bg-light">
+            <div className="row g-4 align-items-start">
+              {/* Cột trái - Ảnh đại diện */}
+              <div className="col-md-4 text-center">
+                <div
+                  className="border rounded-3 p-3 bg-white shadow-sm"
+                  style={{ minHeight: "270px" }}
+                >
+                  <label className="form-label fw-semibold">Ảnh đại diện</label>
+                  <div className="d-flex justify-content-center">
+                    <img
+                      src={
+                        newStudent.image
+                          ? typeof newStudent.image === "string"
+                            ? newStudent.image.startsWith("http")
+                              ? newStudent.image
+                              : `http://localhost:8088/${newStudent.image}`  // ✅ Thêm host nếu thiếu
+                            : URL.createObjectURL(newStudent.image)
+                          : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+                      }
+                      alt="Preview"
+                      className="rounded-circle mb-3"
+                      style={{
+                        width: "130px",
+                        height: "130px",
+                        objectFit: "cover",
+                        border: "3px solid #ddd",
+                      }}
+                    />
 
-          </div>
-          <input
-            type="file"
-            name="image"
-            accept="image/*"
-            className="form-control"
-            onChange={handleImageChange}
-          />
-        </div>
-      </div>
-
-      {/* 🧾 Cột phải - Thông tin học viên */}
-      <div className="col-md-8">
-        <CForm className="row g-3">
-          <h6 className="fw-bold text-primary">Thông tin cơ bản</h6>
-          <div className="col-md-6">
-            <CFormInput
-              name="fullName"
-              label="Họ và tên"
-              value={newStudent.fullName}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              name="email"
-              label="Email"
-              value={newStudent.email}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              name="phoneNumber"
-              label="Số điện thoại"
-              value={newStudent.phoneNumber}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              type="date"
-              name="dateOfBirth"
-              label="Ngày sinh"
-              value={newStudent.dateOfBirth}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <CFormInput
-              name="grade"
-              label="Lớp"
-              value={newStudent.grade}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              name="schoolName"
-              label="Trường"
-              value={newStudent.schoolName}
-              onChange={handleChange}
-            />
-          </div>
-
-          <div className="col-md-6">
-            <CFormSelect
-              name="gender"
-              label="Giới tính"
-              value={newStudent.gender.toString()}
-              onChange={handleChange}
-            >
-              <option value="true">Nam</option>
-              <option value="false">Nữ</option>
-            </CFormSelect>
-          </div>
-
-          {/* 🏠 Địa chỉ */}
-          <div className="col-12 mt-3">
-            <h6 className="fw-bold text-primary">Địa chỉ</h6>
-          </div>
-          <div className="col-md-12">
-            <CFormInput
-              name="details"
-              label="Địa chỉ chi tiết"
-              value={newStudent.address.details}
-              onChange={handleChange}
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormSelect
-              name="province"
-              label="Tỉnh/Thành phố"
-              value={newStudent.address.province}
-              onChange={(e) => {
-                const province = e.target.value;
-                setNewStudent({
-                  ...newStudent,
-                  address: { ...newStudent.address, province, ward: "" },
-                });
-                fetchWardsByProvince(province);
-              }}
-            >
-              <option value="">-- Chọn tỉnh/thành phố --</option>
-              {loadingProvince ? (
-                <option disabled>Đang tải...</option>
-              ) : (
-                provinces.map((p) => (
-                  <option key={p.id} value={p.province}>
-                    {p.province}
-                  </option>
-                ))
-              )}
-            </CFormSelect>
-          </div>
-
-          <div className="col-md-6">
-            <CFormSelect
-              name="ward"
-              label="Phường/Xã"
-              value={newStudent.address.ward}
-              onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  address: { ...newStudent.address, ward: e.target.value },
-                })
-              }
-            >
-              <option value="">-- Chọn phường/xã --</option>
-              {loadingWard ? (
-                <option disabled>Đang tải...</option>
-              ) : (
-                wards.map((w, i) => (
-                  <option key={i} value={w.name}>
-                    {w.name}
-                  </option>
-                ))
-              )}
-            </CFormSelect>
-          </div>
-
-          {/* 👨‍👩‍👧 Phụ huynh */}
-          <div className="col-12 mt-3">
-            <h6 className="fw-bold text-primary">Thông tin phụ huynh</h6>
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              name="parentFullName"
-              label="Họ tên phụ huynh"
-              value={newStudent.parents[0].fullName}
-              onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  parents: [
-                    { ...newStudent.parents[0], fullName: e.target.value },
-                  ],
-                })
-              }
-            />
-          </div>
-          <div className="col-md-6">
-            <CFormInput
-              name="parentPhone"
-              label="SĐT phụ huynh"
-              value={newStudent.parents[0].phoneNumber}
-              onChange={(e) =>
-                setNewStudent({
-                  ...newStudent,
-                  parents: [
-                    { ...newStudent.parents[0], phoneNumber: e.target.value },
-                  ],
-                })
-              }
-            />
-          </div>
-        </CForm>
-      </div>
-    </div>
-  </div>
-</CModalBody>
-
-
-      <CModalFooter className="d-flex justify-content-between">
-        <CButton color="secondary" variant="outline" onClick={() => setShowModal(false)}>
-          Hủy
-        </CButton>
-        <CButton color="primary" onClick={handleSubmit}>
-          {editMode ? "💾 Lưu thay đổi" : "✅ Thêm học viên"}
-        </CButton>
-      </CModalFooter>
-    </CModal>
-
-
-{/* 🟢 Modal xem chi tiết học viên */}
-<CModal
-  visible={showDetailModal}
-  onClose={() => setShowDetailModal(false)}
-  alignment="center"
-  //size="xl"                      // 👈 mở rộng modal
-  className="student-detail-modal"
->
-
-  <CModalHeader className="bg-success text-white rounded-top-4">
-    <h5 className="m-0">
-      🧑‍🎓 Thông tin chi tiết học viên
-    </h5>
-  </CModalHeader>
-
-  <CModalBody className="p-4 bg-light">
-    {studentDetail ? (
-      <div className="container-fluid">
-        <div className="row g-4">
-          {/* Cột trái - Ảnh đại diện */}
-          <div className="col-md-4 text-center">
-            <div className="card border-0 shadow-sm p-3 rounded-4 h-100">
-              <img
-                src={
-                  studentDetail.image
-                    ? `http://localhost:8088/${studentDetail.image}`
-                    : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                }
-                alt="Student Avatar"
-                className="rounded-circle mx-auto mb-3"
-                style={{
-                  width: "130px",
-                  height: "130px",
-                  objectFit: "cover",
-                  border: "4px solid #28a745",
-                }}
-              />
-              <h5 className="fw-bold text-success mb-1">
-                {studentDetail.fullName}
-              </h5>
-              <p className="text-muted small">
-                🎓 {studentDetail.roleName || "Học viên"}
-              </p>
-              <hr />
-              <div className="text-start small">
-                <p><strong>📞 SĐT:</strong> {studentDetail.phoneNumber || "Chưa có"}</p>
-                <p><strong>🎂 Ngày sinh:</strong> {studentDetail.dateOfBirth || "Chưa có"}</p>
-                <p><strong>🚻 Giới tính:</strong> {studentDetail.gender ? "Nam" : "Nữ"}</p>
+                  </div>
+                  <input
+                    type="file"
+                    name="image"
+                    accept="image/*"
+                    className="form-control"
+                    onChange={handleImageChange}
+                  />
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* Cột phải - Thông tin chi tiết */}
-          <div className="col-md-8">
-            <div className="card border-0 shadow-sm rounded-4 p-3 mb-3">
-              <h6 className="fw-bold text-success mb-3">📋 Thông tin cá nhân</h6>
-              <div className="row mb-2">
-                <div className="col-sm-6"><strong>Email:</strong> {studentDetail.email}</div>
-                <div className="col-sm-6"><strong>Lớp:</strong> {studentDetail.grade || "Chưa có"}</div>
-              </div>
-              <div className="row mb-2">
-                <div className="col-sm-6"><strong>Trường:</strong> {studentDetail.schoolName || "Chưa có"}</div>
-                <div className="col-sm-6"><strong>Phụ huynh:</strong> {studentDetail.parents?.[0]?.fullName || "Chưa có"} ({studentDetail.parents?.[0]?.phoneNumber || "Chưa có"})</div>
-              </div>
-              <div className="mb-2">
-                <strong>Địa chỉ:</strong>{" "}
-                {studentDetail.address?.details}, {studentDetail.address?.ward},{" "}
-                {studentDetail.address?.province}
-              </div>
-            </div>
+              {/* Cột phải - Thông tin học viên */}
+              <div className="col-md-8">
+                <CForm className="row g-3">
+                  <h6 className="csection-title">Thông tin cơ bản</h6>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="fullName"
+                      label="Họ và tên"
+                      value={newStudent.fullName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="email"
+                      label="Email"
+                      value={newStudent.email}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="phoneNumber"
+                      label="Số điện thoại"
+                      value={newStudent.phoneNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      type="date"
+                      name="dateOfBirth"
+                      label="Ngày sinh"
+                      value={newStudent.dateOfBirth}
+                      onChange={handleChange}
+                    />
+                  </div>
 
-            <div className="card border-0 shadow-sm rounded-4 p-3">
-              <h6 className="fw-bold text-success mb-2">📚 Môn học đã đăng ký</h6>
-              {studentDetail.subjects?.length > 0 ? (
-                <ul className="list-group list-group-flush">
-                  {studentDetail.subjects.map((subj) => (
-                    <li
-                      key={subj.id}
-                      className="list-group-item d-flex justify-content-between align-items-center"
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="grade"
+                      label="Lớp"
+                      value={newStudent.grade}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="schoolName"
+                      label="Trường"
+                      value={newStudent.schoolName}
+                      onChange={handleChange}
+                    />
+                  </div>
+
+                  <div className="col-md-6">
+                    <CFormSelect
+                      name="gender"
+                      label="Giới tính"
+                      value={newStudent.gender.toString()}
+                      onChange={handleChange}
                     >
-                      <span><strong>{subj.name}</strong> – Lớp {subj.grade}</span>
-                      <span className="text-muted small">
-                        {new Date(subj.enrollmentDate).toLocaleDateString("vi-VN")}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="text-muted fst-italic mb-0">Chưa đăng ký môn học nào.</p>
-              )}
+                      <option value="true">Nam</option>
+                      <option value="false">Nữ</option>
+                    </CFormSelect>
+                  </div>
+
+                  {/* 🏠 Địa chỉ */}
+                  <div className="col-12 mt-3">
+                    <h6 className="csection-title">Địa chỉ</h6>
+                  </div>
+                  <div className="col-md-12">
+                    <CFormInput
+                      name="details"
+                      label="Địa chỉ chi tiết"
+                      value={newStudent.address.details}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormSelect
+                      name="province"
+                      label="Tỉnh/Thành phố"
+                      value={newStudent.address.province}
+                      onChange={(e) => {
+                        const province = e.target.value;
+                        setNewStudent({
+                          ...newStudent,
+                          address: { ...newStudent.address, province, ward: "" },
+                        });
+                        fetchWardsByProvince(province);
+                      }}
+                    >
+                      <option value="">-- Chọn tỉnh/thành phố --</option>
+                      {loadingProvince ? (
+                        <option disabled>Đang tải...</option>
+                      ) : (
+                        provinces.map((p) => (
+                          <option key={p.id} value={p.province}>
+                            {p.province}
+                          </option>
+                        ))
+                      )}
+                    </CFormSelect>
+                  </div>
+
+                  <div className="col-md-6">
+                    <CFormSelect
+                      name="ward"
+                      label="Phường/Xã"
+                      value={newStudent.address.ward}
+                      onChange={(e) =>
+                        setNewStudent({
+                          ...newStudent,
+                          address: { ...newStudent.address, ward: e.target.value },
+                        })
+                      }
+                    >
+                      <option value="">-- Chọn phường/xã --</option>
+                      {loadingWard ? (
+                        <option disabled>Đang tải...</option>
+                      ) : (
+                        wards.map((w, i) => (
+                          <option key={i} value={w.name}>
+                            {w.name}
+                          </option>
+                        ))
+                      )}
+                    </CFormSelect>
+                  </div>
+
+                  {/* 👨‍👩‍👧 Phụ huynh */}
+                  <div className="col-12 mt-3">
+                    <h6 className="csection-title">Thông tin phụ huynh</h6>
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="parentFullName"
+                      label="Họ tên phụ huynh"
+                      value={newStudent.parents[0].fullName}
+                      onChange={(e) =>
+                        setNewStudent({
+                          ...newStudent,
+                          parents: [
+                            { ...newStudent.parents[0], fullName: e.target.value },
+                          ],
+                        })
+                      }
+                    />
+                  </div>
+                  <div className="col-md-6">
+                    <CFormInput
+                      name="parentPhone"
+                      label="SĐT phụ huynh"
+                      value={newStudent.parents[0].phoneNumber}
+                      onChange={(e) =>
+                        setNewStudent({
+                          ...newStudent,
+                          parents: [
+                            { ...newStudent.parents[0], phoneNumber: e.target.value },
+                          ],
+                        })
+                      }
+                    />
+                  </div>
+                </CForm>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-    ) : (
-      <p>Đang tải thông tin...</p>
-    )}
-  </CModalBody>
+        </CModalBody>
 
-  <CModalFooter className="bg-white border-top-0">
-    <CButton
-      color="success"
-      variant="outline"
-      onClick={() => {
-        setShowDetailModal(false);
-        handleEdit(studentDetail);
-      }}
-    >
-      ✏️ Chỉnh sửa
-    </CButton>
-    <CButton color="secondary" onClick={() => setShowDetailModal(false)}>
-      Đóng
-    </CButton>
-  </CModalFooter>
-</CModal>
+
+        <CModalFooter className="d-flex justify-content-between">
+          <CButton color="secondary" variant="outline" onClick={() => setShowModal(false)}>
+            Hủy
+          </CButton>
+          <CButton color="primary" onClick={handleSubmit}>
+            {editMode ? "Lưu thay đổi" : "Thêm học viên"}
+          </CButton>
+        </CModalFooter>
+      </CModal>
+
+
+      {/* 🟢 Modal xem chi tiết học viên */}
+      <CModal
+        visible={showDetailModal}
+        onClose={() => setShowDetailModal(false)}
+        alignment="center"
+        //size="xl"                   
+        className="student-detail-modal"
+      >
+
+        <CModalHeader className="custom-modal-header">
+          <h5 className="m-0">
+            Thông tin chi tiết học viên
+          </h5>
+        </CModalHeader>
+
+        <CModalBody className="p-4 bg-light">
+          {studentDetail ? (
+            <div className="container-fluid">
+              <div className="row g-4">
+                {/* Cột trái - Ảnh đại diện */}
+                <div className="col-md-4 text-center">
+                  <div className="card border-0 shadow-sm p-3 rounded-4 h-100">
+                    <img
+                      src={
+                        studentDetail.image
+                          ? `http://localhost:8088/${studentDetail.image}`
+                          : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
+                      }
+                      alt="Student Avatar"
+                      className="rounded-circle mx-auto mb-3"
+                      style={{
+                        width: "130px",
+                        height: "130px",
+                        objectFit: "cover",
+                        border: "0px solid #7494ec",
+                      }}
+                    />
+                    <h5 >
+                      {studentDetail.fullName}
+                    </h5>
+                    <p className="text-muted small">
+                      {studentDetail.roleName || "Học viên"}
+                    </p>
+                    <hr />
+                    <div className="text-start small">
+                      <p>
+                        <strong><FiPhone />   SĐT:</strong> {studentDetail.phoneNumber || "Chưa có"}
+                      </p>
+                      <p>
+                        <strong><FiCalendar />   Ngày sinh:</strong> {studentDetail.dateOfBirth || "Chưa có"}
+                      </p>
+                      <p>
+                        <strong><FiUser />   Giới tính:</strong> {studentDetail.gender ? "Nam" : "Nữ"}
+                      </p>
+                    </div>
+
+                  </div>
+                </div>
+
+                {/* Cột phải - Thông tin chi tiết */}
+                <div className="col-md-8">
+                  <div className="card border-0 shadow-sm rounded-4 p-3 mb-3">
+                    <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Thông tin cá nhân</h6>
+                    <div className="row mb-2">
+                      <div className="col-sm-6"><strong>Email:</strong> {studentDetail.email}</div>
+                      <div className="col-sm-6"><strong>Lớp:</strong> {studentDetail.grade || "Chưa có"}</div>
+                    </div>
+                    <div className="row mb-2">
+                      <div className="col-sm-6"><strong>Trường:</strong> {studentDetail.schoolName || "Chưa có"}</div>
+                      <div className="col-sm-6"><strong>Phụ huynh:</strong> {studentDetail.parents?.[0]?.fullName || "Chưa có"} ({studentDetail.parents?.[0]?.phoneNumber || "Chưa có"})</div>
+                    </div>
+                    <div className="mb-2">
+                      <strong>Địa chỉ:</strong>{" "}
+                      {studentDetail.address?.details}, {studentDetail.address?.ward},{" "}
+                      {studentDetail.address?.province}
+                    </div>
+                  </div>
+
+                  <div className="card border-0 shadow-sm rounded-4 p-3">
+                    <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Môn học đã đăng ký</h6>
+                    {studentDetail.subjects?.length > 0 ? (
+                      <ul className="list-group list-group-flush">
+                        {studentDetail.subjects.map((subj) => (
+                          <li
+                            key={subj.id}
+                            className="list-group-item d-flex justify-content-between align-items-center"
+                          >
+                            <span><strong>{subj.name}</strong> – Lớp {subj.grade}</span>
+                            <span className="text-muted small">
+                              {new Date(subj.enrollmentDate).toLocaleDateString("vi-VN")}
+                            </span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-muted fst-italic mb-0">Chưa đăng ký môn học nào.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <p>Đang tải thông tin...</p>
+          )}
+        </CModalBody>
+
+        <CModalFooter className="bg-white border-top-0">
+          <CButton style={{ backgroundColor: '#7494ec', borderColor: '#7494ec', color: 'white' }} size="sm"
+            color="success"
+            variant="outline"
+            onClick={() => {
+              setShowDetailModal(false);
+              handleEdit(studentDetail);
+            }}
+          >
+            Chỉnh sửa
+          </CButton>
+          <CButton style={{ backgroundColor: '#89898aff', borderColor: '#7494ec', color: 'white' }} size="sm" onClick={() => setShowDetailModal(false)}>
+            Đóng
+          </CButton>
+        </CModalFooter>
+      </CModal>
 
 
 

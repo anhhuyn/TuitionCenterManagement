@@ -425,3 +425,59 @@ h6.text-primary {
   border-radius: 1rem;
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
 }
+
+/* 🔴 Nút "Xóa đã chọn" */
+.btn-delete-selected {
+  background: #dc2626; /* đỏ */
+  color: #fff;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s ease-in-out, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-delete-selected:hover {
+  background: #b91c1c; /* đỏ đậm khi hover */
+  transform: scale(1.03);
+}
+
+.btn-delete-selected:active {
+  background: #991b1b; /* đỏ sậm hơn khi click */
+  transform: scale(0.98);
+}
+
+.btn-delete-selected:disabled {
+  background: #ccc;
+  color: #666;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.csection-title {
+  color: #7494ec !important;
+  font-weight: 600;
+  font-family: "Poppins", "Roboto", sans-serif;
+  font-size: 15px;
+  letter-spacing: 0.3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.csection-title::before {
+  content: "";
+  display: inline-block;
+  width: 4px;
+  height: 18px;
+  background-color: #7494ec;
+  border-radius: 2px;
+}
+
+.custom-modal-header {
+  background-color: #7494ec !important; /* xanh nhạt bạn dùng ở phần khác */
+  color: #fff !important;
+}

@@ -119,7 +119,6 @@ export default function MaterialList({ classData }) {
     if (!materialToDelete) return;
     try {
       await deleteMaterialApi(materialToDelete.id);
-      alert("Xóa tài liệu thành công!");
       fetchMaterials();
     } catch (error) {
       console.error("Lỗi khi xóa tài liệu:", error);

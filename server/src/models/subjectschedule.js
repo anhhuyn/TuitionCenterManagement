@@ -36,7 +36,7 @@ export default (sequelize, DataTypes) => {
     },
     roomId: {
       type: DataTypes.INTEGER,
-      allowNull: false,
+      allowNull: true,
     },
     startDate: {
       type: DataTypes.DATEONLY,

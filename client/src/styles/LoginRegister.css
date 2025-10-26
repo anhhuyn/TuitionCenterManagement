@@ -298,3 +298,30 @@
     font-size: 30px;
   }
 }
+.ant-input-password {
+  background-color: #e6f0ff !important; /* nền chính của input */
+  border-radius: 10px !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+.ant-input-password .ant-input {
+  background-color: transparent !important; /* để input bên trong thừa hưởng nền ngoài */
+  border: none !important;
+  height: 50px !important;
+  padding: 12px 15px !important;
+  font-size: 16px !important;
+  box-shadow: none !important;
+}
+
+.ant-input-password .ant-input-suffix {
+  background-color: #e6f0ff !important; /* nền trùng với input */
+  padding-right: 15px;
+  display: flex;
+  align-items: center;
+  border-radius: 0 10px 10px 0; /* bo góc phải cho phần icon */
+  height: 50px;
+}

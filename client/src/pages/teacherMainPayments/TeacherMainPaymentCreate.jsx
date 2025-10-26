@@ -19,29 +19,61 @@ const TeacherPaymentCreate = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
-  const handleCreate = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage(null);
-    try {
-      const res = await createTeacherPayments({ month, year, notes });
-      if (res.data.errCode === 0) {
-        setMessage({
-          type: "success",
-          text: res.data.message,
-        });
-      }
-    } catch (err) {
-      setMessage({ type: "danger", text: "Tạo bảng lương thất bại!" });
-    } finally {
-      setLoading(false);
+const handleCreate = async (e) => {
+  e.preventDefault();
+  setLoading(true);
+  setMessage(null);
+
+  try {
+    const res = await createTeacherPayments({ month, year, notes });
+    console.log("📦 API response:", res);
+
+    if (res.errCode === 0) {
+      // ✅ Thành công
+      setMessage({
+        type: "success",
+        text: `Tạo bảng lương tháng ${month}/${year} thành công!`,
+      });
+      setNotes("");
+    } else if (res.errCode === 409) {
+      // ⚠️ Trùng bảng lương
+      setMessage({
+        type: "warning",
+        text: res.message || `Bảng lương tháng ${month}/${year} đã được tạo trước đó!`,
+      });
+    } else {
+      // ❌ Lỗi khác
+      setMessage({
+        type: "danger",
+        text: res.message || "Không thể tạo bảng lương! Vui lòng thử lại sau.",
+      });
     }
-  };
+  } catch (err) {
+    console.error("❌ Lỗi khi gọi API tạo bảng lương:", err);
+
+    if (err.response) {
+      setMessage({
+        type: "danger",
+        text: err.response.data?.message || "Lỗi server!",
+      });
+    } else {
+      setMessage({
+        type: "danger",
+        text: "Không thể kết nối tới server!",
+      });
+    }
+  } finally {
+    setLoading(false);
+    setTimeout(() => setMessage(null), 5000);
+  }
+};
+
+
 
   return (
     <CCard>
       <CCardHeader className="bg-warning text-white">
-        🧾 Tạo bảng lương giáo viên
+        Tạo bảng lương giáo viên
       </CCardHeader>
       <CCardBody>
         <CForm onSubmit={handleCreate}>
@@ -80,13 +112,18 @@ const TeacherPaymentCreate = () => {
             className="mt-2"
           />
 
-          <CButton type="submit" color="primary" className="mt-3" disabled={loading}>
+          <CButton
+            type="submit"
+            color="primary"
+            className="mt-3"
+            disabled={loading}
+          >
             {loading ? <CSpinner size="sm" /> : "Tạo bảng lương"}
           </CButton>
         </CForm>
 
         {message && (
-          <CAlert color={message.type} className="mt-3">
+          <CAlert color={message.type} className="mt-3 text-center fw-bold">
             {message.text}
           </CAlert>
         )}

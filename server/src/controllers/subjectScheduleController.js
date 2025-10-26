@@ -6,17 +6,17 @@ const createSubjectSchedule = async (req, res) => {
     const { subjectId, dayOfWeek, startTime, endTime, roomId, startDate, endDate } = req.body;
 
     // Kiểm tra thông tin bắt buộc
-    if (!subjectId || dayOfWeek === undefined || !startTime || !endTime || !roomId || !startDate) {
-      return res.status(400).json({ message: "Thiếu thông tin lịch học hoặc startDate" });
+    if (!subjectId || dayOfWeek === undefined || !startTime || !endTime || !startDate) {
+      return res.status(400).json({ message: "Thiếu thông tin lịch học bắt buộc" });
     }
 
-    // Tạo lịch học và sinh session tự động
+    // Gọi service
     const { schedule, sessions } = await subjectScheduleService.createSubjectSchedule({
       subjectId,
       dayOfWeek,
       startTime,
       endTime,
-      roomId,
+      roomId: roomId || null,
       startDate,
       endDate,
     });
@@ -27,13 +27,30 @@ const createSubjectSchedule = async (req, res) => {
       sessions,
     });
   } catch (error) {
-    console.error("Error in createSubjectSchedule:", error);
+    console.error("Error in createSubjectSchedule:", error.message);
+
+    // Phân loại lỗi để trả mã phù hợp
+    if (error.message.includes("Phòng học này đã có lịch")) {
+      return res.status(409).json({ message: error.message }); // Conflict
+    }
+    if (error.message.includes("Lớp học này đã có lịch")) {
+      return res.status(409).json({ message: error.message });
+    }
+    if (error.message.includes("Giờ kết thúc phải sau")) {
+      return res.status(400).json({ message: error.message });
+    }
+    if (error.message.includes("trôi qua") || error.message.includes("quá khứ")) {
+      return res.status(400).json({ message: error.message });
+    }
+
+    // Lỗi không xác định
     return res.status(500).json({
       message: "Có lỗi xảy ra khi tạo lịch học",
       error: error.message,
     });
   }
 };
+
 
 // Controller lấy tất cả session theo subjectId
 const getScheduleBySubjectId = async (req, res) => {

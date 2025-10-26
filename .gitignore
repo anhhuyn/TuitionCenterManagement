@@ -1,1 +1,15 @@
+# Bỏ qua các thư mục cài đặt package
+node_modules
+client/node_modules
+server/node_modules
+
+# Bỏ qua các file cấu hình và biến môi trường
+.env
+.env.development
+.babelrc
+.sequelizerc
+
+# Bỏ qua các thư mục/file khác thường không cần push
+dist
+build
 /server/public/uploads/

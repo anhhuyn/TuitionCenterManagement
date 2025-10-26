@@ -1,0 +1,210 @@
+/* --- Tổng thể --- */
+.teacher-payment-container {
+    padding: 1.5rem;
+    animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Header --- */
+.teacher-payment-container h2 {
+    font-size: 1.5rem;
+    color: #7494ec;
+    font-weight: 700;
+}
+
+/* --- Nút thêm mới --- */
+.teacher-payment-container .btn-success {
+    background-color: #7494ec !important;
+    border: none !important;
+    color: #fff !important;
+    border-radius: 10px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 600;
+    transition: 0.2s ease-in-out;
+}
+
+.teacher-payment-container .btn-success:hover {
+    background-color: #5a7be3 !important;
+    transform: translateY(-2px);
+}
+
+/* --- Card --- */
+.teacher-payment-container .card {
+    max-width: 320px;
+    border-radius: 18px !important;
+    background: linear-gradient(180deg, #ffffff, #f7f9ff);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+    transition: 0.25s ease-in-out;
+    height: 100%;
+    /* ✅ để các card đều chiều cao */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.teacher-payment-container .card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 14px rgba(116, 148, 236, 0.25);
+}
+
+/* --- Card Header --- */
+.teacher-payment-container .card-header {
+    background-color: #7494ec !important;
+    color: #fff !important;
+    border-top-left-radius: 18px !important;
+    border-top-right-radius: 18px !important;
+    font-size: 1rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.8rem !important;
+}
+
+/* --- Avatar --- */
+.teacher-payment-container img {
+    border: 3px solid #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s;
+}
+
+.teacher-payment-container img:hover {
+    transform: scale(1.05);
+}
+
+/* --- Info box --- */
+.teacher-payment-container .info-box {
+    background: #eef2ff;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 0.95rem;
+    color: #333;
+    width: 100%;
+}
+
+.teacher-payment-container .info-box strong {
+    color: #4a5db8;
+}
+
+/* --- Nút hành động --- */
+.teacher-payment-container .btn-outline-primary {
+    border: 1.8px solid #7494ec !important;
+    color: #7494ec !important;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.teacher-payment-container .btn-outline-primary:hover {
+    background-color: #7494ec !important;
+    color: #fff !important;
+}
+
+/* ✅ Nút chỉnh sửa màu vàng nổi bật */
+.teacher-payment-container .btn-outline-warning {
+    border: 1.8px solid #f6b93b !important;
+    color: #f6b93b !important;
+    font-weight: 500;
+    border-radius: 8px;
+    transition: 0.2s;
+}
+
+.teacher-payment-container .btn-outline-warning:hover {
+    background-color: #f6b93b !important;
+    color: #fff !important;
+}
+
+/* --- Nút xóa góc phải --- */
+.teacher-payment-container .delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 10px;
+    z-index: 10;
+    color: #ff6b6b !important;
+    background-color: transparent !important;
+    border: none !important;
+    transition: 0.2s;
+    font-size: 16px;
+}
+
+.teacher-payment-container .delete-btn:hover {
+    color: #d9534f !important;
+    transform: scale(1.15);
+}
+
+/* ✅ Đảm bảo các cột có chiều cao bằng nhau */
+.teacher-payment-container .row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch; /* giúp các card cao bằng nhau */
+}
+
+/* ✅ Cột chứa card chiếm toàn chiều cao */
+.teacher-payment-container .col {
+  display: flex;
+}
+
+/* ✅ Card chiếm toàn chiều cao của cột */
+.teacher-payment-container .card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+}
+
+/* ✅ Căn giữa phần thân card */
+/* ✅ Cấu trúc cột dọc trong card */
+.teacher-payment-container .card-body {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* đẩy nút xuống đáy */
+  align-items: center;
+  flex-grow: 1;
+  width: 100%;
+}
+
+/* ✅ Khối chứa thông tin (avatar, tên, email, info-box) chiếm phần trên */
+.teacher-payment-container .card-body .d-flex.flex-column.align-items-center {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+/* ✅ Nhóm nút nằm sát đáy, căn giữa */
+.teacher-payment-container .card-body .d-flex.gap-2 {
+  margin-top: auto; /* đẩy nhóm nút xuống cuối */
+  justify-content: center;
+}
+
+/* --- GRID LAYOUT --- */
+.teacher-payment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-top: 1rem;
+}
+
+/* Card bọc ngoài (để điều chỉnh padding / hover) */
+.teacher-card {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
+}
+
+/* Đảm bảo card full height */
+.teacher-card .card {
+  flex: 1;
+  height: 100%;
+}

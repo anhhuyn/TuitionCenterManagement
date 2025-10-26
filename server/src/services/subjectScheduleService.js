@@ -74,38 +74,63 @@ const generateSessionsForSchedule = async (schedule) => {
  * Tạo lịch học mới và sinh session
  */
 const createSubjectSchedule = async ({ subjectId, dayOfWeek, startTime, endTime, roomId, startDate, endDate }) => {
-  // Format startTime chuẩn HH:MM:SS
   const formatTime = (timeStr) => timeStr.length === 5 ? timeStr + ":00" : timeStr;
   const startTimeStr = formatTime(startTime);
+  const endTimeStr = formatTime(endTime);
 
-  // Kiểm tra schedule đã tồn tại chưa (cùng subjectId, dayOfWeek, startTime, roomId)
-  let schedule = await db.SubjectSchedule.findOne({
+  // 🛑 1. Kiểm tra trùng lịch cùng phòng
+  const overlappingRoom = await db.SubjectSchedule.findOne({
+    where: {
+      roomId,
+      dayOfWeek,
+      [Op.or]: [
+        { startTime: { [Op.between]: [startTimeStr, endTimeStr] } },
+        { endTime: { [Op.between]: [startTimeStr, endTimeStr] } },
+      ],
+    },
+  });
+
+  if (overlappingRoom) {
+    throw new Error(`Phòng học này đã có lịch (${overlappingRoom.startTime} - ${overlappingRoom.endTime}) trong cùng ngày`);
+  }
+
+  // 🛑 2. Kiểm tra trùng lịch cùng lớp
+  const overlappingSubject = await db.SubjectSchedule.findOne({
     where: {
       subjectId,
       dayOfWeek,
-      startTime: startTimeStr,
-      roomId
-    }
+      [Op.or]: [
+        { startTime: { [Op.between]: [startTimeStr, endTimeStr] } },
+        { endTime: { [Op.between]: [startTimeStr, endTimeStr] } },
+      ],
+    },
   });
 
-  // Nếu chưa tồn tại thì tạo mới
+  if (overlappingSubject) {
+    throw new Error(`Lớp học này đã có lịch (${overlappingSubject.startTime} - ${overlappingSubject.endTime}) trong cùng ngày`);
+  }
+
+  // ✅ Nếu không trùng → tiếp tục tạo
+  let schedule = await db.SubjectSchedule.findOne({
+    where: { subjectId, dayOfWeek, startTime: startTimeStr, roomId }
+  });
+
   if (!schedule) {
     schedule = await db.SubjectSchedule.create({
       subjectId,
       dayOfWeek,
       startTime: startTimeStr,
-      endTime,
+      endTime: endTimeStr,
       roomId,
       startDate,
       endDate,
     });
   }
 
-  // Sinh session tự động
   const sessions = await generateSessionsForSchedule(schedule);
-
   return { schedule, sessions };
 };
+
 
 /**
  * Lấy tất cả session theo subjectId để hiển thị thời khóa biểu

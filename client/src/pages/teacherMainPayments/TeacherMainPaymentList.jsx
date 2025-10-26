@@ -29,11 +29,11 @@ const TeacherPaymentList = () => {
     try {
       setLoading(true);
       const res = await getTeacherPaymentsByMonth(month, year);
-        if (res && res.errCode === 0) {
+      if (res && res.errCode === 0) {
         setData(res.data || []);
-        } else {
+      } else {
         setData([]);
-        }
+      }
     } catch (error) {
       console.error("Lỗi khi lấy danh sách lương:", error);
     } finally {
@@ -41,28 +41,21 @@ const TeacherPaymentList = () => {
     }
   };
 
-
-  const handleCreatePayments = async () => {
-  try {
-    setLoading(true);
-    await createTeacherPaymentsAPI({ month, year });
-    await handleFetchData(); // reload bảng lương mới
-  } catch (err) {
-    console.error("Tạo bảng lương thất bại:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-
   return (
-    <CCard className="shadow-sm">
-      <CCardHeader className="bg-success text-white">
-        💰 Danh sách lương giáo viên
+    <CCard className="shadow-sm border-0">
+      <CCardHeader
+        className="text-white fw-bold"
+        style={{ backgroundColor: "#7494ec" }}
+      >
+        Danh sách lương giáo viên
       </CCardHeader>
       <CCardBody>
-        <CRow className="mb-3">
+        <CRow className="mb-3 align-items-end">
           <CCol md={3}>
-            <CFormSelect value={month} onChange={(e) => setMonth(e.target.value)}>
+            <CFormSelect
+              value={month}
+              onChange={(e) => setMonth(e.target.value)}
+            >
               {Array.from({ length: 12 }, (_, i) => (
                 <option key={i + 1} value={i + 1}>
                   Tháng {i + 1}
@@ -71,7 +64,10 @@ const TeacherPaymentList = () => {
             </CFormSelect>
           </CCol>
           <CCol md={3}>
-            <CFormSelect value={year} onChange={(e) => setYear(e.target.value)}>
+            <CFormSelect
+              value={year}
+              onChange={(e) => setYear(e.target.value)}
+            >
               {Array.from({ length: 5 }, (_, i) => {
                 const y = new Date().getFullYear() - i;
                 return (
@@ -83,7 +79,15 @@ const TeacherPaymentList = () => {
             </CFormSelect>
           </CCol>
           <CCol md={3}>
-            <CButton color="primary" onClick={handleFetchData} disabled={loading}>
+            <CButton
+              style={{
+                backgroundColor: "#7494ec",
+                borderColor: "#7494ec",
+                color:"white"
+              }}
+              onClick={handleFetchData}
+              disabled={loading}
+            >
               {loading ? <CSpinner size="sm" /> : "Xem bảng lương"}
             </CButton>
           </CCol>
@@ -91,7 +95,7 @@ const TeacherPaymentList = () => {
 
         {data.length > 0 && (
           <CTable striped hover responsive bordered>
-            <CTableHead className="table-success">
+            <CTableHead style={{ backgroundColor: "#e8edfd" }}>
               <CTableRow>
                 <CTableHeaderCell>#</CTableHeaderCell>
                 <CTableHeaderCell>Họ tên</CTableHeaderCell>
@@ -113,10 +117,16 @@ const TeacherPaymentList = () => {
                   </CTableDataCell>
                   <CTableDataCell>
                     <CButton
-                      color="info"
                       size="sm"
+                      style={{
+                        backgroundColor: "#7494ec",
+                        borderColor: "#7494ec",
+                        color: "white",
+                      }}
                       onClick={() =>
-                        navigate(`/admin/teacher-main-payments/${t.teacherId}?month=${month}&year=${year}`)
+                        navigate(
+                          `/admin/teacher-main-payments/${t.teacherId}?month=${month}&year=${year}`
+                        )
                       }
                     >
                       Xem chi tiết
