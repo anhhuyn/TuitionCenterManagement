@@ -3,7 +3,7 @@ import subjectService from '../services/subjectService.js';
 const getSubjects = async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 15;
+    const limit = parseInt(req.query.limit) || 12;
     const status = req.query.status || null; // lấy filter status từ query
 
     const { subjects, total, countAll, countActive, countUpcoming, countEnded } =

@@ -1,3 +1,4 @@
+/* Overlay nền mờ */
 .create-schedule-overlay {
   position: fixed;
   top: 0;
@@ -11,62 +12,127 @@
   z-index: 2000;
 }
 
+/* Modal chính */
 .create-schedule-modal {
-  background: white !important;
-  padding: 20px !important;
-  border-radius: 10px !important;
-  width: 400px !important;
-  max-width: 90% !important;
-  z-index: 99999 !important;
-  position: fixed !important;
-  top: 50% !important;
-  left: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  display: block !important;
+  background: white;
+  border-radius: 12px;
+  width: 400px;
+  max-width: 90%;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99999;
 }
 
-.create-schedule-modal h2 {
-  margin-bottom: 15px;
-  font-size: 18px;
+/* Header */
+.create-schedule-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid #eee;
+  display: flex;           /* cho icon và tiêu đề nằm ngang */
+  align-items: center;     /* căn dọc giữa */
+  gap: 8px;                /* khoảng cách giữa icon và chữ */
+}
+.create-schedule-header h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+.create-schedule-header svg {
+  color: #7494ec;          /* màu icon tùy chọn */
 }
 
-.create-schedule-modal label {
+/* Body */
+.create-schedule-body {
+  padding: 4px 20px;
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px; /* khoảng cách giữa các label-input */
+}
+
+.create-schedule-body label {
   display: block;
-  margin-bottom: 10px;
+  font-size: 14px;
+  color: #333;
 }
 
-.create-schedule-modal input,
-.create-schedule-modal select {
+.create-schedule-body input,
+.create-schedule-body select {
   width: 100%;
-  padding: 6px;
+  padding: 6px 8px;
   margin-top: 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border 0.3s ease;
 }
 
-.create-schedule-actions {
+.create-schedule-body input:focus,
+.create-schedule-body select:focus {
+  border-color: #7494ec;
+  outline: none;
+}
+
+/* Footer */
+.create-schedule-footer {
+  padding: 16px 20px;
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  margin-top: 15px;
+  flex-shrink: 0;
 }
-
-.create-schedule-actions button {
-  padding: 6px 12px;
-  border: none;
-  border-radius: 4px;
+.create-schedule-footer button:first-child {
+  background: #e0e0e0;
+  color: #333;
+  border-radius: 6px;
+  padding: 4px 16px;
   cursor: pointer;
+  border: none;
 }
-
-.create-schedule-actions button:first-child {
+.create-schedule-footer button:last-child {
   background: #7494ec;
   color: white;
+  border-radius: 6px;
+  padding: 4px 16px;
+  cursor: pointer;
+  border: none;
 }
 
-.create-schedule-actions button:last-child {
-  background: #dc3545;
-  color: white;
+
+/* Scrollbar mềm mại cho Chrome, Edge, Safari */
+.create-schedule-body::-webkit-scrollbar {
+  width: 8px;
 }
 
-/* Dành riêng cho modal chi tiết sinh viên (nếu có dùng chung) */
+.create-schedule-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.create-schedule-body::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 8px;
+  border: 2px solid #f1f1f1;
+}
+
+.create-schedule-body::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
+}
+
+/* Firefox */
+.create-schedule-body {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Dành cho modal chi tiết sinh viên (nếu dùng chung) */
 .create-schedule-student-detail-modal {
   width: auto !important;
   max-width: 90vw !important;
@@ -75,4 +141,15 @@
 .create-schedule-student-detail-modal .create-schedule-modal-dialog {
   max-width: 1200px !important;
   width: 90vw !important;
+}
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+.error-text {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }

@@ -62,6 +62,6 @@ body.dark-mode .content {
 
 /* Light mode nếu cần */
 body.light-mode {
-  background-color: #fff;
+  background-color: #ffffff;
   color: #000;
 }

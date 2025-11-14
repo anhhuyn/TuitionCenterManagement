@@ -5,7 +5,8 @@ import {
     getScheduleBySubjectId,
     assignToStudentsApi
 } from "../../util/api";
-import "../../styles/classDetailViews/MaterialModal.css";
+import { FiUpload } from "react-icons/fi"; // icon upload
+import "../../styles/classDetailViews/AssignmentModal.css";
 
 export default function AssignmentModal({
     onClose,
@@ -23,42 +24,47 @@ export default function AssignmentModal({
     );
     const [file, setFile] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
     const [sessions, setSessions] = useState([]);
     const [selectedSessionId, setSelectedSessionId] = useState(initialData?.sessionId || "");
 
-    // 🔹 Lấy danh sách session theo subjectId
+    // Lỗi riêng lẻ cho từng field
+    const [errors, setErrors] = useState({
+        title: "",
+        dueDate: "",
+        session: "",
+    });
+
     useEffect(() => {
         const fetchSessions = async () => {
             try {
                 const res = await getScheduleBySubjectId(subjectId);
-                if (res?.sessions) {
-                    setSessions(res.sessions);
-                }
+                if (res?.sessions) setSessions(res.sessions);
             } catch (err) {
                 console.error("Lỗi khi lấy danh sách buổi học:", err);
             }
         };
-
         if (!editMode && subjectId) fetchSessions();
     }, [subjectId, editMode]);
 
-    // 🔹 Xử lý submit form
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // Reset errors
+        setErrors({ title: "", dueDate: "", session: "" });
+        let hasError = false;
 
         if (!title.trim()) {
-            setError("Vui lòng nhập tiêu đề bài tập.");
-            return;
+            setErrors((prev) => ({ ...prev, title: "Vui lòng nhập tiêu đề bài tập." }));
+            hasError = true;
         }
         if (!dueDate) {
-            setError("Vui lòng chọn hạn nộp bài.");
-            return;
+            setErrors((prev) => ({ ...prev, dueDate: "Vui lòng chọn hạn nộp bài." }));
+            hasError = true;
         }
         if (!selectedSessionId) {
-            setError("Vui lòng chọn buổi học.");
-            return;
+            setErrors((prev) => ({ ...prev, session: "Vui lòng chọn buổi học." }));
+            hasError = true;
         }
+        if (hasError) return;
 
         const formData = new FormData();
         formData.append("title", title);
@@ -79,65 +85,62 @@ export default function AssignmentModal({
             if (res) {
                 if (!editMode && res?.id) {
                     try {
-                        const assignRes = await assignToStudentsApi(res.id); 
-                        
-                    } catch (assignErr) {
-                        console.error("Lỗi khi gán assignment cho học sinh:", assignErr);
+                        await assignToStudentsApi(res.id);
+                    } catch (err) {
+                        console.error("Lỗi khi gán assignment:", err);
                     }
                 }
-                const refreshed = await onUploadSuccess();
+                await onUploadSuccess();
                 onClose();
             }
         } catch (err) {
             console.error("Lỗi khi lưu bài tập:", err);
-            setError(
-                err.response?.data?.message ||
-                err.message ||
-                "Có lỗi xảy ra, vui lòng thử lại."
-            );
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="modal-overlay">
-            <div className="modal-box">
-                <h3>{editMode ? "Cập nhật bài tập" : "Thêm bài tập mới"}</h3>
+        <div className="assignment-modal-overlay">
+            <div className="assignment-modal-box">
+                <h2>{editMode ? "Cập nhật bài tập" : "Thêm bài tập mới"}</h2>
 
-                <form onSubmit={handleSubmit} className="modal-form">
-                    <label>Tiêu đề:</label>
+                <form onSubmit={handleSubmit} className="assignment-modal-body">
+                    <label>
+                        Tiêu đề: <span className="required">*</span>
+                    </label>
                     <input
                         type="text"
-                        className="modal-input"
                         placeholder="Nhập tiêu đề bài tập"
                         value={title}
                         onChange={(e) => setTitle(e.target.value)}
                     />
+                    {errors.title && <p className="assignment-modal-error">{errors.title}</p>}
 
                     <label>Mô tả yêu cầu:</label>
                     <textarea
                         rows={4}
-                        className="modal-input"
                         placeholder="Nhập mô tả chi tiết cho bài tập"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
                     />
 
-                    <label>Hạn nộp:</label>
+                    <label>
+                        Hạn nộp: <span className="required">*</span>
+                    </label>
                     <input
                         type="datetime-local"
-                        className="modal-input"
                         value={dueDate}
                         onChange={(e) => setDueDate(e.target.value)}
                     />
+                    {errors.dueDate && <p className="assignment-modal-error">{errors.dueDate}</p>}
 
-                    {/* 🔹 Thêm dropdown chọn buổi học */}
                     {!editMode && (
                         <>
-                            <label>Buổi học:</label>
+                            <label>
+                                Buổi học: <span className="required">*</span>
+                            </label>
                             <select
-                                className="modal-input"
                                 value={selectedSessionId}
                                 onChange={(e) => setSelectedSessionId(e.target.value)}
                             >
@@ -148,23 +151,37 @@ export default function AssignmentModal({
                                     </option>
                                 ))}
                             </select>
+                            {errors.session && <p className="assignment-modal-error">{errors.session}</p>}
                         </>
                     )}
 
                     <label>{editMode ? "Chọn file mới (nếu muốn):" : "File đính kèm:"}</label>
-                    <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
-                        onChange={(e) => setFile(e.target.files[0])}
-                    />
+                    <div className="assignment-modal-file-container">
+                        <input
+                            type="file"
+                            accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
+                            className="assignment-modal-hidden-file-input"
+                            onChange={(e) => setFile(e.target.files[0])}
+                        />
+                        <label className="assignment-modal-file-label">
+                            <FiUpload style={{ marginRight: "6px" }} />
+                            {file ? file.name : "Chọn file..."}
+                        </label>
+                    </div>
 
-                    {error && <p className="error-msg">{error}</p>}
-
-                    <div className="modal-actions">
-                        <button type="button" className="cancel-btn" onClick={onClose}>
+                    <div className="assignment-modal-footer">
+                        <button
+                            type="button"
+                            className="assignment-modal-cancel-btn"
+                            onClick={onClose}
+                        >
                             Hủy
                         </button>
-                        <button type="submit" className="confirm-btn" disabled={loading}>
+                        <button
+                            type="submit"
+                            className="assignment-modal-confirm-btn"
+                            disabled={loading}
+                        >
                             {loading ? "Đang xử lý..." : editMode ? "Cập nhật" : "Tạo mới"}
                         </button>
                     </div>

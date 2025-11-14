@@ -22,7 +22,7 @@ export default function ClassList() {
 
     const navigate = useNavigate();
     const [page, setPage] = useState(1);
-    const [limit, setLimit] = useState(15);
+    const [limit, setLimit] = useState(12);
     const [total, setTotal] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
     const filterStatusMap = {
@@ -148,6 +148,11 @@ export default function ClassList() {
                                         : "https://llv.edu.vn/media/2018/11/BLOG-PHOTO-Back-to-School-stationery-v1-20170115-1.jpg"
                                 }
                                 alt={cls.name}
+                                onError={(e) => {
+                                    e.target.onerror = null; // tránh loop vô hạn nếu ảnh fallback cũng lỗi
+                                    e.target.src =
+                                        "https://llv.edu.vn/media/2018/11/BLOG-PHOTO-Back-to-School-stationery-v1-20170115-1.jpg";
+                                }}
                             />
                             <span
                                 className={`status-badge ${statusBadgeClass[cls.status] || ""}`}

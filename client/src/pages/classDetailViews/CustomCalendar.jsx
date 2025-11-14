@@ -10,6 +10,7 @@ import CreateScheduleModal from "./CreateScheduleModal.jsx";
 import CreateSessionModal from "./CreateSessionModal.jsx";
 import { fetchSessionById, getScheduleBySubjectId, deleteSessionApi } from "../../util/api";
 import ConfirmModal from "../../components/modal/ConfirmModal";
+import Swal from "sweetalert2";
 
 export default function CustomCalendar({ subjectId }) {
     const [events, setEvents] = useState([]);
@@ -206,10 +207,18 @@ export default function CustomCalendar({ subjectId }) {
                         const id = String(info.event.id);
                         setSelectedSessions(prev => prev.includes(id) ? prev.filter(sid => sid !== id) : [...prev, id]);
                     }}
+                    eventClassNames={(arg) => {
+                        const id = String(arg.event.id);
+                        const baseClasses = arg.event.classNames || [];
+                        // Nếu id nằm trong danh sách selectedSessions thì thêm class "selected"
+                        if (selectedSessions.includes(id)) {
+                            return [...baseClasses, "selected"];
+                        }
+                        return baseClasses;
+                    }}
                     eventContent={(arg) => {
                         const [timeRange, roomRaw] = arg.event.title.split(" (");
                         const roomName = roomRaw?.replace(")", "");
-                        const isSelected = selectedSessions.includes(String(arg.event.id));
 
                         return (
                             <div
@@ -217,16 +226,21 @@ export default function CustomCalendar({ subjectId }) {
                                     lineHeight: "1.2",
                                     textAlign: "center",
                                     position: "relative",
-                                    border: isSelected ? "2px solid #007bff" : "none",
                                     borderRadius: "4px",
-                                    background: isSelected ? "rgba(0,123,255,0.06)" : "transparent",
                                 }}
                             >
                                 <div style={{ fontWeight: "600" }}>{timeRange}</div>
                                 <div style={{ fontSize: "0.8em", color: "#888" }}>Phòng: {roomName}</div>
 
                                 {isEditMode && (
-                                    <div style={{ marginTop: "4px", display: "flex", justifyContent: "center", gap: "6px" }}>
+                                    <div
+                                        style={{
+                                            marginTop: "4px",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            gap: "6px",
+                                        }}
+                                    >
                                         <button
                                             style={{
                                                 background: "#f6c23e",
@@ -236,7 +250,7 @@ export default function CustomCalendar({ subjectId }) {
                                                 cursor: "pointer",
                                             }}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // IMPORTANT: không trigger eventClick
+                                                e.stopPropagation();
                                                 handleEditSession(String(arg.event.id));
                                             }}
                                         >
@@ -251,7 +265,7 @@ export default function CustomCalendar({ subjectId }) {
                                                 cursor: "pointer",
                                             }}
                                             onClick={(e) => {
-                                                e.stopPropagation(); // IMPORTANT: không trigger eventClick
+                                                e.stopPropagation();
                                                 handleDeleteSessionClick(String(arg.event.id));
                                             }}
                                         >

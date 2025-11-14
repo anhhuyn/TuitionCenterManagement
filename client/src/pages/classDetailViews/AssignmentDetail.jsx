@@ -86,13 +86,39 @@ export default function AssignmentDetail() {
           })
         )
       );
-      setOriginalStudents(JSON.parse(JSON.stringify(students))); 
+      setOriginalStudents(JSON.parse(JSON.stringify(students)));
       setIsEditing(false);
     } catch (error) {
       console.error("Lỗi khi cập nhật:", error);
       alert("Cập nhật thất bại!");
     }
   };
+
+  // 🔹 Hàm tách tên
+  const splitNameParts = (fullName) => {
+    const parts = fullName?.trim().split(" ") || [];
+    return {
+      name: parts[parts.length - 1] || "", // Tên cuối
+      middle: parts.slice(1, parts.length - 1).join(" "), // Tên đệm
+      last: parts[0] || "", // Họ
+    };
+  };
+
+  // 🔹 Danh sách filteredStudents có sắp xếp
+  const sortedFilteredStudents = useMemo(() => {
+    return filteredStudents.slice().sort((a, b) => {
+      const A = splitNameParts(a.Student?.userInfo?.fullName);
+      const B = splitNameParts(b.Student?.userInfo?.fullName);
+
+      let cmp = A.name.localeCompare(B.name, "vi", { sensitivity: "base" });
+      if (cmp !== 0) return cmp;
+
+      cmp = A.middle.localeCompare(B.middle, "vi", { sensitivity: "base" });
+      if (cmp !== 0) return cmp;
+
+      return A.last.localeCompare(B.last, "vi", { sensitivity: "base" });
+    });
+  }, [filteredStudents]);
 
   if (loading) return <p className="loading-text">Đang tải dữ liệu...</p>;
 
@@ -147,7 +173,7 @@ export default function AssignmentDetail() {
         <p className="empty-text">Không có học sinh trong danh sách này.</p>
       ) : (
         <div className="student-list">
-          {filteredStudents.map((s, index) => (
+          {sortedFilteredStudents.map((s, index) => (
             <div key={s.id} className="student-row">
               <div className="student-info">
                 <div className="avatar">
@@ -181,8 +207,8 @@ export default function AssignmentDetail() {
                     {s.submittedStatus === "submitted"
                       ? "Hoàn thành"
                       : s.submittedStatus === "incomplete"
-                      ? "Chưa hoàn thành"
-                      : "Chưa làm"}
+                        ? "Chưa hoàn thành"
+                        : "Chưa làm"}
                   </span>
                 )}
               </div>

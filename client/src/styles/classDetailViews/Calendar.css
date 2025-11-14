@@ -262,3 +262,21 @@
   color: #fff !important;
 }
 
+/* Khi event được chọn, hiển thị giống hover */
+.event-scheduled.selected {
+  background-color: #ff7a00 !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.event-completed.selected {
+  background-color: #7494ec !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}
+
+.event-canceled.selected {
+  background-color: #f6c23e !important;
+  color: #fff !important;
+  transform: scale(1.05);
+}

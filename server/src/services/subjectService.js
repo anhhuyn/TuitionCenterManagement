@@ -1,7 +1,7 @@
 import db from '../models/index.js';
 const { Subject, TeacherSubject, Teacher, User } = db;
 
-const getAllSubjects = async (page = 1, limit = 15, status = null) => {
+const getAllSubjects = async (page = 1, limit = 12, status = null) => {
   try {
     const offset = (page - 1) * limit;
 

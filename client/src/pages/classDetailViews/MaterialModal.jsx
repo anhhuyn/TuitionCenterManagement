@@ -1,16 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { createMaterialApi, updateMaterialApi, getAuthMe } from "../../util/api";
 import "../../styles/classDetailViews/MaterialModal.css";
+import { FiUpload } from "react-icons/fi";
 
 export default function MaterialModal({
   onClose,
   onUploadSuccess,
   subjectId,
   editMode = false,
-  initialData = null, // nếu có sẽ dùng để update
+  initialData = null,
 }) {
   const [title, setTitle] = useState(initialData?.title || "");
-  const [file, setFile] = useState(null); // có thể update hoặc giữ nguyên
+  const [file, setFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [userId, setUserId] = useState(null);
@@ -33,7 +34,6 @@ export default function MaterialModal({
       setError("Vui lòng nhập tiêu đề.");
       return;
     }
-
     if (!userId) {
       setError("Không xác định được người dùng.");
       return;
@@ -46,14 +46,12 @@ export default function MaterialModal({
       if (file) formData.append("file", file);
 
       if (editMode) {
-        // 👇 gọi API cập nhật
         const res = await updateMaterialApi(initialData.id, formData);
         if (res?.data) {
           onUploadSuccess();
           onClose();
         }
       } else {
-        // 👇 gọi API tạo mới
         formData.append("subjectId", subjectId);
         formData.append("userId", userId);
         const res = await createMaterialApi(formData);
@@ -63,19 +61,31 @@ export default function MaterialModal({
         }
       }
     } catch (err) {
-      // Xử lý lỗi từ backend (file quá lớn hoặc lỗi khác)
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else if (err.message) {
-        setError(err.message); // ví dụ lỗi network, axios
+        setError(err.message);
       } else {
         setError("Đã xảy ra lỗi không xác định.");
       }
-    }
-    finally {
+    } finally {
       setLoading(false);
     }
   };
+
+  const handleFileChange = (e) => {
+  const selectedFile = e.target.files[0];
+  if (selectedFile) {
+    if (selectedFile.size > 10 * 1024 * 1024) { // 10MB
+      setError("File quá lớn. Vui lòng chọn file dưới 10MB.");
+      setFile(null);
+    } else {
+      setError("");
+      setFile(selectedFile);
+    }
+  }
+};
+
 
   return (
     <div className="modal-overlay">
@@ -83,7 +93,9 @@ export default function MaterialModal({
         <h3>{editMode ? "Cập nhật tài liệu" : "Thêm tài liệu mới"}</h3>
 
         <form onSubmit={handleSubmit} className="modal-form">
-          <label>Tiêu đề:</label>
+          <label>
+            Tiêu đề: <span className="required">*</span>
+          </label>
           <input
             type="text"
             value={title}
@@ -92,12 +104,21 @@ export default function MaterialModal({
             className="modal-input"
           />
 
-          <label>{editMode ? "Chọn file mới (nếu muốn):" : "Chọn file:"}</label>
-          <input
-            type="file"
-            onChange={(e) => setFile(e.target.files[0])}
-            accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
-          />
+          <label>
+            {editMode ? "Chọn file mới (nếu muốn):" : "Chọn file:"} <span className="required">*</span>
+          </label>
+          <div className="file-upload-container">
+            <input
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.zip"
+              className="hidden-file-input"
+            />
+            <label className="file-upload-label">
+              <FiUpload style={{ marginRight: "6px" }} />
+              {file ? file.name : "Chọn file..."}
+            </label>
+          </div>
 
           {error && <p className="error-msg">{error}</p>}
 
@@ -106,11 +127,7 @@ export default function MaterialModal({
               Hủy
             </button>
             <button type="submit" className="confirm-btn" disabled={loading}>
-              {loading
-                ? "Đang xử lý..."
-                : editMode
-                  ? "Cập nhật"
-                  : "Tải lên"}
+              {loading ? "Đang xử lý..." : editMode ? "Cập nhật" : "Tải lên"}
             </button>
           </div>
         </form>

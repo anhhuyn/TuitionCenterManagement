@@ -1,0 +1,178 @@
+/* ================= Overlay ================= */
+.assignment-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* ================= Modal box ================= */
+.assignment-modal-box {
+  background: #fff;
+  width: 400px;
+  max-height: 90vh;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+/* Header */
+.assignment-modal-box h2 {
+  margin: 0;
+  padding: 15px 20px;
+  font-size: 16px;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+}
+
+/* Body scrollable */
+.assignment-modal-body {
+  padding: 12px 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* Labels */
+.assignment-modal-body label {
+  display: block;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.required {
+  color: red;
+  font-weight: bold;
+}
+
+/* Inputs, select, textarea */
+.assignment-modal-body input,
+.assignment-modal-body select,
+.assignment-modal-body textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.assignment-modal-body input:focus,
+.assignment-modal-body select:focus,
+.assignment-modal-body textarea:focus {
+  border-color: #7494ec;
+  outline: none;
+}
+
+/* Error text */
+.assignment-modal-error {
+  color: red;
+  font-size: 13px;
+  margin-top: 4px;
+}
+
+/* File upload */
+.assignment-modal-hidden-file-input {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.assignment-modal-file-container {
+  position: relative;
+  margin-bottom: 0px;
+}
+
+.assignment-modal-file-label {
+  display: flex;
+  align-items: center;
+  padding: 7px 10px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.3s, border-color 0.3s;
+}
+
+.assignment-modal-file-label:hover {
+  background-color: #f1f1f1;
+  border-color: #7494ec;
+}
+
+/* Footer */
+.assignment-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 0px;
+  flex-shrink: 0;
+}
+
+/* Buttons */
+.assignment-modal-cancel-btn,
+.assignment-modal-confirm-btn {
+  padding: 5px 15px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s ease;
+}
+
+.assignment-modal-cancel-btn {
+  background: #e0e0e0;
+  color: #333;
+}
+
+.assignment-modal-cancel-btn:hover {
+  background: #d5d5d5;
+}
+
+.assignment-modal-confirm-btn {
+  background: #7494ec;
+  color: #fff;
+  margin-left: 10px;
+}
+
+.assignment-modal-confirm-btn:hover {
+  background: #5e7ddc;
+}
+
+/* Scrollbar mềm mại */
+.assignment-modal-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.assignment-modal-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 8px;
+}
+
+.assignment-modal-body::-webkit-scrollbar-thumb {
+  background-color: #c1c1c1;
+  border-radius: 8px;
+  border: 2px solid #f1f1f1;
+}
+
+.assignment-modal-body::-webkit-scrollbar-thumb:hover {
+  background-color: #a8a8a8;
+}
+
+/* Firefox scrollbar */
+.assignment-modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: #c1c1c1 #f1f1f1;
+}

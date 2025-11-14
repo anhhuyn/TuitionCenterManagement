@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/CreateScheduleModal.css";
-
+import { FiCalendar } from "react-icons/fi"; 
 export default function CreateScheduleModal({ subjectId, onClose, onSuccess }) {
   const [formData, setFormData] = useState({
     dayOfWeek: 1,
@@ -14,7 +14,9 @@ export default function CreateScheduleModal({ subjectId, onClose, onSuccess }) {
   const [rooms, setRooms] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Lấy danh sách phòng học
+  // State để lưu lỗi từng field
+  const [errors, setErrors] = useState({});
+
   useEffect(() => {
     const fetchRooms = async () => {
       try {
@@ -32,34 +34,26 @@ export default function CreateScheduleModal({ subjectId, onClose, onSuccess }) {
     fetchRooms();
   }, []);
 
-  // Xử lý khi bấm "Tạo"
   const handleCreateSchedule = async () => {
     const { startDate, endDate, startTime, endTime } = formData;
+    let newErrors = {};
 
-    // --- Kiểm tra hợp lệ ---
-    if (!startDate) {
-      alert("Vui lòng chọn ngày bắt đầu!");
-      return;
+    // Kiểm tra các field bắt buộc
+    if (!startDate) newErrors.startDate = "Vui lòng chọn ngày bắt đầu!";
+    if (!endDate) newErrors.endDate = "Vui lòng chọn ngày kết thúc!";
+    if (endTime <= startTime) newErrors.endTime = "Giờ kết thúc phải sau giờ bắt đầu!";
+
+    // Kiểm tra ngày kết thúc >= ngày bắt đầu
+    if (startDate && endDate) {
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+      if (end < start) newErrors.endDate = "Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!";
     }
 
-    const now = new Date();
-    const start = new Date(startDate);
-    const end = endDate ? new Date(endDate) : start;
+    setErrors(newErrors);
 
-    if (end < start) {
-      alert("Ngày kết thúc phải sau hoặc bằng ngày bắt đầu!");
-      return;
-    }
-
-    if (start < new Date(now.getFullYear(), now.getMonth(), now.getDate())) {
-      alert("Không thể tạo lịch học bắt đầu trong quá khứ!");
-      return;
-    }
-
-    if (endTime <= startTime) {
-      alert("Giờ kết thúc phải sau giờ bắt đầu!");
-      return;
-    }
+    // Nếu có lỗi, dừng submit
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
@@ -71,22 +65,11 @@ export default function CreateScheduleModal({ subjectId, onClose, onSuccess }) {
       const data = await res.json();
 
       if (res.ok) {
-        onSuccess(); // reload calendar
+        onSuccess();
         onClose();
       } else {
         const msg = data?.error || data?.message || "Có lỗi xảy ra khi tạo lịch học!";
-        console.log("Server error:", data.error);
-        if (msg.includes("trùng") && msg.includes("phòng")) {
-          alert("Giờ học bị trùng với buổi khác trong cùng phòng!");
-        } else if (msg.includes("trùng") && msg.includes("lớp")) {
-          alert("Giờ học bị trùng với buổi khác của cùng lớp!");
-        } else if (msg.includes("Giờ kết thúc")) {
-          alert("Giờ kết thúc phải sau giờ bắt đầu!");
-        } else if (msg.includes("quá khứ") || msg.includes("đã trôi qua")) {
-          alert("Không thể tạo lịch học bắt đầu trong quá khứ!");
-        } else {
-          alert(msg);
-        }
+        alert(msg);
       }
     } catch (error) {
       console.error("Lỗi tạo lịch học:", error);
@@ -99,80 +82,91 @@ export default function CreateScheduleModal({ subjectId, onClose, onSuccess }) {
   return (
     <div className="create-schedule-overlay">
       <div className="create-schedule-modal">
-        <h2>Tạo lịch học mới</h2>
+        {/* Header */}
+        <div className="create-schedule-header">
+          <FiCalendar size={20} /> {/* icon lịch */}
+          <h2>Tạo lịch học mới</h2>
+        </div>
 
-        <label>
-          Ngày bắt đầu:
-          <input
-            type="date"
-            value={formData.startDate}
-            onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
-          />
-        </label>
+        {/* Body */}
+        <div className="create-schedule-body">
+          <label>
+            Ngày bắt đầu: <span className="required">*</span>
+            <input
+              type="date"
+              value={formData.startDate}
+              onChange={(e) => setFormData({ ...formData, startDate: e.target.value })}
+            />
+            {errors.startDate && <div className="error-text">{errors.startDate}</div>}
+          </label>
 
-        <label>
-          Ngày kết thúc:
-          <input
-            type="date"
-            value={formData.endDate}
-            onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
-          />
-        </label>
+          <label>
+            Ngày kết thúc: <span className="required">*</span>
+            <input
+              type="date"
+              value={formData.endDate}
+              onChange={(e) => setFormData({ ...formData, endDate: e.target.value })}
+            />
+            {errors.endDate && <div className="error-text">{errors.endDate}</div>}
+          </label>
 
-        <label>
-          Thứ trong tuần:
-          <select
-            value={formData.dayOfWeek}
-            onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
-          >
-            <option value={0}>Chủ nhật</option>
-            <option value={1}>Thứ 2</option>
-            <option value={2}>Thứ 3</option>
-            <option value={3}>Thứ 4</option>
-            <option value={4}>Thứ 5</option>
-            <option value={5}>Thứ 6</option>
-            <option value={6}>Thứ 7</option>
-          </select>
-        </label>
+          <label>
+            Thứ trong tuần: <span className="required">*</span>
+            <select
+              value={formData.dayOfWeek}
+              onChange={(e) => setFormData({ ...formData, dayOfWeek: parseInt(e.target.value) })}
+            >
+              <option value={0}>Chủ nhật</option>
+              <option value={1}>Thứ 2</option>
+              <option value={2}>Thứ 3</option>
+              <option value={3}>Thứ 4</option>
+              <option value={4}>Thứ 5</option>
+              <option value={5}>Thứ 6</option>
+              <option value={6}>Thứ 7</option>
+            </select>
+          </label>
 
-        <label>
-          Giờ bắt đầu:
-          <input
-            type="time"
-            value={formData.startTime}
-            onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-          />
-        </label>
+          <label>
+            Giờ bắt đầu: <span className="required">*</span>
+            <input
+              type="time"
+              value={formData.startTime}
+              onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
+            />
+          </label>
 
-        <label>
-          Giờ kết thúc:
-          <input
-            type="time"
-            value={formData.endTime}
-            onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-          />
-        </label>
+          <label>
+            Giờ kết thúc: <span className="required">*</span>
+            <input
+              type="time"
+              value={formData.endTime}
+              onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
+            />
+            {errors.endTime && <div className="error-text">{errors.endTime}</div>}
+          </label>
 
-        <label>
-          Phòng học:
-          <select
-            value={formData.roomId}
-            onChange={(e) => setFormData({ ...formData, roomId: parseInt(e.target.value) })}
-          >
-            <option value="">-- Chọn phòng --</option>
-            {rooms.map((room) => (
-              <option key={room.id} value={room.id}>
-                {room.name} (Sức chứa: {room.seatCapacity})
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Phòng học:
+            <select
+              value={formData.roomId}
+              onChange={(e) => setFormData({ ...formData, roomId: parseInt(e.target.value) })}
+            >
+              <option value="">-- Chọn phòng --</option>
+              {rooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name} (Sức chứa: {room.seatCapacity})
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
 
-        <div className="create-schedule-actions">
+        {/* Footer */}
+        <div className="create-schedule-footer">
+          <button onClick={onClose}>Hủy</button>
           <button onClick={handleCreateSchedule} disabled={loading}>
             {loading ? "Đang tạo..." : "Tạo"}
           </button>
-          <button onClick={onClose}>Hủy</button>
         </div>
       </div>
     </div>

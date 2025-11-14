@@ -81,7 +81,6 @@
 
 .assignment-item {
   position: relative;
-  border-radius: 10px;
   padding: 20px;
   margin-bottom: 25px;
   border-bottom: 1px solid #e0e0e0; /* 🔹 Đường phân cách giữa các bài */
@@ -252,4 +251,12 @@
 .assignment-info-row span {
   display: inline-block;
   min-width: 260px; /* Cố định độ rộng cho các nhãn để canh thẳng */
+}
+.clickable-title {
+  cursor: pointer;
+}
+
+.clickable-title:hover {
+  text-decoration: underline;
+  opacity: 0.85;
 }

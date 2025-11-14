@@ -12,11 +12,11 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useColorModes } from "@coreui/react";
 
-// 🧩 Layout & Components
+// Layout & Components
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-// 🧩 Pages
+// Pages
 import Login from "./pages/login.jsx";
 import HomePage from "./pages/homePage.jsx";
 import ForgotPasswordPage from "./pages/forgotPasswordPage";

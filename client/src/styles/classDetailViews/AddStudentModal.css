@@ -53,15 +53,18 @@
   gap: 10px;
 }
 
-/* Nút hủy */
-.btn-cancel {
-  background-color: #dc3545;
-  color: white;
+.modal-btn-cancel {
+  background-color: #e5e5e5; /* xám nhạt */
+  color: #333; /* chữ đen */
   border: none;
   padding: 6px 14px;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
+}
+
+.modal-btn-cancel:hover {
+  background-color: #d4d4d4; /* xám đậm hơn khi hover */
 }
 
 /* Nút lưu */
@@ -81,4 +84,7 @@
 
 .btn-save:hover {
   background-color: #5f7de0;
+}
+.row-line label span.required {
+  color: red;
 }

@@ -1,152 +1,67 @@
-/*
- * HomePage.css - Styling cho component HomePage
- * Tối ưu hóa giao diện người dùng cho một nền tảng E-learning/Quản lý
- */
-
-/* === General Reset & Body Styles === */
-/* Đảm bảo font chữ và box-sizing nhất quán */
-body {
-    background-color: #f8f9fa; /* Màu nền nhẹ cho toàn bộ trang */
+/* === Home Content === */
+.home-content {
+  padding: 0 40px 40px 40px;
+  text-align: center;
 }
 
-/* Loại bỏ padding và margin mặc định của CoreUI layout nếu cần (Thường do Layout component xử lý) */
-/* .layout-content-wrapper {
-    padding: 0;
-} */
-
-/* === Hero Section Styles (Áp dụng cho div chứa Hero) === */
-.homepage-hero-section {
-    padding: 80px 40px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    background: linear-gradient(120deg, #f6f9ff, #e9f3ff);
-    border-radius: 20px;
-    margin-bottom: 60px;
-    box-shadow: 0 10px 30px rgba(0, 50, 100, 0.08); /* Đổ bóng nhẹ */
+.home-greeting {
+  font-family: "Pacifico", cursive; /* hoặc 'Poppins', sans-serif , Pacifico*/
+  font-size: 1.2rem;
+  color: #ff7b54; 
+  margin-bottom: 25px;
+  letter-spacing: 1px;
+  transition: transform 0.3s ease;
+  text-align: right;
 }
 
-@media (max-width: 992px) {
-    .homepage-hero-section {
-        flex-direction: column;
-        text-align: center;
-        padding: 50px 20px;
-    }
-    .homepage-hero-section > div {
-        max-width: 100% !important; /* Đảm bảo nội dung chiếm hết chiều rộng */
-    }
-    .homepage-hero-section img {
-        margin-top: 40px !important;
-        width: 100% !important;
-        max-width: 400px !important;
-    }
-    .homepage-hero-section h1 {
-        font-size: 2.5rem !important;
-    }
-    .homepage-hero-section p {
-        margin-bottom: 20px !important;
-    }
+.home-greeting:hover {
+  transform: scale(1.05);
+  color: #ff9966;
 }
 
-/* Hiệu ứng cho nút Bắt đầu học ngay */
-.c-button.btn-primary:hover {
-    background-color: #0056b3;
-    transform: translateY(-2px); /* Nhấc nhẹ lên */
-    box-shadow: 0 4px 10px rgba(0, 123, 255, 0.4);
-}
-.c-button.btn-primary {
-    transition: all 0.3s ease;
+.home-content h6 {
+  text-align: left;
 }
 
-
-/* === Cards Section Styles === */
-
-/* Custom class cho thẻ CCard quản lý */
-.admin-card-container {
-    padding: 40px 0; /* Đảm bảo khoảng cách với các phần khác */
+.home-content p {
+  margin-bottom: 30px;
+  color: #555;
+  text-align: left;
 }
 
-/* Hiệu ứng hover cho thẻ quản lý */
-.shadow-sm.hover-shadow-lg {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Shadow mặc định nhẹ */
+/* === Cards === */
+.home-card {
+  text-align: center;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.shadow-sm.hover-shadow-lg:hover {
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important; /* Shadow lớn hơn khi hover */
-    /* Hiệu ứng transform đã được định nghĩa inline trong component, nhưng CSS này có thể ghi đè nếu muốn:
-    transform: translateY(-5px); 
-    */
-    /* transition: all 0.3s ease; */ /* Đảm bảo transition được áp dụng */
+.home-card:hover {
+  transform: scale(1.03);
 }
 
-/* Custom styles cho các icon/nút */
-.admin-card-icon-wrapper {
-    margin-bottom: 15px;
+.card-icon {
+  margin-bottom: 15px;
 }
 
-.admin-card-title {
-    font-weight: bold;
-    font-size: 1.1rem;
+.home-card .btn {
+  margin-top: 15px;
 }
 
-.admin-card-button {
-    margin-top: 15px;
-    transition: all 0.3s ease;
+/* === Footer === */
+.home-footer {
+  text-align: center;
+  padding: 20px 20px;
+  border-radius: 20px;
+  background: #f1f5ff;
 }
 
-.admin-card-button:hover {
-    background-color: #f0f8ff; /* Màu nền nhẹ khi hover nút */
-    transform: translateY(-1px);
+.home-footer h4 {
+  font-weight: 700;
+  margin-bottom: 15px;
 }
 
-/* === Services Section Styles === */
-.services-section-title h6 {
-    text-transform: uppercase;
-    margin-bottom: 8px;
+.home-footer p {
+  color: #555;
 }
-.services-section-title h2 {
-    margin-bottom: 40px;
-}
-
-/* Hiệu ứng hover cho thẻ dịch vụ */
-.services-section .CCard {
-    border: none;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-}
-
-.services-section .CCard:hover {
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    /* transform: translateY(-5px); (Đã dùng inline) */
-}
-
-/* === Testimonials Section Styles === */
-.testimonials-section {
-    text-align: center;
-    padding: 0 20px;
-}
-
-.testimonial-box {
-    background: #f8f9fa;
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.05); /* Box shadow phía trong */
-    border: 1px solid #eee;
-}
-
-.testimonial-box p:first-child {
-    font-size: 1.1rem;
-}
-
-/* === Footer Styles === */
-.homepage-footer {
-    padding: 40px 20px;
-    background: #f1f5ff;
-    border-radius: 20px;
-    margin-top: 60px; /* Thêm khoảng cách nếu cần */
-}
-
-.homepage-footer h4 {
-    color: #1a1a1a;
-}
-

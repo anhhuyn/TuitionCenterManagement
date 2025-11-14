@@ -78,7 +78,7 @@ const updateImageApi = (file) => {
     },
   });
 };
-const getSubjectsApi = async ({ page = 1, limit = 15, status = null } = {}) => {
+const getSubjectsApi = async ({ page = 1, limit = 12, status = null } = {}) => {
   const params = { page, limit };
   if (status) params.status = status;
   const res = await axios.get("/v1/api/subjects", { params });

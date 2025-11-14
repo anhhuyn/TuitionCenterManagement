@@ -1,5 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { getMaterialsBySubjectIdApi, deleteMaterialApi, getAuthMe } from "../../util/api";
+import React, { useEffect, useState, useRef } from "react"; // <-- Import useRef
+import {
+  getMaterialsBySubjectIdApi,
+  deleteMaterialApi,
+  getAuthMe,
+} from "../../util/api";
 import "../../styles/classDetailViews/MaterialList.css";
 import { FiMoreVertical, FiDownload, FiFileText, FiFilter } from "react-icons/fi";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
@@ -12,13 +16,15 @@ export default function MaterialList({ classData }) {
   const [filter, setFilter] = useState("Mới nhất");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(null); // <--- state quản lý menu hiện tại
-  const [editMaterial, setEditMaterial] = useState(null); // lưu dữ liệu cần cập nhật
+  const [activeMenu, setActiveMenu] = useState(null);
+  const [editMaterial, setEditMaterial] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
-   // State quản lý modal xác nhận xóa
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [materialToDelete, setMaterialToDelete] = useState(null);
-  
+
+  // <-- Tạo một ref cho mỗi item trong danh sách, hoặc dùng chung một ref cho container
+  const menuRefs = useRef([]); // Dùng array ref để lưu trữ ref của mỗi item
+
   // Lấy user hiện tại
   useEffect(() => {
     const fetchCurrentUser = async () => {
@@ -31,7 +37,6 @@ export default function MaterialList({ classData }) {
     };
     fetchCurrentUser();
   }, []);
-
 
   const fetchMaterials = async () => {
     try {
@@ -48,6 +53,46 @@ export default function MaterialList({ classData }) {
     if (classData?.id) fetchMaterials();
   }, [classData]);
 
+  // <-- Thêm useEffect để xử lý click ngoài
+  useEffect(() => {
+    /**
+     * Đóng menu nếu click bên ngoài menu hoặc nút mở menu
+     * Chúng ta sẽ gắn ref vào phần tử cha bao gồm cả nút và menu
+     * và kiểm tra xem target của click có nằm trong ref đó không.
+     */
+    const handleClickOutside = (event) => {
+      // Lặp qua tất cả các ref (của các material-entry)
+      let clickedOutside = true;
+
+      // Kiểm tra xem event.target có phải là một phần của bất kỳ item menu nào đang mở không
+      // Ở đây chúng ta gắn ref vào `material-entry` hoặc `more-wrapper`
+      // Nên ta sẽ kiểm tra xem cú click có nằm trong bất kỳ `more-wrapper` nào không.
+
+      // Cách tốt nhất là gắn ref vào `more-wrapper` (cha của nút và menu)
+      const moreWrappers = document.querySelectorAll(".more-wrapper");
+
+      let isInsideAnyMenu = false;
+      moreWrappers.forEach((wrapper) => {
+        if (wrapper.contains(event.target)) {
+          isInsideAnyMenu = true;
+        }
+      });
+
+      // Nếu click không nằm trong bất kỳ menu nào, ta đóng menu hiện tại
+      if (!isInsideAnyMenu && activeMenu !== null) {
+        setActiveMenu(null);
+      }
+    };
+
+    // Lắng nghe sự kiện click trên document
+    document.addEventListener("mousedown", handleClickOutside);
+
+    // Dọn dẹp listener khi component unmount
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [activeMenu]); // Chạy lại khi activeMenu thay đổi
+
   if (loading) return <p className="loading">Đang tải danh sách tài liệu...</p>;
 
   let filteredMaterials = materials.filter((mat) =>
@@ -55,49 +100,29 @@ export default function MaterialList({ classData }) {
   );
 
   if (filter === "Mới nhất") {
-    filteredMaterials.sort((a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt));
+    filteredMaterials.sort(
+      (a, b) => new Date(b.uploadedAt) - new Date(a.uploadedAt)
+    );
   } else {
-    filteredMaterials.sort((a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt));
+    filteredMaterials.sort(
+      (a, b) => new Date(a.uploadedAt) - new Date(b.uploadedAt)
+    );
   }
 
   const handleMenuToggle = (id) => {
-    setActiveMenu(activeMenu === id ? null : id); // click lần nữa sẽ tắt menu
+    setActiveMenu(activeMenu === id ? null : id);
   };
 
   const handleUpdate = (material) => {
+    setActiveMenu(null); // Đóng menu khi mở modal cập nhật
     setEditMaterial(material);
     setShowModal(true);
   };
 
-  const handleDelete = async (material) => {
-    setActiveMenu(null);
+  // Hàm cũ dùng window.confirm, giữ lại để tham khảo
+  // const handleDelete = async (material) => { ... }
 
-    if (!currentUser) {
-      alert("Bạn cần đăng nhập để thực hiện thao tác này.");
-      return;
-    }
-
-    if (currentUser.id !== material.User?.id) {
-      alert("Bạn chỉ có thể xóa tài liệu do chính mình tải lên.");
-      return;
-    }
-
-    // Confirm trước khi xóa
-    if (!window.confirm(`Bạn có chắc muốn xóa tài liệu "${material.title}" không?`)) {
-      return;
-    }
-
-    try {
-      // Gọi API xóa (đã viết trong service)
-      await deleteMaterialApi(material.id);
-      fetchMaterials(); // tải lại danh sách
-    } catch (error) {
-      console.error("Lỗi khi xóa tài liệu:", error);
-      alert("Xóa tài liệu thất bại, vui lòng thử lại.");
-    }
-  };
-
-   const handleDeleteClick = (material) => {
+  const handleDeleteClick = (material) => {
     setActiveMenu(null);
 
     if (!currentUser) {
@@ -114,7 +139,6 @@ export default function MaterialList({ classData }) {
     setShowConfirmModal(true);
   };
 
-  // Khi xác nhận xóa trong modal
   const confirmDelete = async () => {
     if (!materialToDelete) return;
     try {
@@ -129,7 +153,6 @@ export default function MaterialList({ classData }) {
     }
   };
 
-  // Khi hủy xóa
   const cancelDelete = () => {
     setShowConfirmModal(false);
     setMaterialToDelete(null);
@@ -173,16 +196,23 @@ export default function MaterialList({ classData }) {
       ) : (
         <div className="material-list">
           {filteredMaterials.map((mat) => (
+            // Gắn ref vào đây nếu muốn check click ngoài từng item
+            // Nhưng cách trên dùng querySelectorAll cho className là đơn giản hơn.
             <div key={mat.id} className="material-entry">
-              <div className="material-icon"><FiFileText /></div>
+              <div className="material-icon">
+                <FiFileText />
+              </div>
               <div className="material-desc">
                 <div className="material-title-row">
                   <label>{mat.title}</label>
                   <span className="file-type">{mat.type}</span>
                 </div>
                 <span>
-                  Uploaded {new Date(mat.uploadedAt).toLocaleString("vi-VN")} by{" "}
-                  <span className="uploader">{mat.User?.fullName || "Không rõ"}</span>
+                  Uploaded{" "}
+                  {new Date(mat.uploadedAt).toLocaleString("vi-VN")} by{" "}
+                  <span className="uploader">
+                    {mat.User?.fullName || "Không rõ"}
+                  </span>
                 </span>
               </div>
               <div className="material-actions">
@@ -196,6 +226,7 @@ export default function MaterialList({ classData }) {
                 >
                   <FiDownload />
                 </a>
+                {/* Đảm bảo element có className="more-wrapper" */}
                 <div className="more-wrapper">
                   <button
                     className="icon-btn more"

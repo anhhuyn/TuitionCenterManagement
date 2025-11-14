@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/CreateScheduleModal.css";
+import { FiCalendar } from "react-icons/fi"; 
 import {
   getRoomsApi,
   createSessionApi,
@@ -20,6 +21,9 @@ export default function CreateSessionModal({
     roomId: "",
     status: "scheduled",
   });
+
+  // Track lỗi từng field
+  const [errors, setErrors] = useState({});
 
   const [rooms, setRooms] = useState([]);
 
@@ -44,53 +48,30 @@ export default function CreateSessionModal({
         roomId: initialData.roomId || "",
         status: initialData.status || "scheduled",
       });
-    } else {
-      setFormData({
-        sessionDate: "",
-        startTime: "08:00",
-        endTime: "10:00",
-        roomId: "",
-        status: "scheduled",
-      });
     }
   }, [initialData]);
 
   const handleSubmit = async () => {
-    const { sessionDate, startTime, endTime, roomId, status } = formData;
+    const { sessionDate, startTime, endTime } = formData;
 
-    if (!sessionDate) {
-      alert("Vui lòng chọn ngày học!");
-      return;
-    }
+    let newErrors = {};
 
-    const now = new Date();
+    // Kiểm tra các trường bắt buộc
+    if (!sessionDate) newErrors.sessionDate = "Vui lòng chọn ngày học!";
+    if (!startTime) newErrors.startTime = "Vui lòng chọn giờ bắt đầu!";
+    if (!endTime) newErrors.endTime = "Vui lòng chọn giờ kết thúc!";
+
     const sessionStart = new Date(`${sessionDate}T${startTime}`);
     const sessionEnd = new Date(`${sessionDate}T${endTime}`);
 
-    if (sessionEnd <= sessionStart) {
-      alert("Giờ kết thúc phải sau giờ bắt đầu!");
-      return;
+    if (startTime && endTime && sessionEnd <= sessionStart) {
+      newErrors.endTime = "Giờ kết thúc phải sau giờ bắt đầu!";
     }
 
-    if (!isEdit) {
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
+    setErrors(newErrors);
 
-      if (sessionStart < today) {
-        alert("Không thể tạo buổi học trong quá khứ!");
-        return;
-      }
-
-      const isSameDay =
-        sessionStart.getFullYear() === today.getFullYear() &&
-        sessionStart.getMonth() === today.getMonth() &&
-        sessionStart.getDate() === today.getDate();
-
-      if (isSameDay && sessionStart <= new Date()) {
-        alert("Không thể tạo buổi học trong ngày hôm nay có giờ đã trôi qua!");
-        return;
-      }
-    }
+    // Nếu có lỗi thì không submit
+    if (Object.keys(newErrors).length > 0) return;
 
     try {
       let res;
@@ -110,103 +91,98 @@ export default function CreateSessionModal({
       onClose();
     } catch (error) {
       console.error("Lỗi khi lưu session:", error);
-      const msg =
-        error?.response?.data?.error ||
-        error?.response?.data?.message ||
-        error?.message ||
-        "Có lỗi xảy ra khi lưu buổi học!";
-
-      if (msg.includes("cùng phòng")) {
-        alert("Giờ học bị trùng với buổi khác trong cùng phòng!");
-      } else if (msg.includes("cùng lớp") || msg.includes("cùng môn")) {
-        alert("Giờ học bị trùng với buổi khác của cùng lớp!");
-      } else if (msg.includes("Giờ kết thúc")) {
-        alert("Giờ kết thúc phải sau giờ bắt đầu!");
-      } else if (msg.includes("Giờ bắt đầu không hợp lệ")) {
-        alert("Không thể tạo buổi học đã trôi qua so với hiện tại!");
-      } else {
-        alert(msg);
-      }
+      alert("Có lỗi xảy ra khi lưu buổi học!");
     }
   };
 
   return (
     <div className="create-schedule-overlay">
       <div className="create-schedule-modal">
-        <h2>{isEdit ? "Chỉnh sửa buổi học" : "Thêm buổi học thủ công"}</h2>
+        {/* Header */}
+        <div className="create-schedule-header">
+          <FiCalendar size={20} /> {/* icon lịch */}
+          <h2>{isEdit ? "Chỉnh sửa buổi học" : "Thêm buổi học thủ công"}</h2>
+        </div>
 
-        <label>
-          Ngày học:
-          <input
-            type="date"
-            value={formData.sessionDate}
-            onChange={(e) =>
-              setFormData({ ...formData, sessionDate: e.target.value })
-            }
-          />
-        </label>
+        {/* Body */}
+        <div className="create-schedule-body">
+          <label>
+            Ngày học: <span className="required">*</span>
+            <input
+              type="date"
+              value={formData.sessionDate}
+              onChange={(e) =>
+                setFormData({ ...formData, sessionDate: e.target.value })
+              }
+            />
+            {errors.sessionDate && <div className="error-text">{errors.sessionDate}</div>}
+          </label>
 
-        <label>
-          Giờ bắt đầu:
-          <input
-            type="time"
-            value={formData.startTime}
-            onChange={(e) =>
-              setFormData({ ...formData, startTime: e.target.value })
-            }
-          />
-        </label>
+          <label>
+            Giờ bắt đầu: <span className="required">*</span>
+            <input
+              type="time"
+              value={formData.startTime}
+              onChange={(e) =>
+                setFormData({ ...formData, startTime: e.target.value })
+              }
+            />
+            {errors.startTime && <div className="error-text">{errors.startTime}</div>}
+          </label>
 
-        <label>
-          Giờ kết thúc:
-          <input
-            type="time"
-            value={formData.endTime}
-            onChange={(e) =>
-              setFormData({ ...formData, endTime: e.target.value })
-            }
-          />
-        </label>
+          <label>
+            Giờ kết thúc: <span className="required">*</span>
+            <input
+              type="time"
+              value={formData.endTime}
+              onChange={(e) =>
+                setFormData({ ...formData, endTime: e.target.value })
+              }
+            />
+            {errors.endTime && <div className="error-text">{errors.endTime}</div>}
+          </label>
 
-        <label>
-          Phòng học:
-          <select
-            value={formData.roomId || ""}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                roomId: e.target.value === "" ? "" : parseInt(e.target.value),
-              })
-            }
-          >
-            <option value="">-- Chọn phòng --</option>
-            {rooms.map((room) => (
-              <option key={room.id} value={room.id}>
-                {room.name} (Sức chứa: {room.seatCapacity})
-              </option>
-            ))}
-          </select>
-        </label>
+          <label>
+            Phòng học:
+            <select
+              value={formData.roomId || ""}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  roomId: e.target.value === "" ? "" : parseInt(e.target.value),
+                })
+              }
+            >
+              <option value="">-- Chọn phòng --</option>
+              {rooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name} (Sức chứa: {room.seatCapacity})
+                </option>
+              ))}
+            </select>
+          </label>
 
-        <label>
-          Trạng thái:
-          <select
-            value={formData.status}
-            onChange={(e) =>
-              setFormData({ ...formData, status: e.target.value })
-            }
-          >
-            <option value="scheduled">Đã lên lịch</option>
-            <option value="completed">Đã hoàn thành</option>
-            <option value="canceled">Đã huỷ</option>
-          </select>
-        </label>
+          <label>
+            Trạng thái:
+            <select
+              value={formData.status}
+              onChange={(e) =>
+                setFormData({ ...formData, status: e.target.value })
+              }
+            >
+              <option value="scheduled">Đã lên lịch</option>
+              <option value="completed">Đã hoàn thành</option>
+              <option value="canceled">Đã huỷ</option>
+            </select>
+          </label>
+        </div>
 
-        <div className="create-schedule-actions">
+        {/* Footer */}
+        <div className="create-schedule-footer">
+          <button onClick={onClose}>Hủy</button>
           <button onClick={handleSubmit}>
             {isEdit ? "Cập nhật" : "Tạo"}
           </button>
-          <button onClick={onClose}>Hủy</button>
         </div>
       </div>
     </div>

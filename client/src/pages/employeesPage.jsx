@@ -417,10 +417,10 @@ const TeacherManagement = () => {
 
 
             <div className="search-wrapper">
-              <CIcon icon={cilSearch} className="search-icon" />
+              
               <input
                 type="text"
-                placeholder="     Tra cứu nhân viên"
+                placeholder="Tra cứu nhân viên"
                 className="search-box"
                 value={filters.name}
                 onChange={(e) => {

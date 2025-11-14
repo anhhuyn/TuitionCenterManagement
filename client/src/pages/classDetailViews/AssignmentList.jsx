@@ -69,6 +69,7 @@ export default function AssignmentList({ classData }) {
       }
     };
 
+
     if (classData?.id) fetchAssignments();
   }, [classData]);
 
@@ -86,6 +87,8 @@ export default function AssignmentList({ classData }) {
   const toggleMenu = (id) => {
     setShowMenuId(showMenuId === id ? null : id);
   };
+
+
 
   // Hàm xử lý các thao tác (Cần được thay thế bằng API call thực tế)
   const handleDelete = (id) => {
@@ -114,6 +117,19 @@ export default function AssignmentList({ classData }) {
     setShowModal(true);
     setShowMenuId(null);
   };
+
+  // Đóng menu khi click ra ngoài
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (!e.target.closest(".options-menu")) {
+        setShowMenuId(null);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <div className="assignment-list-container">
       <div className="assignment-header">
@@ -165,14 +181,15 @@ export default function AssignmentList({ classData }) {
       ) : (
         <ul className="assignment-list">
           {filteredAssignments.map((item) => (
-            <li key={item.id} className="assignment-item" 
-            onClick={() => navigate(`/admin/assignment/${item.id}`)} // 👈 thêm dòng này
-            style={{ cursor: "pointer" }}>
+            <li key={item.id} className="assignment-item">
               {/* Nút 3 chấm (Menu Options) ở góc trên bên phải */}
               <div className="options-menu">
                 <button
                   className="options-button"
-                  onClick={() => toggleMenu(item.id)}
+                  onClick={(e) => {
+                    e.stopPropagation(); // ngăn event nổi bọt
+                    toggleMenu(item.id);
+                  }}
                   aria-expanded={showMenuId === item.id}
                   aria-label="Tùy chọn bài tập"
                 >
@@ -180,20 +197,33 @@ export default function AssignmentList({ classData }) {
                 </button>
                 {showMenuId === item.id && (
                   <div className="menu-dropdown">
-                    <button onClick={() => handleEdit(item)}>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(item);
+                      }}
+                    >
                       <FiEdit2 style={{ marginRight: "6px" }} />
                       Sửa
                     </button>
-                    <button onClick={() => handleDelete(item.id)} className="delete-option">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(item.id);
+                      }}
+                      className="delete-option"
+                    >
                       <FiTrash2 style={{ marginRight: "6px" }} />
                       Xóa
                     </button>
                   </div>
                 )}
               </div>
-
               <div className="assignment-content">
-                <p className="assignment-header-line">
+                <p
+                  className="assignment-header-line clickable-title"
+                  onClick={() => navigate(`/admin/assignment/${item.id}`)}
+                >
                   <FiBook style={{ color: "var(--primary)" }} />
                   <span>
                     <strong>
@@ -253,7 +283,7 @@ export default function AssignmentList({ classData }) {
           onUploadSuccess={async () => {
             const data = await getAssignmentsBySubjectIdApi(classData.id);
             setAssignments(data);
-            return data; 
+            return data;
           }}
           subjectId={classData.id}
           editMode={!!editAssignment}

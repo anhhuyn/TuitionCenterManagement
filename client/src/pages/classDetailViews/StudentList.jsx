@@ -1,16 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState } from "react";
 import { getStudentsBySubjectIdApi, removeStudentFromSubjectApi } from "../../util/api";
-import "../../styles/CustomerTable.css";
+import "../../styles/classDetailViews/StudentList.css"; // 👉 Dùng CSS mới
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import AddStudentModal from "./AddStudentModal";
 
 import CIcon from "@coreui/icons-react";
-import {
-  cilFilter,
-  cilSearch,
-  cilPencil,
-  cilTrash,
-} from "@coreui/icons";
+import { cilFilter, cilSearch } from "@coreui/icons";
 
 export default function StudentList({ classData }) {
   const [students, setStudents] = useState([]);
@@ -19,7 +14,7 @@ export default function StudentList({ classData }) {
   const [selected, setSelected] = useState([]);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
-  const [isDeleteMultiple, setIsDeleteMultiple] = useState(false); // Xác định là xóa nhiều hay 1
+  const [isDeleteMultiple, setIsDeleteMultiple] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
 
   const confirmDeleteSelected = () => {
@@ -44,12 +39,9 @@ export default function StudentList({ classData }) {
       }
     };
 
-    if (classData?.id) {
-      fetchStudents();
-    }
+    if (classData?.id) fetchStudents();
   }, [classData]);
 
-  // Checkbox chọn tất cả
   const handleSelectAll = (e) => {
     if (e.target.checked) {
       setSelected(students.map((s) => s.id));
@@ -58,70 +50,50 @@ export default function StudentList({ classData }) {
     }
   };
 
-  // Checkbox từng dòng
   const handleSelectRow = (id) => {
-    if (selected.includes(id)) {
-      setSelected(selected.filter((s) => s !== id));
-    } else {
-      setSelected([...selected, id]);
-    }
+    setSelected((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
   };
 
   const confirmDeleteStudent = (studentId) => {
     setStudentToDelete(studentId);
+    setIsDeleteMultiple(false);
     setShowConfirmModal(true);
-  };
-
-  const handleDeleteStudent = async () => {
-    if (!studentToDelete || !classData?.id) return;
-
-    try {
-      await removeStudentFromSubjectApi(studentToDelete, classData.id);
-      setStudents((prev) => prev.filter((s) => s.id !== studentToDelete));
-      setSelected((prev) => prev.filter((id) => id !== studentToDelete));
-    } catch (error) {
-      console.error("Lỗi khi xóa học sinh:", error);
-      alert("Xảy ra lỗi khi xóa học sinh. Vui lòng thử lại.");
-    } finally {
-      setShowConfirmModal(false);
-      setStudentToDelete(null);
-    }
   };
 
   const handleConfirmDelete = async () => {
     try {
       if (isDeleteMultiple) {
-        // Xóa nhiều học sinh
         await Promise.all(
-          selected.map((studentId) => removeStudentFromSubjectApi(studentId, classData.id))
+          selected.map((studentId) =>
+            removeStudentFromSubjectApi(studentId, classData.id)
+          )
         );
         setStudents((prev) => prev.filter((s) => !selected.includes(s.id)));
         setSelected([]);
       } else {
-        // Xóa 1 học sinh
-        if (!studentToDelete) return;
         await removeStudentFromSubjectApi(studentToDelete, classData.id);
         setStudents((prev) => prev.filter((s) => s.id !== studentToDelete));
         setSelected((prev) => prev.filter((id) => id !== studentToDelete));
-        setStudentToDelete(null);
       }
     } catch (error) {
-      console.error("Lỗi khi xóa học sinh:", error);
-      alert("Xảy ra lỗi khi xóa học sinh. Vui lòng thử lại.");
+      alert("Xảy ra lỗi khi xóa học sinh.");
     } finally {
       setShowConfirmModal(false);
       setIsDeleteMultiple(false);
+      setStudentToDelete(null);
     }
   };
 
-  // Tìm kiếm học sinh theo tên hoặc trường
-  // Hàm tách họ, tên lót, tên
+  // --- Tìm kiếm + sắp xếp ---
   const splitNameParts = (fullName) => {
     const parts = fullName?.trim().split(" ") || [];
-    const name = parts[parts.length - 1] || ""; // Tên cuối
-    const middle = parts.slice(1, parts.length - 1).join(" "); // Tên lót (các từ ở giữa)
-    const last = parts[0] || ""; // Họ
-    return { name, middle, last };
+    return {
+      name: parts[parts.length - 1] || "",
+      middle: parts.slice(1, parts.length - 1).join(" "),
+      last: parts[0] || "",
+    };
   };
 
   const filteredStudents = students
@@ -131,66 +103,67 @@ export default function StudentList({ classData }) {
         stu.schoolName?.toLowerCase().includes(search.toLowerCase())
     )
     .sort((a, b) => {
-      const nameA = splitNameParts(a.fullName);
-      const nameB = splitNameParts(b.fullName);
+      const A = splitNameParts(a.fullName);
+      const B = splitNameParts(b.fullName);
 
-      // So sánh tên cuối
-      const nameCompare = nameA.name.localeCompare(nameB.name, "vi", { sensitivity: "base" });
-      if (nameCompare !== 0) return nameCompare;
+      let cmp = A.name.localeCompare(B.name, "vi", { sensitivity: "base" });
+      if (cmp !== 0) return cmp;
 
-      // Nếu tên cuối giống, so sánh tên lót
-      const middleCompare = nameA.middle.localeCompare(nameB.middle, "vi", { sensitivity: "base" });
-      if (middleCompare !== 0) return middleCompare;
+      cmp = A.middle.localeCompare(B.middle, "vi", { sensitivity: "base" });
+      if (cmp !== 0) return cmp;
 
-      // Nếu tên lót cũng giống, so sánh họ
-      return nameA.last.localeCompare(nameB.last, "vi", { sensitivity: "base" });
+      return A.last.localeCompare(B.last, "vi", { sensitivity: "base" });
     });
 
   if (loading) return <p>Đang tải danh sách học sinh...</p>;
 
   return (
-    <div className="table-container">
-      {/* Thanh công cụ trên */}
-      <div className="top-bar">
-        <div className="left-tools">
-          <button className="btn-filter">
+    <div className="studentlist-container">
+      {/* === Thanh công cụ trên === */}
+      <div className="studentlist-topbar">
+        <div className="studentlist-lefttools">
+          <button className="studentlist-btn-filter">
             <CIcon icon={cilFilter} />
           </button>
 
-          <div className="search-wrapper">
-            <CIcon icon={cilSearch} className="search-icon" />
+          <div className="studentlist-search-wrapper">
+            <CIcon icon={cilSearch} className="studentlist-search-icon" />
             <input
               type="text"
-              placeholder="     Tìm học sinh..."
-              className="search-box"
+              placeholder="Tìm học sinh..."
+              className="studentlist-searchbox"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
         </div>
 
-        <div className="right-tools">
+        <div className="studentlist-righttools">
           <button
-            className="btn-delete-selected"
+            className="studentlist-btn-delete-selected"
             disabled={selected.length === 0}
             onClick={confirmDeleteSelected}
           >
             Xóa đã chọn ({selected.length})
           </button>
-          <button className="btn-add" onClick={() => setShowAddModal(true)}>
+
+          <button
+            className="studentlist-btn-add"
+            onClick={() => setShowAddModal(true)}
+          >
             + Thêm học sinh
           </button>
         </div>
       </div>
 
-      {/* Bảng danh sách học sinh */}
-      <table className="customer-table">
+      {/* === Bảng danh sách học sinh === */}
+      <table className="studentlist-table">
         <thead>
           <tr>
             <th>
               <input
                 type="checkbox"
-                className="custom-checkbox"
+                className="studentlist-checkbox"
                 checked={selected.length === students.length && students.length > 0}
                 onChange={handleSelectAll}
               />
@@ -200,13 +173,13 @@ export default function StudentList({ classData }) {
             <th>Giới tính</th>
             <th>Ngày sinh</th>
             <th>Trường</th>
-            <th>Thao tác</th>
           </tr>
         </thead>
+
         <tbody>
           {filteredStudents.length === 0 ? (
             <tr>
-              <td colSpan="7" style={{ textAlign: "center", padding: "20px" }}>
+              <td colSpan="6" style={{ textAlign: "center", padding: "20px" }}>
                 Không tìm thấy học sinh nào.
               </td>
             </tr>
@@ -216,7 +189,7 @@ export default function StudentList({ classData }) {
                 <td>
                   <input
                     type="checkbox"
-                    className="custom-checkbox"
+                    className="studentlist-checkbox"
                     checked={selected.includes(stu.id)}
                     onChange={() => handleSelectRow(stu.id)}
                   />
@@ -227,34 +200,23 @@ export default function StudentList({ classData }) {
                   {stu.gender === true
                     ? "Nam"
                     : stu.gender === false
-                      ? "Nữ"
-                      : "Không xác định"}
+                    ? "Nữ"
+                    : "Không xác định"}
                 </td>
                 <td>{stu.dateOfBirth}</td>
                 <td>{stu.schoolName}</td>
-                <td className="action-cell">
-                  <button className="btn-edit">
-                    <CIcon icon={cilPencil} />
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => {
-                      setStudentToDelete(stu.id);
-                      setIsDeleteMultiple(false);
-                      setShowConfirmModal(true);
-                    }}
-                  >
-                    <CIcon icon={cilTrash} />
-                  </button>
-                </td>
               </tr>
             ))
           )}
         </tbody>
       </table>
+
+      {/* === Modal Xác nhận === */}
       {showConfirmModal && (
         <ConfirmModal
-          title={isDeleteMultiple ? "Xác nhận xóa nhiều học sinh" : "Xác nhận xóa học sinh"}
+          title={
+            isDeleteMultiple ? "Xác nhận xóa nhiều học sinh" : "Xác nhận xóa học sinh"
+          }
           message={
             isDeleteMultiple
               ? `Bạn có chắc chắn muốn xóa ${selected.length} học sinh khỏi môn học?`
@@ -270,12 +232,14 @@ export default function StudentList({ classData }) {
           onConfirm={handleConfirmDelete}
         />
       )}
+
+      {/* === Modal Thêm học sinh === */}
       {showAddModal && (
         <AddStudentModal
           onClose={() => setShowAddModal(false)}
           classId={classData.id}
           grade={classData.grade}
-          existingStudents={students}  
+          existingStudents={students}
           onSuccess={() => setSelected([])}
           onStudentAdded={(newStu) => {
             setStudents((prev) => [...prev, newStu]);

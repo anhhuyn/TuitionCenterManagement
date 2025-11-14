@@ -74,7 +74,7 @@ export default function AddStudentModal({
         <h3 className="section-header">Thêm học viên</h3>
 
         <div className="row-line">
-          <label>Chọn học viên *</label>
+          <label>Chọn học viên <span className="required">*</span></label>
           <Select
             options={studentOptions}
             value={selectedStudent}
@@ -85,7 +85,7 @@ export default function AddStudentModal({
         </div>
 
         <div className="modal-actions">
-          <button onClick={onClose} className="btn-cancel" disabled={loading}>
+          <button onClick={onClose} className="modal-btn-cancel" disabled={loading}>
             Huỷ
           </button>
           <button onClick={handleSave} className="btn-save" disabled={loading}>
