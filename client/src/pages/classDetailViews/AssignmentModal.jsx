@@ -5,7 +5,7 @@ import {
     getScheduleBySubjectId,
     assignToStudentsApi
 } from "../../util/api";
-import { FiUpload } from "react-icons/fi"; // icon upload
+import { FiUpload } from "react-icons/fi"; 
 import "../../styles/classDetailViews/AssignmentModal.css";
 
 export default function AssignmentModal({
@@ -48,7 +48,6 @@ export default function AssignmentModal({
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // Reset errors
         setErrors({ title: "", dueDate: "", session: "" });
         let hasError = false;
 
@@ -64,15 +63,17 @@ export default function AssignmentModal({
             setErrors((prev) => ({ ...prev, session: "Vui lòng chọn buổi học." }));
             hasError = true;
         }
-        if (hasError) return;
-
+        if (hasError) {
+        console.log("Có lỗi validate, không gửi API"); 
+        return;
+    }
         const formData = new FormData();
         formData.append("title", title);
         formData.append("description", description);
         formData.append("dueDate", dueDate);
         formData.append("sessionId", selectedSessionId);
         if (file) formData.append("file", file);
-
+       
         try {
             setLoading(true);
             let res;
@@ -81,7 +82,6 @@ export default function AssignmentModal({
             } else {
                 res = await createAssignmentApi(formData);
             }
-
             if (res) {
                 if (!editMode && res?.id) {
                     try {

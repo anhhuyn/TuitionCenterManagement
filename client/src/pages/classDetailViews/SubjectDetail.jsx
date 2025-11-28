@@ -17,8 +17,8 @@ export default function SubjectDetail() {
     const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     const getInitialEditedData = (data) => {
-        const teacher = data.TeacherSubjects[0]?.Teacher || null;
-        const userInfo = teacher?.userInfo || null;
+        const teacher = data.teacherSubjects[0]?.teacher || null;
+        const userInfo = teacher?.user || null;
         const specialty = teacher?.specialty || "Chưa cập nhật";
 
         return {

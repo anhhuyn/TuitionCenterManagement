@@ -58,9 +58,11 @@ const Profile = () => {
     const fetchUser = async () => {
       try {
         const res = await getUserApi();
+        console.log("📥 Response từ API getUserApi:", res);
 
-        if (res && res.user) {
-          setUser(res.user);
+        if (res) {
+          setUser(res);
+          console.log("✅ User được set:", res);
         } else {
           setError("Không lấy được thông tin user");
         }
@@ -123,7 +125,7 @@ const Profile = () => {
     // Tải lại dữ liệu user mới nhất
     try {
       const res = await getUserApi();
-      if (res.user) setUser(res.user);
+      if (res) setUser(res);
     } catch (error) {
       console.error("Lỗi tải lại dữ liệu user sau khi verify OTP:", error);
     }
@@ -144,9 +146,9 @@ const Profile = () => {
       await updateImageApi(selectedImage);
 
       const res = await getUserApi();
-      if (res && res.user) {
-        setUser(res.user);
-        dispatch(setUserRedux(res.user));
+      if (res) {
+        setUser(res);
+        dispatch(setUserRedux(res));
       }
 
       setSelectedImage(null);

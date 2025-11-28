@@ -50,7 +50,6 @@ export default function AssignmentList({ classData }) {
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showConfirm, setShowConfirm] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState(null);
-  // State mới để quản lý việc mở/đóng menu 3 chấm
   const [showMenuId, setShowMenuId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editAssignment, setEditAssignment] = useState(null);
@@ -59,8 +58,6 @@ export default function AssignmentList({ classData }) {
     const fetchAssignments = async () => {
       try {
         const data = await getAssignmentsBySubjectIdApi(classData.id);
-        // Giả lập thêm isSubmitted nếu API chưa có, để tránh lỗi
-        // const dataWithMockStatus = data.map(item => ({...item, isSubmitted: Math.random() > 0.5}));
         setAssignments(data);
       } catch (error) {
         console.error("Lỗi lấy danh sách bài tập:", error);
@@ -88,15 +85,12 @@ export default function AssignmentList({ classData }) {
     setShowMenuId(showMenuId === id ? null : id);
   };
 
-
-
   // Hàm xử lý các thao tác (Cần được thay thế bằng API call thực tế)
   const handleDelete = (id) => {
     setSelectedDeleteId(id);
     setShowMenuId(null);
     setShowConfirm(true);
   };
-
   const confirmDelete = async () => {
     if (!selectedDeleteId) return;
 
@@ -125,7 +119,6 @@ export default function AssignmentList({ classData }) {
         setShowMenuId(null);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);

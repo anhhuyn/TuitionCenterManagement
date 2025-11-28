@@ -71,6 +71,9 @@ function App() {
           withCredentials: true,
         });
 
+        console.log("User từ /auth/me:", res.data.user);
+
+
         if (res.data?.user) {
           dispatch({ type: "auth/setUser", payload: res.data.user });
         }

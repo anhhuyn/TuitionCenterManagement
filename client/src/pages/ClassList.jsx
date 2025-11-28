@@ -69,7 +69,7 @@ export default function ClassList() {
 
     const filtered = classes.filter((cls) => {
         const teacherName =
-            cls.TeacherSubjects[0]?.Teacher?.User?.fullName?.toLowerCase() || "";
+            cls.teacherSubjects[0]?.teacher?.user?.fullName?.toLowerCase() || "";
         const matchSearch =
             cls.name.toLowerCase().includes(search.toLowerCase()) ||
             teacherName.includes(search.toLowerCase());
@@ -168,7 +168,7 @@ export default function ClassList() {
                             </p>
                             <p>
                                 Giáo viên:{" "}
-                                {cls.TeacherSubjects[0]?.Teacher?.userInfo?.fullName || "Chưa sắp xếp"}
+                                {cls.teacherSubjects?.[0]?.teacher?.user?.fullName || "Chưa sắp xếp"}
                             </p>
                             <p>
                                 Thanh toán: <b>Thanh toán theo tháng</b>

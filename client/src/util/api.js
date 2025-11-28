@@ -76,6 +76,7 @@ const updateImageApi = (file) => {
     headers: {
       "Content-Type": "multipart/form-data",
     },
+    withCredentials: true,
   });
 };
 const getSubjectsApi = async ({ page = 1, limit = 12, status = null } = {}) => {
