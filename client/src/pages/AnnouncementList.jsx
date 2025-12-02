@@ -8,13 +8,17 @@ import {
 import axios from "axios";
 import "../styles/AnnouncementList.css";
 
+import AddAnnouncementModal from "./AddAnnouncementModal";
+
 export default function AnnouncementList() {
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
     const [hasMore, setHasMore] = useState(true);
+    const [showAddModal, setShowAddModal] = useState(false);
 
     const [adminId, setAdminId] = useState(null);
+    const [adminAvatar, setAdminAvatar] = useState(null);
 
     // ==========================
     // ADD form (test create)
@@ -44,7 +48,9 @@ export default function AnnouncementList() {
             const res = await axios.get("http://localhost:8088/v1/api/auth/me", {
                 withCredentials: true
             });
+            console.log("Avatar:", res.data.user.avatar); // debug avatar riêng
             setAdminId(res.data.user.id);
+            setAdminAvatar(res.data.user.image || null);
         } catch (err) {
             console.error("Không lấy được thông tin admin:", err);
         }
@@ -100,10 +106,8 @@ export default function AnnouncementList() {
     // ==========================
     // CREATE announcement
     // ==========================
-    const handleAddTest = async () => {
-        if (!adminId) return alert("Chưa lấy được adminId");
-        if (!newTitle || !newContent) return alert("Nhập đầy đủ title và content");
-
+    // hàm thêm mới từ modal
+    const handleAddFromModal = async ({ adminId, title, content, status, imageFile, attachmentFiles }) => {
         try {
             const formData = new FormData();
 
@@ -111,9 +115,9 @@ export default function AnnouncementList() {
                 "data",
                 new Blob([JSON.stringify({
                     adminId,
-                    title: newTitle,
-                    content: newContent,
-                    status: newStatus
+                    title,
+                    content,
+                    status
                 })], { type: "application/json" })
             );
 
@@ -123,12 +127,7 @@ export default function AnnouncementList() {
             const res = await createAnnouncementApi(formData);
 
             setAnnouncements(prev => [res, ...prev]);
-
-            // reset
-            setNewTitle("");
-            setNewContent("");
-            setImageFile(null);
-            setAttachmentFiles([]);
+            setShowAddModal(false);
 
         } catch (err) {
             console.error("Tạo announcement lỗi:", err);
@@ -204,38 +203,37 @@ export default function AnnouncementList() {
     return (
         <div className="announcement-list">
 
-            {/* ADD FORM */}
-            <div className="announcement-add-test">
-                <h3>Thêm nhanh thông báo</h3>
+            <div className="announcement-add-wrapper">
+                {adminAvatar && (
+                    <img
+                        src={
+                            adminAvatar.startsWith("http")
+                                ? adminAvatar
+                                : `${import.meta.env.VITE_BACKEND_URL}${adminAvatar}`
+                        }
+                        alt="avatar"
+                        className="announcement-add-avatar"
+                    />
+                )}
 
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={newTitle}
-                    onChange={e => setNewTitle(e.target.value)}
-                />
-
-                <textarea
-                    placeholder="Content"
-                    value={newContent}
-                    onChange={e => setNewContent(e.target.value)}
-                />
-
-                <label>Ảnh đại diện:</label>
-                <input type="file" onChange={e => setImageFile(e.target.files[0])} />
-
-                <label>File đính kèm:</label>
-                <input type="file" multiple onChange={e => setAttachmentFiles([...e.target.files])} />
-
-                <label>Trạng thái:</label>
-                <select value={newStatus} onChange={e => setNewStatus(e.target.value)}>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="draft">Draft</option>
-                </select>
-
-                <button onClick={handleAddTest}>Thêm thử</button>
+                <div
+                    className="announcement-add-placeholder"
+                    tabIndex={0}
+                    onClick={() => setShowAddModal(true)}
+                    onKeyDown={e => {
+                        if (e.key === 'Enter' || e.key === ' ') setShowAddModal(true);
+                    }}
+                >
+                    Bài viết mới...
+                </div>
             </div>
+
+            <AddAnnouncementModal
+                visible={showAddModal}
+                onClose={() => setShowAddModal(false)}
+                onAdd={handleAddFromModal}
+                adminId={adminId}
+            />
 
             {/* EDIT FORM */}
             {editMode && (
