@@ -34,6 +34,8 @@ import ManageTeacherSubject from "./pages/teacherPayment/ManageTeacherSubject.js
 import TeacherMainPaymentList from "./pages/teacherMainPayments/TeacherMainPaymentList.jsx";
 import TeacherMainPaymentDetail from "./pages/teacherMainPayments/TeacherMainPaymentDetail.jsx";
 import TeacherMainPaymentCreate from "./pages/teacherMainPayments/TeacherMainPaymentCreate.jsx";
+import AnnouncementList from "./pages/AnnouncementList.jsx";
+
 
 function AppWrapper() {
   return (
@@ -246,6 +248,17 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <TeacherMainPaymentDetail />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/announcements"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <AnnouncementList />
             </Layout>
           </ProtectedRoute>
         }

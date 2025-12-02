@@ -408,12 +408,66 @@ const getTeacherSalaryDetail = (teacherId, month, year) => {
   return axios.get(`/v1/api/teacher-payments/${teacherId}?month=${month}&year=${year}`);
 };
 
-// 💰 Thanh toán lương giáo viên
+// Thanh toán lương giáo viên
 const payTeacherSalary = (teacherId, month, year) => {
   return axios.put(`/v1/api/teacher-payments/${teacherId}/pay`, { month, year });
 };
 
+// Thông báo
+const getAnnouncementsApi = async ({ page = 0, limit = 10 } = {}) => {
+  try {
+    const res = await axios.get('/v1/api/announcements', { params: { page, size: limit } });
+    return res; // interceptor của axios đã trả về res.data
+  } catch (err) {
+    console.error('Error fetching announcements:', err);
+    return { content: [], last: true }; // trả về giống server nếu lỗi
+  }
+};
+
+
+const createAnnouncementApi = async (formData) => {
+  try {
+    const res = await axios.post('/v1/api/announcements', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    return res; // axios interceptor sẽ trả res.data
+  } catch (err) {
+    console.error('Error creating announcement:', err);
+    return { success: false, error: err.response?.data || err.message };
+  }
+};
+
+const updateAnnouncementApi = async (id, formData) => {
+  try {
+    const res = await axios.put(`/v1/api/announcements/${id}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res;
+  } catch (err) {
+    console.error("Error updating announcement:", err);
+    return { success: false, error: err.response?.data || err.message };
+  }
+};
+
+const deleteAnnouncementApi = async (id) => {
+  try {
+    const res = await axios.delete(`/v1/api/announcements/${id}`);
+    return res;
+  } catch (err) {
+    console.error('Error deleting announcement:', err);
+    return { success: false, error: err.response?.data || err.message };
+  }
+};
+
 export {
+  deleteAnnouncementApi,
+  updateAnnouncementApi,
+  createAnnouncementApi,
+  getAnnouncementsApi,
   createSubjectApi, deleteSubjectApi,
   getSubjectByIdApi,
   createAssignmentApi,

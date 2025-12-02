@@ -28,7 +28,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Tin tức',
-    to: '/theme/colors',
+    to: '/admin/announcements',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
   {
