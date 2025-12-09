@@ -9,6 +9,9 @@ import axios from "axios";
 import "../styles/AnnouncementList.css";
 
 import AddAnnouncementModal from "./AddAnnouncementModal";
+import EditAnnouncementModal from "./EditAnnouncementModal";
+import ConfirmModal from "../components/modal/ConfirmModal";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 
 export default function AnnouncementList() {
     const [announcements, setAnnouncements] = useState([]);
@@ -19,6 +22,7 @@ export default function AnnouncementList() {
 
     const [adminId, setAdminId] = useState(null);
     const [adminAvatar, setAdminAvatar] = useState(null);
+    const [expanded, setExpanded] = useState({});
 
     // ==========================
     // ADD form (test create)
@@ -39,7 +43,18 @@ export default function AnnouncementList() {
     const [editStatus, setEditStatus] = useState("active");
     const [editImageFile, setEditImageFile] = useState(null);
     const [editAttachments, setEditAttachments] = useState([]);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedAnnouncement, setSelectedAnnouncement] = useState(null);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
 
+
+    const toggleExpand = (id) => {
+        setExpanded(prev => ({
+            ...prev,
+            [id]: !prev[id]
+        }));
+    };
     // ==========================
     // Fetch admin info
     // ==========================
@@ -102,6 +117,32 @@ export default function AnnouncementList() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, [loading, hasMore]);
+    // Trong component AnnouncementList
+    useEffect(() => {
+        const handleClickOutside = (e) => {
+            // Kiểm tra nếu click ngoài các menu-wrapper
+            const menus = document.querySelectorAll(".menu-wrapper");
+            let clickedInsideMenu = false;
+            menus.forEach(menu => {
+                if (menu.contains(e.target)) clickedInsideMenu = true;
+            });
+
+            if (!clickedInsideMenu) {
+                // đóng tất cả menu
+                setExpanded(prev => {
+                    const newExpanded = { ...prev };
+                    Object.keys(newExpanded).forEach(key => {
+                        if (key.startsWith("menu_")) newExpanded[key] = false;
+                    });
+                    return newExpanded;
+                });
+            }
+        };
+
+        document.addEventListener("click", handleClickOutside);
+        return () => document.removeEventListener("click", handleClickOutside);
+    }, []);
+
 
     // ==========================
     // CREATE announcement
@@ -138,17 +179,29 @@ export default function AnnouncementList() {
     // ==========================
     // DELETE announcement
     // ==========================
-    const handleDelete = async (id) => {
-        if (!window.confirm("Bạn có chắc muốn xóa thông báo này?")) return;
-        const res = await deleteAnnouncementApi(id);
+    const confirmDelete = (id) => {
+        setDeleteTargetId(id);
+        setShowConfirm(true);
+    };
 
+    const handleConfirmDelete = async () => {
+        if (!deleteTargetId) return;
+
+        const res = await deleteAnnouncementApi(deleteTargetId);
         if (res && !res.success) {
             alert("Xóa thất bại: " + (res.error || "Lỗi server"));
         } else {
-            setAnnouncements(prev => prev.filter(a => a.id !== id));
+            setAnnouncements(prev => prev.filter(a => a.id !== deleteTargetId));
         }
+
+        setShowConfirm(false);
+        setDeleteTargetId(null);
     };
 
+    const handleCancelDelete = () => {
+        setShowConfirm(false);
+        setDeleteTargetId(null);
+    };
     // ==========================
     // EDIT: mở form
     // ==========================
@@ -160,6 +213,8 @@ export default function AnnouncementList() {
         setEditStatus(a.status);
         setEditImageFile(null);
         setEditAttachments([]);
+        setSelectedAnnouncement(a);
+        setShowEditModal(true);
     };
 
     // ==========================
@@ -197,6 +252,7 @@ export default function AnnouncementList() {
         }
     };
 
+
     // ==========================
     // UI
     // ==========================
@@ -233,48 +289,134 @@ export default function AnnouncementList() {
                 onClose={() => setShowAddModal(false)}
                 onAdd={handleAddFromModal}
                 adminId={adminId}
+                adminAvatar={adminAvatar}
             />
 
             {/* EDIT FORM */}
-            {editMode && (
-                <div className="announcement-edit-box">
-                    <h3>Sửa thông báo</h3>
+            <EditAnnouncementModal
+                visible={showEditModal}
+                onClose={() => setShowEditModal(false)}
+                onUpdate={async (data) => {
+                    const { id, title, content, status, imageFile, attachmentFiles, clearImage, clearAttachments } = data;
 
-                    <input
-                        type="text"
-                        value={editTitle}
-                        onChange={e => setEditTitle(e.target.value)}
-                    />
+                    const formData = new FormData();
+                    formData.append("data",
+                        new Blob([JSON.stringify({
+                            title,
+                            content,
+                            status,
+                            clearImage,
+                            clearAttachments
+                        })], { type: "application/json" })
+                    );
 
-                    <textarea
-                        value={editContent}
-                        onChange={e => setEditContent(e.target.value)}
-                    />
+                    if (imageFile) formData.append("imageFile", imageFile);
+                    attachmentFiles.forEach(f => formData.append("attachments", f));
 
-                    <label>Đổi ảnh đại diện:</label>
-                    <input type="file" onChange={e => setEditImageFile(e.target.files[0])} />
+                    const updated = await updateAnnouncementApi(id, formData);
+                    setAnnouncements(prev => prev.map(item => item.id === id ? updated : item));
 
-                    <label>Thêm file đính kèm:</label>
-                    <input type="file" multiple onChange={e => setEditAttachments([...e.target.files])} />
-
-                    <label>Status:</label>
-                    <select value={editStatus} onChange={e => setEditStatus(e.target.value)}>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="draft">Draft</option>
-                    </select>
-
-                    <button onClick={handleUpdate}>Lưu thay đổi</button>
-                    <button onClick={() => setEditMode(false)}>Hủy</button>
-                </div>
-            )}
+                    setShowEditModal(false);
+                }}
+                adminAvatar={adminAvatar}
+                adminName={"Admin"}
+                announcement={selectedAnnouncement}
+            />
 
             {/* LIST */}
             {announcements.map((a, index) => (
                 <div key={`${a.id}-${index}`} className="announcement-card">
-                    <h3>{a.title}</h3>
-                    <p>{a.content}</p>
 
+                    {/* HEADER */}
+                    <div className="announcement-header">
+                        <div className="header-left">
+                            <img
+                                src={
+                                    a.admin?.image?.startsWith("http")
+                                        ? a.admin.image
+                                        : `${import.meta.env.VITE_BACKEND_URL}${a.admin?.image}`
+                                }
+                                alt="avatar"
+                                className="announcement-admin-avatar"
+                            />
+
+                            <div className="header-info">
+                                <div className="admin-name">
+                                    {a.admin?.fullName || "ADMIN"}
+                                </div>
+
+                                <div className="meta-info">
+
+                                    <span className="created-date">
+                                        {new Date(a.createdAt).toLocaleString()}
+                                    </span>
+                                    <span className={`announcement-status-badge ${a.status?.toLowerCase()}`}>
+                                        {a.status}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* MENU ⋯ */}
+                        <div className="menu-wrapper">
+                            <button
+                                className="menu-button"
+                                onClick={() =>
+                                    setExpanded(prev => ({
+                                        ...prev,
+                                        ["menu_" + a.id]: !prev["menu_" + a.id]
+                                    }))
+                                }
+                            >
+                                ⋯
+                            </button>
+
+                            {expanded["menu_" + a.id] && (
+                                <div className="menu-dropdown">
+                                    <div
+                                        className="menu-item"
+                                        onClick={() => openEdit(a)}
+                                    >
+                                        <FiEdit style={{ marginRight: "6px" }} /> Sửa
+                                    </div>
+                                    <div
+                                        className="menu-item"
+                                        onClick={() => confirmDelete(a.id)}
+                                    >
+                                        <FiTrash2 style={{ marginRight: "6px" }} /> Xóa
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* TIÊU ĐỀ */}
+                    <h3 className="announcement-title">{a.title}</h3>
+
+                    {/* NỘI DUNG rút gọn */}
+                    <div>
+                        <div
+                            className={
+                                expanded[a.id] ? "content-box expanded" : "content-box"
+                            }
+                        >
+                            <span className="text">{a.content}</span>
+
+                            {!expanded[a.id] && a.content.length > 100 && (
+                                <span className="see-more" onClick={() => toggleExpand(a.id)}>
+                                    ... Xem thêm
+                                </span>
+                            )}
+
+                            {expanded[a.id] && (
+                                <span className="see-less" onClick={() => toggleExpand(a.id)}>
+                                    Ẩn bớt
+                                </span>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* ẢNH */}
                     {a.imageURL && (
                         <img
                             src={
@@ -282,52 +424,48 @@ export default function AnnouncementList() {
                                     ? a.imageURL
                                     : `${import.meta.env.VITE_BACKEND_URL}${a.imageURL}`
                             }
-                            alt={a.title}
+                            alt="preview"
                             className="announcement-image"
                         />
                     )}
 
-                    {a.attachments && a.attachments.length > 0 && (
+                    {/* FILES */}
+                    {a.attachments?.length > 0 && (
                         <div className="attachments-box">
-                            <h4>File đính kèm:</h4>
+                            <h6>File đính kèm:</h6>
                             <ul>
                                 {a.attachments.map((url, idx) => (
                                     <li key={idx}>
                                         <a
                                             href={`${import.meta.env.VITE_BACKEND_URL}${url}`}
                                             target="_blank"
+                                            rel="noopener noreferrer"
                                         >
-                                            {url.split("/").pop()}
+                                            File đính kèm {idx + 1}
                                         </a>
                                     </li>
                                 ))}
                             </ul>
                         </div>
                     )}
-
-                    <p>Status: <b>{a.status}</b></p>
-                    <p>Ngày tạo: {new Date(a.createdAt).toLocaleString()}</p>
-
-                    <div className="actions">
-                        <button
-                            onClick={() => openEdit(a)}
-                            className="btn-edit"
-                        >
-                            Sửa
-                        </button>
-
-                        <button
-                            onClick={() => handleDelete(a.id)}
-                            className="btn-delete"
-                        >
-                            Xóa
-                        </button>
-                    </div>
                 </div>
+
+
             ))}
 
             {loading && <p>Đang tải thêm...</p>}
             {!hasMore && <p>Đã tải hết thông báo</p>}
+            {showConfirm && (
+                <ConfirmModal
+                    title="Xác nhận xóa thông báo"
+                    message="Bạn có chắc chắn muốn xóa thông báo này?"
+                    cancelText="Hủy"
+                    confirmText="Xóa"
+                    onCancel={handleCancelDelete}
+                    onConfirm={handleConfirmDelete}
+                />
+            )}
         </div>
+
     );
 }

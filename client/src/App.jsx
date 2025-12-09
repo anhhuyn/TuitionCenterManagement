@@ -35,6 +35,8 @@ import TeacherMainPaymentList from "./pages/teacherMainPayments/TeacherMainPayme
 import TeacherMainPaymentDetail from "./pages/teacherMainPayments/TeacherMainPaymentDetail.jsx";
 import TeacherMainPaymentCreate from "./pages/teacherMainPayments/TeacherMainPaymentCreate.jsx";
 import AnnouncementList from "./pages/AnnouncementList.jsx";
+import RoomSchedulePage from "./pages/RoomSchedulePage.jsx";
+import TeacherSchedulePage from "./pages/TeacherSchedulePage.jsx";
 
 
 function AppWrapper() {
@@ -259,6 +261,28 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <AnnouncementList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/room-schedule"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RoomSchedulePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/teacher-schedule"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <TeacherSchedulePage />
             </Layout>
           </ProtectedRoute>
         }

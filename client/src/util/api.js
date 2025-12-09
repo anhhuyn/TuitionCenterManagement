@@ -392,25 +392,37 @@ const updateTeacherSubjectApi = async (id, data) => {
     throw err; // Ném lỗi ra để component có thể bắt
   }
 };
-
-// 📅 Lấy danh sách lương theo tháng & năm
+// 📅 1. Lấy danh sách lương theo tháng & năm
+// Backend: GET /v1/api/payments/list?month=X&year=Y
 const getTeacherPaymentsByMonth = (month, year) => {
-  return axios.get(`/v1/api/teacher-payments?month=${month}&year=${year}`);
+  return axios.get("/v1/api/payments/list", {
+    params: { month, year }
+  });
 };
 
-// 💾 Tạo bảng lương
+// 💾 2. Tạo bảng lương
+// Backend: POST /v1/api/payments/create?month=X&year=Y&notes=Z
+// Lưu ý: Backend dùng @RequestParam nên phải gửi qua `params`, body để null
 const createTeacherPayments = (data) => {
-  return axios.post("/v1/api/teacher-payments", data);
+  // data = { month, year, notes }
+  return axios.post("/v1/api/payments/create", null, {
+    params: data 
+  });
 };
 
-// 🔍 Lấy chi tiết lương 1 giáo viên
+// 🔍 3. Lấy chi tiết lương 1 giáo viên
+// Backend: GET /v1/api/payments/detail?teacherId=X&month=Y&year=Z
 const getTeacherSalaryDetail = (teacherId, month, year) => {
-  return axios.get(`/v1/api/teacher-payments/${teacherId}?month=${month}&year=${year}`);
+  return axios.get("/v1/api/payments/detail", {
+    params: { teacherId, month, year }
+  });
 };
 
-// Thanh toán lương giáo viên
-const payTeacherSalary = (teacherId, month, year) => {
-  return axios.put(`/v1/api/teacher-payments/${teacherId}/pay`, { month, year });
+// 💸 4. Thanh toán lương giáo viên
+// Backend: POST /v1/api/payments/pay (Body: { teacherId, month, year })
+const payTeacherSalary = (data) => {
+  // data = { teacherId, month, year }
+  return axios.post("/v1/api/payments/pay", data);
 };
 
 // Thông báo
@@ -463,7 +475,66 @@ const deleteAnnouncementApi = async (id) => {
   }
 };
 
+// Lấy lịch phòng theo roomId và khoảng ngày
+const getRoomScheduleApi = async (roomId, startDate, endDate) => {
+  try {
+    const res = await axios.get(`/v1/api/rooms/${roomId}/schedule`, {
+      params: {
+        startDate, // yyyy-MM-dd
+        endDate    // yyyy-MM-dd
+      }
+    });
+    return res; // nếu dùng instance.interceptors.response như bạn thì res.data đã là data
+  } catch (err) {
+    console.error('Error fetching room schedule:', err);
+    return { success: false, error: err.response?.data || err.message };
+  }
+};
+
+// Tạo phòng
+export const createRoomApi = async (room) => {
+  const res = await axios.post("/v1/api/rooms", room);
+  return res.data;
+  // res.data = { message, data: room }
+};
+
+// Cập nhật phòng
+export const updateRoomApi = async (roomId, room) => {
+  const res = await axios.put(`/v1/api/rooms/${roomId}`, room);
+  return res.data;
+};
+
+
+// Xóa phòng
+export const deleteRoomApi = async (roomId) => {
+  const res = await axios.delete(`/v1/api/rooms/${roomId}`);
+  return res.data;
+};
+
+/**
+ * Lấy lịch dạy của giáo viên theo teacherId và khoảng ngày
+ * @param {number} teacherId 
+ * @param {string} startDate - yyyy-MM-dd
+ * @param {string} endDate - yyyy-MM-dd
+ * @returns {Promise<Object>} - mảng TeacherScheduleDTO
+ */
+export const getTeacherScheduleApi = async (teacherId, startDate, endDate) => {
+  try {
+    const res = await axios.get(`/v1/api/teachers/${teacherId}/schedule`, {
+      params: {
+        startDate,
+        endDate
+      }
+    });
+    return res; // nếu dùng interceptors.response thì res đã là data
+  } catch (err) {
+    console.error('Error fetching teacher schedule:', err);
+    return { success: false, error: err.response?.data || err.message };
+  }
+};
+
 export {
+  getRoomScheduleApi,
   deleteAnnouncementApi,
   updateAnnouncementApi,
   createAnnouncementApi,

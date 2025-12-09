@@ -23,16 +23,23 @@ const TeacherPaymentList = () => {
     fetchData()
   }, [])
 
-  const fetchData = async () => {
-    try {
-      const res = await axios.get('http://localhost:8088/v1/api/teacher-subjects')
-      setTeacherSubjects(res.data)
-    } catch (error) {
-      console.error('Lỗi khi tải dữ liệu:', error)
-    } finally {
-      setLoading(false)
+const fetchData = async () => {
+  try {
+    const res = await axios.get('http://localhost:8088/v1/api/teacher-subjects')
+    // Kiểm tra errCode và lấy mảng data bên trong
+    if (res.data && res.data.errCode === 0) {
+      setTeacherSubjects(res.data.data) 
+    } else {
+      setTeacherSubjects([]) // Nếu lỗi hoặc rỗng thì set mảng rỗng
+      console.error(res.data.message)
     }
+  } catch (error) {
+    console.error('Lỗi khi tải dữ liệu:', error)
+    setTeacherSubjects([])
+  } finally {
+    setLoading(false)
   }
+}
 
   // Hàm tạo mới
   const handleCreateNew = () => {
@@ -50,20 +57,25 @@ const TeacherPaymentList = () => {
     setShowConfirmModal(true)
   }
 
-  // ✅ Xóa sau khi người dùng xác nhận
-  const handleConfirmDelete = async () => {
-    if (!subjectToDelete) return
-    try {
-      await axios.delete(`http://localhost:8088/v1/api/teacher-subjects/${subjectToDelete}`)
-      setTeacherSubjects((prev) => prev.filter((item) => item.id !== subjectToDelete))
-    } catch (error) {
-      console.error('Lỗi khi xóa thỏa thuận:', error)
-      alert('Xóa thất bại. Vui lòng thử lại.')
-    } finally {
-      setShowConfirmModal(false)
-      setSubjectToDelete(null)
+const handleConfirmDelete = async () => {
+  if (!subjectToDelete) return
+  try {
+    const res = await axios.delete(`http://localhost:8088/v1/api/teacher-subjects/${subjectToDelete}`)
+    
+    // Check errCode từ backend
+    if (res.data && res.data.errCode === 0) {
+        setTeacherSubjects((prev) => prev.filter((item) => item.id !== subjectToDelete))
+    } else {
+        alert(res.data.message || "Xóa thất bại ở server!")
     }
+  } catch (error) {
+    console.error('Lỗi khi xóa thỏa thuận:', error)
+    alert('Xóa thất bại. Vui lòng thử lại.')
+  } finally {
+    setShowConfirmModal(false)
+    setSubjectToDelete(null)
   }
+}
 
   if (loading) {
     return (

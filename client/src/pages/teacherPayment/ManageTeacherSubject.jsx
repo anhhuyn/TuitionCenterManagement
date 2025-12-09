@@ -67,33 +67,32 @@ const ManageTeacherSubject = () => {
         setSubjects(normalizedSubjects.filter(s => s.id));
 
 
-        if (isEditMode) {
+if (isEditMode) {
           const res = await getTeacherSubjectByIdApi(id);
-          const initialData = res;
-          console.log('API response:', res);
-          if (!res) {
-            throw new Error('Không tìm thấy dữ liệu thỏa thuận hoặc dữ liệu bị thiếu trường.');
-          }
-          let rawSalaryRate = initialData.salaryRate;
-          let cleanSalaryRate = '';
+          console.log('API response:', res); // Log để kiểm tra
 
-          // 2. LOGIC MỚI: Trích xuất số từ chuỗi định dạng
-          if (typeof rawSalaryRate === 'string') {
-            // Loại bỏ mọi ký tự không phải số. 
-            cleanSalaryRate = rawSalaryRate.replace(/[^0-9]/g, '');
-          } else if (typeof rawSalaryRate === 'number') {
-            // Trường hợp BE đôi khi trả về số, dù đã format cho list
-            cleanSalaryRate = String(rawSalaryRate);
+          // 👇 SỬA LẠI LOGIC LẤY DATA
+          if (res && res.data && res.errCode === 0) {
+              const initialData = res.data; // ✅ Lấy cục data thật sự bên trong
+
+              let rawSalaryRate = initialData.salaryRate;
+              let cleanSalaryRate = '';
+
+              // Logic xử lý tiền giữ nguyên (đoạn này bạn viết tốt rồi)
+              if (typeof rawSalaryRate === 'string') {
+                cleanSalaryRate = rawSalaryRate.replace(/[^0-9]/g, '');
+              } else if (typeof rawSalaryRate === 'number') {
+                cleanSalaryRate = String(rawSalaryRate);
+              }
+
+              setFormData({
+                teacherId: String(initialData.teacherId),
+                subjectId: String(initialData.subjectId), // ✅ Backend đã sửa thì cái này mới có giá trị
+                salaryRate: cleanSalaryRate,
+              });
           } else {
-            cleanSalaryRate = '';
+              throw new Error(res.message || 'Không tìm thấy dữ liệu.');
           }
-
-          setFormData({
-            teacherId: String(initialData.teacherId),
-            subjectId: String(initialData.subjectId),
-            // Đảm bảo giá trị cuối cùng là chuỗi số đơn giản
-            salaryRate: cleanSalaryRate,
-          });
         }
 
       } catch (err) {

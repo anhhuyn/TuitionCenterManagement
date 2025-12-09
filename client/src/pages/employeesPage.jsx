@@ -79,13 +79,28 @@ const TeacherManagement = () => {
     },
   });
 
-  // fetch dữ liệu
+// fetch dữ liệu
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
+        setLoading(true); // Đặt loading true khi bắt đầu
+        
+        // Tạo params chuẩn để loại bỏ các giá trị null/undefined/rỗng
+        const params = new URLSearchParams();
+        params.append("page", page);
+        params.append("limit", limit);
+        
+        if (filters.name) params.append("name", filters.name);
+        if (filters.gender) params.append("gender", filters.gender);
+        
+        // Chỉ append chuyên môn nếu có giá trị
+        if (filters.specialty) params.append("specialty", filters.specialty);
+
+        // Gọi API với params đã xử lý
         const response = await axios.get(
-          `http://localhost:8088/v1/api/employees?page=${page}&limit=${limit}&name=${filters.name}&gender=${filters.gender}&specialty=${filters.specialty}`
+          `http://localhost:8088/v1/api/teachers?${params.toString()}`
         );
+
         if (response.data.errCode === 0) {
           setTeachers(response.data.data);
           setPagination(response.data.pagination);
@@ -93,17 +108,15 @@ const TeacherManagement = () => {
           setError(response.data.message);
         }
       } catch (err) {
-        setError("Không thể kết nối đến server. Vui lòng thử lại sau.");
-        console.error("Lỗi khi fetch data:", err);
+        console.error("Fetch error:", err); // Log lỗi ra console để debug
+        setError("Không thể kết nối đến server.");
       } finally {
         setLoading(false);
       }
     };
 
-
     fetchTeachers();
-  }, [page, limit, filters]);
-
+  }, [page, limit, filters]); // Giữ nguyên dependency
 
   // click ngoài filter -> đóng panel
   useEffect(() => {
@@ -136,7 +149,18 @@ const TeacherManagement = () => {
       setSelected([...selected, id]);
     }
   };
+// 👇 1. Thêm hàm xử lý ảnh (để hiển thị ảnh từ localhost)
+const getImageUrl = (imagePath) => {
+  if (!imagePath) return "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+  if (imagePath.startsWith("http")) return imagePath;
+  return `http://localhost:8088/${imagePath}`;
+};
 
+// 👇 2. Thêm hàm click vào dòng (để mở modal chi tiết)
+const handleRowClick = (teacher) => {
+  setDetailEmployee(teacher);
+  setShowDetailModal(true);
+};
   // Hàm tách họ, tên lót, tên
   const splitNameParts = (fullName = "") => {
     const parts = fullName.trim().split(/\s+/);
@@ -239,87 +263,137 @@ const TeacherManagement = () => {
   };
 
   const handleSubmit = async () => {
+  try {
+    const formData = new FormData();
+    
+    // 1. Append các trường cơ bản
+    formData.append("fullName", newEmployee.fullName);
+    formData.append("email", newEmployee.email);
+    formData.append("phoneNumber", newEmployee.phoneNumber);
+    formData.append("specialty", newEmployee.specialty);
+    formData.append("gender", newEmployee.gender);
+    formData.append("dateOfBirth", newEmployee.dateOfBirth || "");
+    formData.append("roleId", "R1"); // Role Teacher
+    
+    // Gửi password nếu có nhập (hoặc backend tự set default)
+    if (newEmployee.password) {
+        formData.append("password", newEmployee.password);
+    } else if (!editMode) {
+        formData.append("password", "123456"); // Default cho tạo mới
+    }
+
+    // 2. SỬA QUAN TRỌNG: Append Address dùng dấu chấm (.)
+    if (newEmployee.address) {
+      formData.append("address.details", newEmployee.address.details || "");
+      formData.append("address.ward", newEmployee.address.ward || "");
+      formData.append("address.province", newEmployee.address.province || "");
+    }
+
+    // 3. Append Image
+    if (newEmployee.image instanceof File) {
+      formData.append("file", newEmployee.image);
+    }
+
+    // --- GỌI API (Sửa URL thành /teachers) ---
+    let response;
+    if (editMode && currentId) {
+      response = await axios.put(
+        `http://localhost:8088/v1/api/teachers/${currentId}`, // SỬA
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+    } else {
+      response = await axios.post(
+        "http://localhost:8088/v1/api/teachers", // SỬA
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+    }
+
+    if (response.data.errCode === 0) {
+      alert(editMode ? "Cập nhật thành công!" : "Thêm thành công!");
+      
+      // Load lại danh sách
+      const refreshed = await axios.get(
+        `http://localhost:8088/v1/api/teachers?page=${page}&limit=${limit}` // SỬA
+      );
+      if (refreshed.data.errCode === 0) {
+        setTeachers(refreshed.data.data);
+      }
+      setShowModal(false);
+    } else {
+      alert(response.data.message);
+    }
+
+  } catch (err) {
+    console.error(err);
+    alert("Có lỗi xảy ra!");
+  }
+};
+  // Xóa nhân viên
+const handleDelete = async (id) => {
+  if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
+  try {
+    // SỬA: /employees -> /teachers
+    const response = await axios.delete(`http://localhost:8088/v1/api/teachers/${id}`);
+    if (response.data.errCode === 0) {
+      alert("Xóa thành công!");
+      setTeachers(teachers.filter((t) => t.id !== id));
+      setSelected(selected.filter((s) => s !== id));
+    } else {
+      alert(response.data.message);
+    }
+  } catch (err) {
+    alert("Lỗi khi xóa!");
+  }
+};
+
+// Xóa nhiều
+const handleDeleteMultiple = async () => {
+  if (selected.length === 0) return alert("Vui lòng chọn nhân viên!");
+  if (!window.confirm(`Xóa ${selected.length} nhân viên đã chọn?`)) return;
+
+  try {
+    // SỬA: /employees -> /teachers
+    const response = await axios.post(
+      "http://localhost:8088/v1/api/teachers/delete-multiple",
+      { ids: selected }
+    );
+
+    if (response.data.errCode === 0) {
+      alert(response.data.message);
+      setTeachers(teachers.filter((t) => !selected.includes(t.id)));
+      setSelected([]);
+    } else {
+      alert(response.data.message);
+    }
+  } catch (error) {
+    alert("Lỗi khi xóa nhiều!");
+  }
+};
+
+  const handleExportExcel = async () => {
     try {
-      const formData = new FormData();
-      Object.keys(newEmployee).forEach((key) => {
-        if (key === "address") {
-          Object.keys(newEmployee.address).forEach((addrKey) => {
-            formData.append(`address[${addrKey}]`, newEmployee.address[addrKey]);
-          });
-        } else {
-          formData.append(key, newEmployee[key]);
-        }
+      // SỬA: URL đúng là /teachers/export (không có /excel)
+      const res = await axios.get("http://localhost:8088/v1/api/teachers/export", {
+        params: {
+          name: filters.name || undefined,
+          specialty: filters.specialty || undefined,
+          gender: filters.gender || undefined,
+        },
+        responseType: "blob",
       });
 
-      let response;
-      if (editMode && currentId) {
-        response = await axios.put(
-          `http://localhost:8088/v1/api/employees/${currentId}`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      } else {
-        response = await axios.post(
-          "http://localhost:8088/v1/api/employees",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      }
-
-      if (response.data.errCode === 0) {
-        alert(editMode ? "Cập nhật nhân viên thành công!" : "Thêm nhân viên thành công!");
-
-        // ✅ Refetch lại toàn bộ danh sách từ backend
-        const refreshed = await axios.get(
-          `http://localhost:8088/v1/api/employees?page=${page}&limit=${limit}`
-        );
-        if (refreshed.data.errCode === 0) {
-          setTeachers(refreshed.data.data);
-        }
-
-        setShowModal(false);
-      } else {
-        alert(response.data.message);
-      }
-
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `Danh_sach_giao_vien_${Date.now()}.xlsx`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
-      alert("Có lỗi xảy ra khi lưu nhân viên!");
-      console.error(err);
+      alert("⚠️ Xuất Excel thất bại!");
     }
-  };
-  // Xóa nhân viên
-  const handleDelete = async (id) => {
-    if (!window.confirm("Bạn có chắc chắn muốn xóa nhân viên này không?")) return;
-
-    try {
-      const response = await axios.delete(`http://localhost:8088/v1/api/employees/${id}`);
-      if (response.data.errCode === 0) {
-        alert("Xóa nhân viên thành công!");
-        // Cập nhật lại state teachers và selected
-        setTeachers(teachers.filter((t) => t.id !== id));
-        setSelected(selected.filter((s) => s !== id));
-      } else {
-        alert(response.data.message);
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Có lỗi xảy ra khi xóa nhân viên!");
-    }
-  };
-
-  // Xuất Excel
-  const handleExportExcel = () => {
-    try {
-      // Gọi trực tiếp API xuất Excel
-      window.open("http://localhost:8088/v1/api/employees/export/excel", "_blank");
-    } catch (err) {
-      console.error("Lỗi xuất Excel:", err);
-      alert("Không thể xuất Excel!");
-    }
-  };
-  const handleRowClick = (teacher) => {
-    setDetailEmployee(teacher);
-    setShowDetailModal(true);
   };
 
   const [provinces, setProvinces] = useState([]);
@@ -358,34 +432,7 @@ const TeacherManagement = () => {
     }
   };
 
-  // 🔹 Xóa nhiều nhân viên được chọn
-  const handleDeleteMultiple = async () => {
-    if (selected.length === 0) {
-      alert("Vui lòng chọn ít nhất một nhân viên để xóa!");
-      return;
-    }
-
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa ${selected.length} nhân viên này không?`)) return;
-
-    try {
-      const response = await axios.post(
-        "http://localhost:8088/v1/api/employees/delete-multiple",
-        { ids: selected }
-      );
-
-      if (response.data.errCode === 0) {
-        alert(response.data.message);
-        // Cập nhật lại danh sách
-        setTeachers(teachers.filter((t) => !selected.includes(t.id)));
-        setSelected([]);
-      } else {
-        alert(response.data.message);
-      }
-    } catch (error) {
-      console.error("Lỗi khi xóa nhiều nhân viên:", error);
-      alert("Đã xảy ra lỗi khi xóa nhiều nhân viên!");
-    }
-  };
+  
 
 
   return (

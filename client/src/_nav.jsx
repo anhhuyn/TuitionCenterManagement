@@ -74,12 +74,12 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Lịch trống giáo viên',
-        to: '/base/cards',
+        to: '/admin/teacher-schedule',
       },
       {
         component: CNavItem,
         name: 'Kiểm tra phòng trống',
-        to: '/base/carousels',
+        to: '/admin/room-schedule',
       },
       
     ],
