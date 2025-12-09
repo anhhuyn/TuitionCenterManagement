@@ -13,10 +13,20 @@
   background: #fff;
 }
 
+.announcement-content {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
 .announcement-image {
-  max-width: 100%;
-  height: auto;
-  margin-top: 0.5rem;
+  display: block;           
+  max-width: 350px;       
+  width: 100%;             
+  height: auto;           
+  margin: 0.5rem auto;      
+  border-radius: 6px;       
+  object-fit: cover;      
+  margin-top: 20px;
 }
 
 .actions {
@@ -72,4 +82,167 @@
 /* Tăng trải nghiệm người dùng khi click */
 .announcement-add-placeholder:active {
   background-color: #e0e0e0;
+}
+
+.text-clamp-3 {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; 
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.content-box {
+  position: relative;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+
+  overflow: hidden;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* overlay để giữ "… Xem thêm" trong cùng dòng */
+.content-box .see-more {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+
+  padding-left: 40px; 
+  background: linear-gradient(to right, transparent, #fff 40%);
+  cursor: pointer;
+  color: #007bff;
+  font-size: 13px;
+}
+
+/* Khi mở rộng */
+.content-box.expanded {
+  display: block;
+}
+
+.content-box.expanded .see-less {
+  display: inline-block;
+  margin-top: 6px;
+  cursor: pointer;
+  color: #007bff;
+  font-size: 13px;
+}
+
+/* HEADER */
+.announcement-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.announcement-admin-avatar {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 10px;
+  border: 1px solid #ccc;
+}
+
+.header-info .admin-name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.meta-info {
+  font-size: 13px;
+  color: #666;
+  display: flex;
+  align-items: center;
+}
+
+.meta-info .dot {
+  margin: 0 6px;
+}
+
+/* Status badge */
+.announcement-status-badge {
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+  margin-left: 8px;
+}
+
+.announcement-status-badge.active {
+  background: #d4f8d4;
+  color: #1a7f1a;
+}
+
+.announcement-status-badge.inactive {
+  background: #ffe1e1;
+  color: #c62828;
+}
+
+.announcement-status-badge.draft {
+  background: #e6e6e6;
+  color: #555;
+}
+
+/* Menu 3 chấm */
+.menu-wrapper {
+  position: relative;
+}
+
+.menu-button {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 50%;
+}
+
+.menu-button:hover {
+  background: #f0f0f0;
+}
+
+.menu-dropdown {
+  position: absolute;
+  right: 0;
+  top: 28px;
+
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  width: 120px;
+
+  animation: fadeIn 0.15s ease;
+}
+
+.menu-dropdown div {
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.menu-dropdown div:hover {
+  background: #f5f5f5;
+}
+
+/* Fade */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Tiêu đề */
+.announcement-title {
+  margin-top: -4px;
+  margin-bottom: 8px;
+  font-size: 17px;
+  font-weight: 600;
 }
