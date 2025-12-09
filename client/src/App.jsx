@@ -277,7 +277,7 @@ function App() {
         }
       />
 
-       <Route
+      <Route
         path="/admin/teacher-schedule"
         element={
           <ProtectedRoute>

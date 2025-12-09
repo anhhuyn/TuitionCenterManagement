@@ -83,14 +83,18 @@ export default function CustomerTable() {
         },
       });
 
-      if (res.data.errCode === 0) {
-        setStudents(res.data.data);
-        setPagination({
-          total: res.data.pagination?.total || 0,
-          totalPages: res.data.pagination?.totalPages || 1,
-          page: res.data.pagination?.page || 1,
-          limit: res.data.pagination?.limit || 10,
-        });
+// Trong hàm fetchStudents
+  if (res.data.errCode === 0) {
+    setStudents(res.data.data);
+    setPagination({
+      // Backend Java: new PaginationDTO(studentPage.getTotalElements(), ...)
+      // Cần đảm bảo tên trường khớp với DTO Java
+      total: res.data.pagination?.total || res.data.pagination?.totalElements || 0,
+      totalPages: res.data.pagination?.totalPages || 1,
+      page: res.data.pagination?.page || 1,
+      limit: res.data.pagination?.limit || 10,
+    });
+
 
       } else {
         console.error("Lỗi khi lấy dữ liệu:", res.data.message);
@@ -232,48 +236,82 @@ export default function CustomerTable() {
 
 
 
-  // 🟢 Gửi form thêm / cập nhật học viên
-  const handleSubmit = async () => {
-    try {
-      const formData = new FormData();
-      Object.keys(newStudent).forEach((key) => {
-        if (key === "address" || key === "parents") {
-          formData.append(key, JSON.stringify(newStudent[key]));
-        } else {
-          formData.append(key, newStudent[key]);
-        }
-      });
+// 🟢 Gửi form thêm / cập nhật học viên
+const handleSubmit = async () => {
+  try {
+    const formData = new FormData();
 
-      let res;
-      if (editMode && currentId) {
-        // PUT update
-        res = await axios.put(
-          `http://localhost:8088/v1/api/students/${currentId}`,
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      } else {
-        // POST create
-        formData.append("roleId", "R2");
-        res = await axios.post(
-          "http://localhost:8088/v1/api/students",
-          formData,
-          { headers: { "Content-Type": "multipart/form-data" } }
-        );
-      }
+    // 1. Append các trường cơ bản
+    formData.append("fullName", newStudent.fullName);
+    formData.append("email", newStudent.email);
+    formData.append("phoneNumber", newStudent.phoneNumber);
+    formData.append("grade", newStudent.grade);
+    formData.append("schoolName", newStudent.schoolName);
+    formData.append("gender", newStudent.gender); // Chuyển boolean/string tùy BE
+    formData.append("dateOfBirth", newStudent.dateOfBirth || ""); // Tránh null
+    formData.append("roleId", "R2"); // Luôn gửi role R2
 
-      if (res.data.errCode === 0) {
-        alert(editMode ? "Cập nhật học viên thành công!" : "Thêm học viên thành công!");
-        setShowModal(false);
-        await fetchStudents();
-      } else {
-        alert(res.data.message || "Thao tác thất bại!");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("❌ Lỗi khi gửi dữ liệu lên server!");
+    // 2. Append Address (Dùng dấu chấm để Spring Boot hiểu là Object con)
+    if (newStudent.address) {
+      formData.append("address.details", newStudent.address.details || "");
+      formData.append("address.ward", newStudent.address.ward || "");
+      formData.append("address.province", newStudent.address.province || "");
     }
-  };
+
+    // 3. Append Parents (Dùng index để Spring Boot hiểu là List)
+    if (newStudent.parents && newStudent.parents.length > 0) {
+      newStudent.parents.forEach((parent, index) => {
+        formData.append(`parents[${index}].fullName`, parent.fullName || "");
+        formData.append(`parents[${index}].phoneNumber`, parent.phoneNumber || "");
+        formData.append(`parents[${index}].relationship`, "Phụ huynh"); // Backend cần trường này (hoặc default)
+      });
+    }
+
+    // 4. Append Image
+    if (newStudent.image instanceof File) {
+      formData.append("file", newStudent.image);
+    }
+
+    // --- GỌI API ---
+    let res;
+    if (editMode && currentId) {
+      // PUT update
+      res = await axios.put(
+        `http://localhost:8088/v1/api/students/${currentId}`,
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+    } else {
+      // POST create
+      res = await axios.post(
+        "http://localhost:8088/v1/api/students",
+        formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+    }
+
+    if (res.data && res.data.errCode === 0) {
+      alert(editMode ? "✅ Cập nhật thành công!" : "✅ Thêm mới thành công!");
+      setShowModal(false);
+      // Reset form sau khi thành công
+      setNewStudent({
+          fullName: "", email: "", phoneNumber: "", grade: "", schoolName: "",
+          gender: true, dateOfBirth: "",
+          address: { details: "", ward: "", province: "" },
+          parents: [{ fullName: "", phoneNumber: "" }],
+          image: null,
+      });
+      await fetchStudents();
+    } else {
+      alert(res.data?.message || "❌ Thao tác thất bại!");
+    }
+  } catch (err) {
+    console.error("Submit Error:", err);
+    // Log chi tiết lỗi từ backend nếu có
+    const serverMsg = err.response?.data?.message || err.message;
+    alert(`❌ Lỗi: ${serverMsg}`);
+  }
+};
 
   // 🗑️ Xóa học viên
   const handleDelete = async (id) => {
@@ -337,33 +375,35 @@ export default function CustomerTable() {
     limit: 10,
   });
 
-  // 🗑️ Xóa nhiều học viên được chọn
-  const handleDeleteSelected = async () => {
-    if (selected.length === 0) {
-      alert("Vui lòng chọn ít nhất một học viên để xóa!");
-      return;
+// 🗑️ Xóa nhiều học viên được chọn
+const handleDeleteSelected = async () => {
+  if (selected.length === 0) {
+    alert("Vui lòng chọn ít nhất một học viên để xóa!");
+    return;
+  }
+
+  if (!window.confirm(`Bạn có chắc muốn xóa ${selected.length} học viên đã chọn không?`)) return;
+
+  try {
+    // SỬA: Chuyển sang POST và đúng đường dẫn backend
+    const res = await axios.post("http://localhost:8088/v1/api/students/delete-multiple", {
+      ids: selected // Payload khớp với Map<String, List<Long>> trong Backend
+    });
+
+    if (res.data && res.data.errCode === 0) {
+      alert("✅ Đã xóa các học viên được chọn!");
+      // Reset selection
+      setSelected([]);
+      // Load lại dữ liệu
+      await fetchStudents();
+    } else {
+      alert(res.data?.message || "❌ Không thể xóa học viên!");
     }
-
-    if (!window.confirm(`Bạn có chắc muốn xóa ${selected.length} học viên đã chọn không?`)) return;
-
-    try {
-      const res = await axios.delete("http://localhost:8088/v1/api/students", {
-        data: { ids: selected },
-      });
-
-      if (res.data.errCode === 0) {
-        alert("✅ Đã xóa các học viên được chọn!");
-        setStudents(students.filter((s) => !selected.includes(s.id)));
-        setSelected([]);
-      } else {
-        alert(res.data.message || "❌ Không thể xóa học viên!");
-      }
-    } catch (err) {
-      console.error("Lỗi khi xóa nhiều học viên:", err);
-      alert("⚠️ Lỗi kết nối khi xóa nhiều học viên!");
-    }
-  };
-
+  } catch (err) {
+    console.error("Lỗi khi xóa nhiều:", err);
+    alert("⚠️ Lỗi kết nối khi xóa nhiều học viên!");
+  }
+};
   const handleViewDetail = async (id) => {
     try {
       const res = await axios.get(`http://localhost:8088/v1/api/students/${id}`);
@@ -379,37 +419,78 @@ export default function CustomerTable() {
     }
   };
 
-  const handleExportStudentsExcel = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:8088/v1/api/students/export/excel",
-        {
-          params: {
-            name: search || undefined,
-            subject: filters.subject || undefined,
-            grade: filters.grade || undefined,
-            schoolName: filters.schoolName || undefined,
-            gender: filters.gender || undefined,
-          },
-          responseType: "blob", // 🧩 Quan trọng: nhận dạng file nhị phân
-        }
-      );
+  // Thêm state loading cho export nếu chưa có
+const [exporting, setExporting] = useState(false);
 
-      // 🧩 Tạo link download tạm thời
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "danh-sach-hoc-vien.xlsx");
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-    } catch (err) {
-      console.error("Lỗi khi xuất Excel:", err);
-      alert("⚠️ Xuất Excel thất bại!");
+const handleExportStudentsExcel = async () => {
+  try {
+    setExporting(true); // 1. Bắt đầu loading
+    
+    const res = await axios.get(
+      "http://localhost:8088/v1/api/students/export", // URL backend của bạn
+      {
+        params: {
+          name: search || undefined,
+          subject: filters.subject || undefined,
+          grade: filters.grade || undefined,
+          schoolName: filters.schoolName || undefined,
+          gender: filters.gender || undefined,
+        },
+        responseType: "blob", // Quan trọng
+      }
+    );
+
+    // Kiểm tra xem dữ liệu trả về có phải JSON (lỗi) hay không
+    const isJson = res.headers["content-type"] && res.headers["content-type"].indexOf("application/json") !== -1;
+
+    if (isJson) {
+        // Nếu server trả về JSON lỗi dưới dạng Blob, cần đọc ra
+        const reader = new FileReader();
+        reader.onload = () => {
+            const errorData = JSON.parse(reader.result);
+            alert(`⚠️ Lỗi xuất file: ${errorData.message || "Không xác định"}`);
+        };
+        reader.readAsText(res.data);
+        return;
     }
-  };
 
+    // 2. Nếu OK -> Tiến hành tải
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Danh_sach_hoc_vien_${Date.now()}.xlsx`);
+    document.body.appendChild(link);
+    link.click();
+    
+    // Dọn dẹp
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+
+    // 3. Thông báo thành công
+    alert("✅ Xuất file Excel thành công! Kiểm tra thư mục tải xuống.");
+
+  } catch (err) {
+    console.error("Lỗi export:", err);
+    alert("❌ Có lỗi xảy ra khi kết nối tới server để xuất file.");
+  } finally {
+    setExporting(false); // Tắt loading
+  }
+};
+// Helper xử lý ảnh
+const getImageUrl = (imagePath) => {
+  // 1. Nếu không có đường dẫn -> Trả về ảnh mặc định
+  if (!imagePath) return "https://via.placeholder.com/150?text=No+Image"; 
+  
+  // 2. Nếu đường dẫn đã là link online (ví dụ firebase) -> Giữ nguyên
+  if (imagePath.startsWith("http")) return imagePath;
+
+  // 3. Nếu là đường dẫn lưu trong DB (ví dụ: "uploads/anh1.jpg") -> Ghép với localhost
+  // Lưu ý: Kiểm tra xem imagePath có dấu "/" ở đầu không để ghép cho đúng
+  const baseUrl = "http://localhost:8088/"; // Port backend của bạn
+  const cleanPath = imagePath.startsWith("/") ? imagePath.substring(1) : imagePath;
+  
+  return `${baseUrl}${cleanPath}`;
+};
   return (
     <div className="table-container">
       {/* Thanh trên */}
@@ -829,131 +910,169 @@ export default function CustomerTable() {
         </CModalFooter>
       </CModal>
 
+{/* 🟢 Modal xem chi tiết học viên */}
+<CModal
+  visible={showDetailModal}
+  onClose={() => setShowDetailModal(false)}
+  alignment="center"
+  size="lg" // Đặt size lg cho vừa vặn hơn
+  className="student-detail-modal"
+>
+  <CModalHeader className="custom-modal-header">
+    <h5 className="m-0">Thông tin chi tiết học viên</h5>
+  </CModalHeader>
 
-      {/* 🟢 Modal xem chi tiết học viên */}
-      <CModal
-        visible={showDetailModal}
-        onClose={() => setShowDetailModal(false)}
-        alignment="center"
-        //size="xl"                   
-        className="student-detail-modal"
-      >
-
-        <CModalHeader className="custom-modal-header">
-          <h5 className="m-0">
-            Thông tin chi tiết học viên
-          </h5>
-        </CModalHeader>
-
-        <CModalBody className="p-4 bg-light">
-          {studentDetail ? (
-            <div className="container-fluid">
-              <div className="row g-4">
-                {/* Cột trái - Ảnh đại diện */}
-                <div className="col-md-4 text-center">
-                  <div className="card border-0 shadow-sm p-3 rounded-4 h-100">
-                    <img
-                      src={
-                        studentDetail.image
-                          ? `http://localhost:8088/${studentDetail.image}`
-                          : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                      }
-                      alt="Student Avatar"
-                      className="rounded-circle mx-auto mb-3"
-                      style={{
-                        width: "130px",
-                        height: "130px",
-                        objectFit: "cover",
-                        border: "0px solid #7494ec",
-                      }}
-                    />
-                    <h5 >
-                      {studentDetail.fullName}
-                    </h5>
-                    <p className="text-muted small">
-                      {studentDetail.roleName || "Học viên"}
-                    </p>
-                    <hr />
-                    <div className="text-start small">
-                      <p>
-                        <strong><FiPhone />   SĐT:</strong> {studentDetail.phoneNumber || "Chưa có"}
-                      </p>
-                      <p>
-                        <strong><FiCalendar />   Ngày sinh:</strong> {studentDetail.dateOfBirth || "Chưa có"}
-                      </p>
-                      <p>
-                        <strong><FiUser />   Giới tính:</strong> {studentDetail.gender ? "Nam" : "Nữ"}
-                      </p>
-                    </div>
-
-                  </div>
-                </div>
-
-                {/* Cột phải - Thông tin chi tiết */}
-                <div className="col-md-8">
-                  <div className="card border-0 shadow-sm rounded-4 p-3 mb-3">
-                    <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Thông tin cá nhân</h6>
-                    <div className="row mb-2">
-                      <div className="col-sm-6"><strong>Email:</strong> {studentDetail.email}</div>
-                      <div className="col-sm-6"><strong>Lớp:</strong> {studentDetail.grade || "Chưa có"}</div>
-                    </div>
-                    <div className="row mb-2">
-                      <div className="col-sm-6"><strong>Trường:</strong> {studentDetail.schoolName || "Chưa có"}</div>
-                      <div className="col-sm-6"><strong>Phụ huynh:</strong> {studentDetail.parents?.[0]?.fullName || "Chưa có"} ({studentDetail.parents?.[0]?.phoneNumber || "Chưa có"})</div>
-                    </div>
-                    <div className="mb-2">
-                      <strong>Địa chỉ:</strong>{" "}
-                      {studentDetail.address?.details}, {studentDetail.address?.ward},{" "}
-                      {studentDetail.address?.province}
-                    </div>
-                  </div>
-
-                  <div className="card border-0 shadow-sm rounded-4 p-3">
-                    <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Môn học đã đăng ký</h6>
-                    {studentDetail.subjects?.length > 0 ? (
-                      <ul className="list-group list-group-flush">
-                        {studentDetail.subjects.map((subj) => (
-                          <li
-                            key={subj.id}
-                            className="list-group-item d-flex justify-content-between align-items-center"
-                          >
-                            <span><strong>{subj.name}</strong> – Lớp {subj.grade}</span>
-                            <span className="text-muted small">
-                              {new Date(subj.enrollmentDate).toLocaleDateString("vi-VN")}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <p className="text-muted fst-italic mb-0">Chưa đăng ký môn học nào.</p>
-                    )}
-                  </div>
-                </div>
+  <CModalBody className="p-4 bg-light">
+    {studentDetail ? (
+      <div className="container-fluid">
+        <div className="row g-4">
+          {/* Cột trái - Ảnh đại diện */}
+          <div className="col-md-4 text-center">
+            <div className="card border-0 shadow-sm p-3 rounded-4 h-100">
+              <img
+                // SỬA ĐỔI: Sử dụng hàm getImageUrl đã định nghĩa ở trên
+                src={getImageUrl(studentDetail.image)}
+                alt="Student Avatar"
+                className="rounded-circle mx-auto mb-3"
+                style={{
+                  width: "130px",
+                  height: "130px",
+                  objectFit: "cover",
+                  border: "3px solid #7494ec", // Sửa lại border cho rõ nét hơn
+                }}
+                // Thêm xử lý khi ảnh lỗi
+                onError={(e) => {
+                  e.target.src = "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+                }}
+              />
+              <h5>{studentDetail.fullName}</h5>
+              <p className="badge bg-primary text-white">
+                {studentDetail.roleName || "Học viên"}
+              </p>
+              <hr />
+              <div className="text-start small">
+                <p className="mb-2">
+                  <strong><FiPhone /> SĐT:</strong>{" "}
+                  {studentDetail.phoneNumber || "Chưa có"}
+                </p>
+                <p className="mb-2">
+                  <strong><FiCalendar /> Ngày sinh:</strong>{" "}
+                  {studentDetail.dateOfBirth || "Chưa có"}
+                </p>
+                <p className="mb-2">
+                  <strong><FiUser /> Giới tính:</strong>{" "}
+                  {studentDetail.gender ? "Nam" : "Nữ"}
+                </p>
               </div>
             </div>
-          ) : (
-            <p>Đang tải thông tin...</p>
-          )}
-        </CModalBody>
+          </div>
 
-        <CModalFooter className="bg-white border-top-0">
-          <CButton style={{ backgroundColor: '#7494ec', borderColor: '#7494ec', color: 'white' }} size="sm"
-            color="success"
-            variant="outline"
-            onClick={() => {
-              setShowDetailModal(false);
-              handleEdit(studentDetail);
-            }}
-          >
-            Chỉnh sửa
-          </CButton>
-          <CButton style={{ backgroundColor: '#89898aff', borderColor: '#7494ec', color: 'white' }} size="sm" onClick={() => setShowDetailModal(false)}>
-            Đóng
-          </CButton>
-        </CModalFooter>
-      </CModal>
+          {/* Cột phải - Thông tin chi tiết */}
+          <div className="col-md-8">
+            <div className="card border-0 shadow-sm rounded-4 p-3 mb-3">
+              <h6 style={{ color: "#7494ec", fontWeight: 600 }} className="border-bottom pb-2">
+                Thông tin chung
+              </h6>
+              <table className="table table-borderless mb-0">
+                <tbody>
+                  <tr>
+                    <td className="fw-bold w-25">Email:</td>
+                    <td>{studentDetail.email}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Trường:</td>
+                    <td>{studentDetail.schoolName || "Chưa cập nhật"}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Khối lớp:</td>
+                    <td>{studentDetail.grade || "Chưa cập nhật"}</td>
+                  </tr>
+                  <tr>
+                    <td className="fw-bold">Địa chỉ:</td>
+                    <td>
+                      {studentDetail.address ? (
+                        <>
+                          {studentDetail.address.details || ""},{" "}
+                          {studentDetail.address.ward || ""},{" "}
+                          {studentDetail.address.province || ""}
+                        </>
+                      ) : (
+                        "Chưa cập nhật"
+                      )}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
 
+              <h6 style={{ color: "#7494ec", fontWeight: 600 }} className="border-bottom pb-2 mt-3">
+                Thông tin phụ huynh
+              </h6>
+              {studentDetail.parents && studentDetail.parents.length > 0 ? (
+                studentDetail.parents.map((p, idx) => (
+                  <div key={idx} className="alert alert-light border p-2 mb-2">
+                    <strong>{p.fullName}</strong> ({p.relationship || "Phụ huynh"}){" "}
+                    <br />
+                    <span className="text-success">
+                      <FiPhone /> {p.phoneNumber}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-muted fst-italic">Chưa có thông tin phụ huynh</p>
+              )}
+            </div>
 
+            <div className="card border-0 shadow-sm rounded-4 p-3">
+              <h6 style={{ color: "#7494ec", fontWeight: 600 }} className="border-bottom pb-2">
+                Môn học đã đăng ký
+              </h6>
+              {studentDetail.subjects?.length > 0 ? (
+                <ul className="list-group list-group-flush">
+                  {studentDetail.subjects.map((subj) => (
+                    <li
+                      key={subj.id}
+                      className="list-group-item d-flex justify-content-between align-items-center"
+                    >
+                      <span>
+                        <strong>{subj.name}</strong> – Lớp {subj.grade}
+                      </span>
+                      <span className="text-muted small">
+                        {new Date(subj.enrollmentDate).toLocaleDateString("vi-VN")}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-muted fst-italic mb-0">Chưa đăng ký môn học nào.</p>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    ) : (
+      <div className="text-center p-5">
+        <div className="spinner-border text-primary" role="status"></div>
+        <p className="mt-2">Đang tải thông tin...</p>
+      </div>
+    )}
+  </CModalBody>
+
+  <CModalFooter className="bg-white border-top-0">
+    <CButton
+      color="primary"
+      size="sm"
+      onClick={() => {
+        setShowDetailModal(false);
+        handleEdit(studentDetail);
+      }}
+    >
+      <CIcon icon={cilPencil} className="me-1" /> Chỉnh sửa
+    </CButton>
+    <CButton color="secondary" size="sm" onClick={() => setShowDetailModal(false)}>
+      Đóng
+    </CButton>
+  </CModalFooter>
+</CModal>
 
     </div>
   );

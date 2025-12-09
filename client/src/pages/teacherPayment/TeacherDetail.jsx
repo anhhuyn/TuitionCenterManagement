@@ -26,11 +26,17 @@ const TeacherDetail = () => {
   const [teacher, setTeacher] = useState(null)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+useEffect(() => {
     const fetchTeacher = async () => {
       try {
         const res = await axios.get(`http://localhost:8088/v1/api/teacher-subjects/${id}`)
-        setTeacher(res.data)
+        
+        // ✅ SỬA: Kiểm tra errCode và lấy đúng biến data
+        if (res.data && res.data.errCode === 0) {
+            setTeacher(res.data.data)
+        } else {
+            console.error(res.data.message)
+        }
       } catch (error) {
         console.error('Lỗi tải chi tiết giáo viên:', error)
       } finally {
