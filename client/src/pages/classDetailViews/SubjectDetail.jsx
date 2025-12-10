@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import "../../styles/classDetailViews/SubjectDetail.css";
 import { cilPen } from "@coreui/icons";
 import CIcon from "@coreui/icons-react";
-import { getSubjectByIdApi, getTeacherBasicListApi, updateSubjectApi, deleteSubjectApi } from "../../util/api";
+import { getSubjectByIdApi, getTeacherBasicListApi, updateSubjectApi, deleteSubjectApi, getUserApi } from "../../util/api";
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import { useParams } from "react-router-dom";
 
 export default function SubjectDetail() {
     const { id } = useParams();
+    const [user, setUser] = useState(null);
+    const [roleId, setRoleId] = useState(null);
     const [classData, setClassData] = useState(null);
     const [loading, setLoading] = useState(true);
     const [employeeList, setEmployeeList] = useState([]);
@@ -15,6 +17,22 @@ export default function SubjectDetail() {
     const [editedData, setEditedData] = useState(null);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await getUserApi();
+                if (res) {
+                    setUser(res);
+                    setRoleId(res.roleId);
+                }
+            } catch (err) {
+                console.error("Không lấy được thông tin user:", err);
+            }
+        };
+
+        fetchUser();
+    }, []);
 
     const getInitialEditedData = (data) => {
         const teacher = data.teacherSubjects[0]?.teacher || null;
@@ -181,29 +199,28 @@ export default function SubjectDetail() {
     return (
         <div className="subject-detail-container">
             {/* Nút chỉnh sửa nằm trên cùng góc phải */}
-            <div className="top-edit-bar">
-                <button
-                    className="edit-button"
-                    onClick={() => {
-                        if (isEditing) {
-                            setEditedData(getInitialEditedData(classData)); // reset về dữ liệu gốc
-                        }
-                        setIsEditing(!isEditing);
-                    }}
-                >
-                    <CIcon icon={cilPen} className="me-1" /> {isEditing ? "Hủy" : "Chỉnh sửa"}
-                </button>
+            {roleId !== "R1" && (
+                <div className="top-edit-bar">
+                    <button
+                        className="edit-button"
+                        onClick={() => {
+                            if (isEditing) setEditedData(getInitialEditedData(classData));
+                            setIsEditing(!isEditing);
+                        }}
+                    >
+                        <CIcon icon={cilPen} className="me-1" /> {isEditing ? "Hủy" : "Chỉnh sửa"}
+                    </button>
 
-                {/* Nút xóa môn học */}
-                <button
-                    className="delete-button"
-                    style={{ marginLeft: "10px", backgroundColor: "#e53935", color: "#fff" }}
-                    onClick={() => setShowDeleteModal(true)}
-                >
-                    Xóa môn học
-                </button>
+                    <button
+                        className="delete-button"
+                        style={{ marginLeft: "10px", backgroundColor: "#e53935", color: "#fff" }}
+                        onClick={() => setShowDeleteModal(true)}
+                    >
+                        Xóa môn học
+                    </button>
+                </div>
+            )}
 
-            </div>
 
             {/* Dòng 1: Thông tin cơ bản */}
             <div className="section-header">Thông tin cơ bản</div>

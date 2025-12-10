@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { getStudentsBySubjectIdApi, removeStudentFromSubjectApi } from "../../util/api";
-import "../../styles/classDetailViews/StudentList.css"; // 👉 Dùng CSS mới
+import { getStudentsBySubjectIdApi, removeStudentFromSubjectApi, getUserApi } from "../../util/api";
+import "../../styles/classDetailViews/StudentList.css";
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import AddStudentModal from "./AddStudentModal";
 
@@ -8,6 +8,8 @@ import CIcon from "@coreui/icons-react";
 import { cilFilter, cilSearch } from "@coreui/icons";
 
 export default function StudentList({ classData }) {
+  const [user, setUser] = useState(null);
+  const [roleId, setRoleId] = useState(null);
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -22,6 +24,22 @@ export default function StudentList({ classData }) {
     setIsDeleteMultiple(true);
     setShowConfirmModal(true);
   };
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getUserApi();
+        if (res) {
+          setUser(res);
+          setRoleId(res.roleId);
+        }
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin user:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchStudents = async () => {
@@ -139,20 +157,24 @@ export default function StudentList({ classData }) {
         </div>
 
         <div className="studentlist-righttools">
-          <button
-            className="studentlist-btn-delete-selected"
-            disabled={selected.length === 0}
-            onClick={confirmDeleteSelected}
-          >
-            Xóa đã chọn ({selected.length})
-          </button>
+          {roleId !== "R1" && (
+            <>
+              <button
+                className="studentlist-btn-delete-selected"
+                disabled={selected.length === 0}
+                onClick={confirmDeleteSelected}
+              >
+                Xóa đã chọn ({selected.length})
+              </button>
 
-          <button
-            className="studentlist-btn-add"
-            onClick={() => setShowAddModal(true)}
-          >
-            + Thêm học sinh
-          </button>
+              <button
+                className="studentlist-btn-add"
+                onClick={() => setShowAddModal(true)}
+              >
+                + Thêm học sinh
+              </button>
+            </>
+          )}
         </div>
       </div>
 
@@ -200,8 +222,8 @@ export default function StudentList({ classData }) {
                   {stu.gender === true
                     ? "Nam"
                     : stu.gender === false
-                    ? "Nữ"
-                    : "Không xác định"}
+                      ? "Nữ"
+                      : "Không xác định"}
                 </td>
                 <td>{stu.dateOfBirth}</td>
                 <td>{stu.schoolName}</td>

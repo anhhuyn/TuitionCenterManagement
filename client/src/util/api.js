@@ -86,6 +86,24 @@ const getSubjectsApi = async ({ page = 1, limit = 12, status = null } = {}) => {
   return res;
 };
 
+// Lấy danh sách môn học theo userId của giáo viên
+const getSubjectsByTeacherApi = async ({ 
+  userId, 
+  page = 1, 
+  limit = 12, 
+  status = null 
+} = {}) => {
+
+  if (!userId) throw new Error("userId is required");
+
+  const params = { page, limit };
+  if (status) params.status = status;
+
+  const res = await axios.get(`/v1/api/subjects/teacher/${userId}`, { params });
+  return res; // interceptor sẽ trả về res.data
+};
+
+
 const createSubjectApi = async (formData) => {
   try {
     const res = await axios.post("/v1/api/subjects", formData, {
@@ -534,6 +552,7 @@ export const getTeacherScheduleApi = async (teacherId, startDate, endDate) => {
 };
 
 export {
+  getSubjectsByTeacherApi,
   getRoomScheduleApi,
   deleteAnnouncementApi,
   updateAnnouncementApi,

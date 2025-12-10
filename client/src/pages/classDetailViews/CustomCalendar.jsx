@@ -8,11 +8,13 @@ import { FaEdit, FaPlus, FaCalendarAlt, FaTrash } from "react-icons/fa";
 import "../../styles/classDetailViews/Calendar.css";
 import CreateScheduleModal from "./CreateScheduleModal.jsx";
 import CreateSessionModal from "./CreateSessionModal.jsx";
-import { fetchSessionById, getScheduleBySubjectId, deleteSessionApi } from "../../util/api";
+import { fetchSessionById, getScheduleBySubjectId, deleteSessionApi, getUserApi } from "../../util/api";
 import ConfirmModal from "../../components/modal/ConfirmModal";
 import Swal from "sweetalert2";
 
 export default function CustomCalendar({ subjectId }) {
+    const [user, setUser] = useState(null);
+    const [roleId, setRoleId] = useState(null);
     const [events, setEvents] = useState([]);
     const [showModal, setShowModal] = useState(false);
     const calendarRef = useRef(null);
@@ -53,6 +55,22 @@ export default function CustomCalendar({ subjectId }) {
             console.error("Lỗi khi tải lịch học:", err);
         }
     };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await getUserApi();
+                if (res) {
+                    console.log("User info:", res);
+                    setUser(res);
+                    setRoleId(res.roleId);
+                }
+            } catch (err) {
+                console.error("Lỗi khi lấy thông tin user:", err);
+            }
+        };
+        fetchUser();
+    }, []);
 
     useEffect(() => {
         fetchSchedule();
@@ -150,40 +168,42 @@ export default function CustomCalendar({ subjectId }) {
     return (
         <div>
             {/* Các nút chức năng */}
-            <div className="calendar-header">
-                <button
-                    className={`calendar-btn edit ${isEditMode ? "active" : ""}`}
-                    onClick={() => {
-                        setIsEditMode(prev => {
-                            const newMode = !prev;
-                            if (!newMode) {
-                                setSelectedSessions([]);
+            {roleId !== "R1" && (
+                <div className="calendar-header">
+                    <button
+                        className={`calendar-btn edit ${isEditMode ? "active" : ""}`}
+                        onClick={() => {
+                            setIsEditMode(prev => {
+                                const newMode = !prev;
+                                if (!newMode) {
+                                    setSelectedSessions([]);
+                                }
+                                return newMode;
+                            });
+                        }}
+                    >
+                        <FaEdit className="btn-icon" />
+                        {isEditMode ? "Huỷ chỉnh sửa" : "Chỉnh sửa"}
+                    </button>
+                    <button className="calendar-btn add" onClick={() => setShowSessionModal(true)}>
+                        <FaPlus className="btn-icon" /> Thêm buổi
+                    </button>
+                    <button className="calendar-btn create" onClick={() => setShowModal(true)}>
+                        <FaCalendarAlt className="btn-icon" /> Tạo lịch học
+                    </button>
+                    <button
+                        className="calendar-btn delete"
+                        disabled={selectedSessions.length === 0}
+                        onClick={() => {
+                            if (selectedSessions.length > 0) {
+                                setConfirmDeleteSessionId("multiple");
                             }
-                            return newMode;
-                        });
-                    }}
-                >
-                    <FaEdit className="btn-icon" />
-                    {isEditMode ? "Huỷ chỉnh sửa" : "Chỉnh sửa"}
-                </button>
-                <button className="calendar-btn add" onClick={() => setShowSessionModal(true)}>
-                    <FaPlus className="btn-icon" /> Thêm buổi
-                </button>
-                <button className="calendar-btn create" onClick={() => setShowModal(true)}>
-                    <FaCalendarAlt className="btn-icon" /> Tạo lịch học
-                </button>
-                <button
-                    className="calendar-btn delete"
-                    disabled={selectedSessions.length === 0}
-                    onClick={() => {
-                        if (selectedSessions.length > 0) {
-                            setConfirmDeleteSessionId("multiple");
-                        }
-                    }}
-                >
-                    <FaTrash className="btn-icon" /> {selectedSessions.length > 0 ? `Xoá (${selectedSessions.length}) buổi` : "Xoá buổi"}
-                </button>
-            </div>
+                        }}
+                    >
+                        <FaTrash className="btn-icon" /> {selectedSessions.length > 0 ? `Xoá (${selectedSessions.length}) buổi` : "Xoá buổi"}
+                    </button>
+                </div>
+            )}
 
             {/* Calendar */}
             <div className="calendar-container" ref={calendarContainerRef}>

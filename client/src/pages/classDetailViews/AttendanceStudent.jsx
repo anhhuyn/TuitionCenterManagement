@@ -5,6 +5,7 @@ import {
   updateAttendanceStatusApi,
   updateAttendanceNoteApi,
   updateSessionApi,
+  getUserApi
 } from "../../util/api";
 import "../../styles/classDetailViews/AttendanceTable.css";
 import { FaEdit } from "react-icons/fa";
@@ -17,6 +18,7 @@ const STATUS_OPTIONS = [
 ];
 
 export default function AttendanceStudent({ classData }) {
+  const [roleId, setRoleId] = useState(null);
   const [data, setData] = useState(null);
   const [editingNote, setEditingNote] = useState(null);
   const [noteValue, setNoteValue] = useState("");
@@ -26,6 +28,19 @@ export default function AttendanceStudent({ classData }) {
   const [savingStatus, setSavingStatus] = useState(null); // {type, studentId, sessionId, state}
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getUserApi();
+        if (res?.roleId) setRoleId(res.roleId);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin user:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -195,21 +210,21 @@ export default function AttendanceStudent({ classData }) {
   const today = new Date();
 
   // Nếu có ít nhất 1 học viên có mặt => cập nhật session sang "completed"
-const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
-  const sessionData = updatedData.students.map((s) =>
-    s.attendances.find((a) => a.sessionId === sessionId)
-  );
-  const hasPresent = sessionData.some((a) => a?.status === "present");
+  const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
+    const sessionData = updatedData.students.map((s) =>
+      s.attendances.find((a) => a.sessionId === sessionId)
+    );
+    const hasPresent = sessionData.some((a) => a?.status === "present");
 
-  if (hasPresent) {
-    try {
-      await updateSessionApi(sessionId, { status: "completed" });
-      console.log(`Session ${sessionId} đã chuyển sang completed`);
-    } catch (err) {
-      console.error(`Lỗi khi cập nhật trạng thái session ${sessionId}:`, err);
+    if (hasPresent) {
+      try {
+        await updateSessionApi(sessionId, { status: "completed" });
+        console.log(`Session ${sessionId} đã chuyển sang completed`);
+      } catch (err) {
+        console.error(`Lỗi khi cập nhật trạng thái session ${sessionId}:`, err);
+      }
     }
-  }
-};
+  };
 
 
   return (
@@ -254,22 +269,24 @@ const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
                         <div className="session-date">
                           ({new Date(session.date).toLocaleDateString("vi-VN")})
                         </div>
-                        <button
-                          className="btn-mark-all"
-                          onClick={() => handleMarkAll(session.sessionId)}
-                          disabled={
-                            savingStatus?.type === "mark-all" &&
-                            savingStatus.sessionId === session.sessionId &&
-                            savingStatus.state === "loading"
-                          }
-                        >
-                          {savingStatus?.type === "mark-all" &&
-                            savingStatus.sessionId === session.sessionId
-                            ? savingStatus.state === "loading"
-                              ? "Đang điểm danh..."
-                              : "Đã điểm danh"
-                            : "Điểm danh tất cả"}
-                        </button>
+                        {roleId !== "R0" && (
+                          <button
+                            className="btn-mark-all"
+                            onClick={() => handleMarkAll(session.sessionId)}
+                            disabled={
+                              savingStatus?.type === "mark-all" &&
+                              savingStatus.sessionId === session.sessionId &&
+                              savingStatus.state === "loading"
+                            }
+                          >
+                            {savingStatus?.type === "mark-all" &&
+                              savingStatus.sessionId === session.sessionId
+                              ? savingStatus.state === "loading"
+                                ? "Đang điểm danh..."
+                                : "Đã điểm danh"
+                              : "Điểm danh tất cả"}
+                          </button>
+                        )}
                       </div>
                     </th>
                   );
@@ -334,7 +351,7 @@ const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
                                       status: newStatus,
                                       note: "",
                                     });
-                                    checkAndUpdateSessionStatus(session.sessionId, updated);
+                                  checkAndUpdateSessionStatus(session.sessionId, updated);
                                   return updated;
                                 });
 
@@ -353,6 +370,7 @@ const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
                                 setSavingStatus(null);
                               }
                             }}
+                            disabled={roleId === "R0"}
                           >
                             {STATUS_OPTIONS.map((opt) => (
                               <option key={opt.value} value={opt.value}>
@@ -406,12 +424,15 @@ const checkAndUpdateSessionStatus = async (sessionId, updatedData) => {
           >
             <textarea
               value={noteValue}
-              placeholder="Thêm ghi chú"
+              placeholder={roleId === "R0" ? "Không có ghi chú" : "Thêm ghi chú"}
               onChange={(e) => setNoteValue(e.target.value)}
+              readOnly={roleId === "R0"}
             />
-            <button className="btn-save-note" onClick={handleSaveNote}>
-              Lưu
-            </button>
+            {roleId !== "R0" && (
+              <button className="btn-save-note" onClick={handleSaveNote}>
+                Lưu
+              </button>
+            )}
 
             {savingStatus?.type === "note" &&
               savingStatus.studentId === editingNote.studentId &&

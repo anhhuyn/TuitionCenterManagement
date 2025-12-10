@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// ✅ Sử dụng getSubjectByIdApi để lấy chi tiết 
 import { getSubjectByIdApi } from "../../util/api"; 
 import "../../styles/ClassDetailView.css";
 import { cilCalendar, cilChart, cilUser, cilList, cilBook, cilFolder, cilCheckCircle, cilClipboard, cilContact, cilBell, cilDescription } from "@coreui/icons";
@@ -49,12 +48,12 @@ export default function ClassDetailPage() {
 
     useEffect(() => {
         const fetchClass = async () => {
-            // ✅ RESET trạng thái khi ID thay đổi
+            // RESET trạng thái khi ID thay đổi
             setLoading(true);
             setClassData(null); 
             
             try {
-                // 🚀 GỌI API CHI TIẾT THEO ID TỪ URL
+                // GỌI API CHI TIẾT THEO ID TỪ URL
                 const res = await getSubjectByIdApi(id); 
 
                 if (res.success && res.data) {

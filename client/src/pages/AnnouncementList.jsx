@@ -11,9 +11,10 @@ import "../styles/AnnouncementList.css";
 import AddAnnouncementModal from "./AddAnnouncementModal";
 import EditAnnouncementModal from "./EditAnnouncementModal";
 import ConfirmModal from "../components/modal/ConfirmModal";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { FiEdit, FiTrash2, FiCheckCircle } from "react-icons/fi";
 
 export default function AnnouncementList() {
+    const [roleId, setRoleId] = useState(null);
     const [announcements, setAnnouncements] = useState([]);
     const [loading, setLoading] = useState(false);
     const [page, setPage] = useState(0);
@@ -23,6 +24,11 @@ export default function AnnouncementList() {
     const [adminId, setAdminId] = useState(null);
     const [adminAvatar, setAdminAvatar] = useState(null);
     const [expanded, setExpanded] = useState({});
+    const STATUS_LABEL = {
+        active: "Công khai",
+        inactive: "Ẩn",
+        draft: "Nháp"
+    };
 
     // ==========================
     // ADD form (test create)
@@ -66,6 +72,7 @@ export default function AnnouncementList() {
             console.log("Avatar:", res.data.user.avatar); // debug avatar riêng
             setAdminId(res.data.user.id);
             setAdminAvatar(res.data.user.image || null);
+            setRoleId(res.data.user.roleId);
         } catch (err) {
             console.error("Không lấy được thông tin admin:", err);
         }
@@ -259,30 +266,32 @@ export default function AnnouncementList() {
     return (
         <div className="announcement-list">
 
-            <div className="announcement-add-wrapper">
-                {adminAvatar && (
-                    <img
-                        src={
-                            adminAvatar.startsWith("http")
-                                ? adminAvatar
-                                : `${import.meta.env.VITE_BACKEND_URL}${adminAvatar}`
-                        }
-                        alt="avatar"
-                        className="announcement-add-avatar"
-                    />
-                )}
+            {roleId !== "R1" && (
+                <div className="announcement-add-wrapper">
+                    {adminAvatar && (
+                        <img
+                            src={
+                                adminAvatar.startsWith("http")
+                                    ? adminAvatar
+                                    : `${import.meta.env.VITE_BACKEND_URL}${adminAvatar}`
+                            }
+                            alt="avatar"
+                            className="announcement-add-avatar"
+                        />
+                    )}
 
-                <div
-                    className="announcement-add-placeholder"
-                    tabIndex={0}
-                    onClick={() => setShowAddModal(true)}
-                    onKeyDown={e => {
-                        if (e.key === 'Enter' || e.key === ' ') setShowAddModal(true);
-                    }}
-                >
-                    Bài viết mới...
+                    <div
+                        className="announcement-add-placeholder"
+                        tabIndex={0}
+                        onClick={() => setShowAddModal(true)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ' ') setShowAddModal(true);
+                        }}
+                    >
+                        Bài viết mới...
+                    </div>
                 </div>
-            </div>
+            )}
 
             <AddAnnouncementModal
                 visible={showAddModal}
@@ -324,137 +333,147 @@ export default function AnnouncementList() {
             />
 
             {/* LIST */}
-            {announcements.map((a, index) => (
-                <div key={`${a.id}-${index}`} className="announcement-card">
+            {announcements
+                .filter(a => roleId === "R0" ? true : a.status === "active")
+                .map((a, index) => (
 
-                    {/* HEADER */}
-                    <div className="announcement-header">
-                        <div className="header-left">
-                            <img
-                                src={
-                                    a.admin?.image?.startsWith("http")
-                                        ? a.admin.image
-                                        : `${import.meta.env.VITE_BACKEND_URL}${a.admin?.image}`
+                    <div key={`${a.id}-${index}`} className="announcement-card">
+
+                        {/* HEADER */}
+                        <div className="announcement-header">
+                            <div className="header-left">
+                                <img
+                                    src={
+                                        a.admin?.image?.startsWith("http")
+                                            ? a.admin.image
+                                            : `${import.meta.env.VITE_BACKEND_URL}${a.admin?.image}`
+                                    }
+                                    alt="avatar"
+                                    className="announcement-admin-avatar"
+                                />
+
+                                <div className="header-info">
+                                    <div className="admin-name">
+                                        {a.admin?.fullName || "ADMIN"}
+                                    </div>
+
+                                    <div className="meta-info">
+
+                                        <span className="created-date">
+                                            {new Date(a.createdAt).toLocaleString()}
+                                        </span>
+                                        <span className={`announcement-status-badge ${a.status?.toLowerCase()}`}>
+                                            {STATUS_LABEL[a.status?.toLowerCase()] || a.status}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* MENU ⋯ */}
+                            {roleId === "R0" && (
+                                <div className="menu-wrapper">
+                                    <button
+                                        className="menu-button"
+                                        onClick={() =>
+                                            setExpanded(prev => ({
+                                                ...prev,
+                                                ["menu_" + a.id]: !prev["menu_" + a.id]
+                                            }))
+                                        }
+                                    >
+                                        ⋯
+                                    </button>
+
+                                    {expanded["menu_" + a.id] && (
+                                        <div className="menu-dropdown">
+                                            <div
+                                                className="menu-item"
+                                                onClick={() => openEdit(a)}
+                                            >
+                                                <FiEdit style={{ marginRight: "6px" }} /> Sửa
+                                            </div>
+                                            <div
+                                                className="menu-item"
+                                                onClick={() => confirmDelete(a.id)}
+                                            >
+                                                <FiTrash2 style={{ marginRight: "6px" }} /> Xóa
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+
+                        {/* TIÊU ĐỀ */}
+                        <h3 className="announcement-title">{a.title}</h3>
+
+                        {/* NỘI DUNG rút gọn */}
+                        <div>
+                            <div
+                                className={
+                                    expanded[a.id] ? "content-box expanded" : "content-box"
                                 }
-                                alt="avatar"
-                                className="announcement-admin-avatar"
-                            />
+                            >
+                                <span className="text">{a.content}</span>
 
-                            <div className="header-info">
-                                <div className="admin-name">
-                                    {a.admin?.fullName || "ADMIN"}
-                                </div>
-
-                                <div className="meta-info">
-
-                                    <span className="created-date">
-                                        {new Date(a.createdAt).toLocaleString()}
+                                {!expanded[a.id] && a.content.length > 100 && (
+                                    <span className="see-more" onClick={() => toggleExpand(a.id)}>
+                                        ... Xem thêm
                                     </span>
-                                    <span className={`announcement-status-badge ${a.status?.toLowerCase()}`}>
-                                        {a.status}
+                                )}
+
+                                {expanded[a.id] && (
+                                    <span className="see-less" onClick={() => toggleExpand(a.id)}>
+                                        Ẩn bớt
                                     </span>
-                                </div>
+                                )}
                             </div>
                         </div>
 
-                        {/* MENU ⋯ */}
-                        <div className="menu-wrapper">
-                            <button
-                                className="menu-button"
-                                onClick={() =>
-                                    setExpanded(prev => ({
-                                        ...prev,
-                                        ["menu_" + a.id]: !prev["menu_" + a.id]
-                                    }))
+                        {/* ẢNH */}
+                        {a.imageURL && (
+                            <img
+                                src={
+                                    a.imageURL.startsWith("http")
+                                        ? a.imageURL
+                                        : `${import.meta.env.VITE_BACKEND_URL}${a.imageURL}`
                                 }
-                            >
-                                ⋯
-                            </button>
+                                alt="preview"
+                                className="announcement-image"
+                            />
+                        )}
 
-                            {expanded["menu_" + a.id] && (
-                                <div className="menu-dropdown">
-                                    <div
-                                        className="menu-item"
-                                        onClick={() => openEdit(a)}
-                                    >
-                                        <FiEdit style={{ marginRight: "6px" }} /> Sửa
-                                    </div>
-                                    <div
-                                        className="menu-item"
-                                        onClick={() => confirmDelete(a.id)}
-                                    >
-                                        <FiTrash2 style={{ marginRight: "6px" }} /> Xóa
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                        {/* FILES */}
+                        {a.attachments?.length > 0 && (
+                            <div className="attachments-box">
+                                <h6>File đính kèm:</h6>
+                                <ul>
+                                    {a.attachments.map((url, idx) => (
+                                        <li key={idx}>
+                                            <a
+                                                href={`${import.meta.env.VITE_BACKEND_URL}${url}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                            >
+                                                File đính kèm {idx + 1}
+                                            </a>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
                     </div>
 
-                    {/* TIÊU ĐỀ */}
-                    <h3 className="announcement-title">{a.title}</h3>
 
-                    {/* NỘI DUNG rút gọn */}
-                    <div>
-                        <div
-                            className={
-                                expanded[a.id] ? "content-box expanded" : "content-box"
-                            }
-                        >
-                            <span className="text">{a.content}</span>
-
-                            {!expanded[a.id] && a.content.length > 100 && (
-                                <span className="see-more" onClick={() => toggleExpand(a.id)}>
-                                    ... Xem thêm
-                                </span>
-                            )}
-
-                            {expanded[a.id] && (
-                                <span className="see-less" onClick={() => toggleExpand(a.id)}>
-                                    Ẩn bớt
-                                </span>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* ẢNH */}
-                    {a.imageURL && (
-                        <img
-                            src={
-                                a.imageURL.startsWith("http")
-                                    ? a.imageURL
-                                    : `${import.meta.env.VITE_BACKEND_URL}${a.imageURL}`
-                            }
-                            alt="preview"
-                            className="announcement-image"
-                        />
-                    )}
-
-                    {/* FILES */}
-                    {a.attachments?.length > 0 && (
-                        <div className="attachments-box">
-                            <h6>File đính kèm:</h6>
-                            <ul>
-                                {a.attachments.map((url, idx) => (
-                                    <li key={idx}>
-                                        <a
-                                            href={`${import.meta.env.VITE_BACKEND_URL}${url}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                        >
-                                            File đính kèm {idx + 1}
-                                        </a>
-                                    </li>
-                                ))}
-                            </ul>
-                        </div>
-                    )}
-                </div>
-
-
-            ))}
+                ))}
 
             {loading && <p>Đang tải thêm...</p>}
-            {!hasMore && <p>Đã tải hết thông báo</p>}
+            {!hasMore && (
+                <div className="end-of-list">
+                    <FiCheckCircle />
+                    <span>Đã tải hết thông báo</span>
+                </div>
+            )}
             {showConfirm && (
                 <ConfirmModal
                     title="Xác nhận xóa thông báo"
