@@ -551,7 +551,33 @@ export const getTeacherScheduleApi = async (teacherId, startDate, endDate) => {
   }
 };
 
+// Lấy danh sách điểm danh giáo viên theo subject
+const getTeacherAttendanceBySubjectApi = async (subjectId) => {
+  return await axios.get(`/v1/api/teacher-attendance/subject/${subjectId}/teacher-attendance`);
+};
+
+// Cập nhật trạng thái điểm danh giáo viên
+const updateTeacherAttendanceStatusApi = async (sessionId, teacherId, status) => {
+  return await axios.put(`/v1/api/teacher-attendance/teacher-attendance/status`, {
+    sessionId,
+    teacherId,
+    status
+  });
+};
+
+// Cập nhật ghi chú điểm danh giáo viên
+const updateTeacherAttendanceNoteApi = async (sessionId, teacherId, note) => {
+  return await axios.put(`/v1/api/teacher-attendance/teacher-attendance/note`, {
+    sessionId,
+    teacherId,
+    note
+  });
+};
+
 export {
+  getTeacherAttendanceBySubjectApi,
+  updateTeacherAttendanceStatusApi,
+  updateTeacherAttendanceNoteApi,
   getSubjectsByTeacherApi,
   getRoomScheduleApi,
   deleteAnnouncementApi,
