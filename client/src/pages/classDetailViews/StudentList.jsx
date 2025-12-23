@@ -96,27 +96,8 @@ export default function StudentList({ classData }) {
         setSelected((prev) => prev.filter((id) => id !== studentToDelete));
       }
     } catch (error) {
-  const data = error?.response;
-
-  let msg = "Không thể xóa môn học.";
-
-  switch (code) {
-    case "TEACHER_UNPAID":
-      msg = "Không thể xóa môn học vì vẫn còn lương giáo viên chưa thanh toán.";
-      break;
-
-    case "STUDENT_UNPAID":
-      msg = "Không thể xóa môn học vì vẫn còn học sinh chưa thanh toán học phí.";
-      break;
-
-    default:
-      msg = data?.message || msg;
-  }
-
-  alert(msg);
-}
-
- finally {
+      alert("Xảy ra lỗi khi xóa học sinh.");
+    } finally {
       setShowConfirmModal(false);
       setIsDeleteMultiple(false);
       setStudentToDelete(null);

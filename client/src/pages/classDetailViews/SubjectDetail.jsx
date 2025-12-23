@@ -64,11 +64,27 @@ export default function SubjectDetail() {
 
     const handleDelete = async () => {
         try {
-            const res = await deleteSubjectApi(classData.id);
+            await deleteSubjectApi(classData.id);
             window.location.href = "/admin/classlist";
         } catch (error) {
-            console.error("Xóa môn học thất bại:", error);
-            alert("Xóa môn học thất bại. Vui lòng thử lại.");
+            const data = error?.response?.data;
+
+            let msg = "Không thể xóa môn học.";
+
+            switch (data?.code) {
+                case "TEACHER_UNPAID":
+                    msg = "Không thể xóa môn học vì vẫn còn lương giáo viên chưa thanh toán.";
+                    break;
+
+                case "STUDENT_UNPAID":
+                    msg = "Không thể xóa môn học vì vẫn còn học sinh chưa thanh toán học phí.";
+                    break;
+
+                default:
+                    msg = data?.message || msg;
+            }
+
+            alert(msg);
         }
     };
 
