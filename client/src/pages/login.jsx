@@ -5,6 +5,7 @@ import { useDispatch } from "react-redux";
 import { loginApi, registerApi } from "../util/api";
 import { loginSuccess } from "../store/authSlice";
 import "../styles/LoginRegister.css";
+import { SmileOutlined } from "@ant-design/icons";
 
 const { Option } = Select;
 
@@ -12,6 +13,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const dispatch = useDispatch();
+  const [loginForm] = Form.useForm();
 
   // State toggle
   const [isActive, setIsActive] = useState(false);
@@ -29,37 +31,49 @@ const LoginPage = () => {
     document.cookie = `${cname}=${cvalue};${expires};path=/`;
   };
 
-  // Login
   const onLogin = async (values) => {
     try {
       const res = await loginApi(values.email, values.password);
+      console.log("Login response:", res);
 
-      if (res?.token) {
-        setCookie("token", res.token, 1); // Lưu cookie 1 ngày
-        dispatch(loginSuccess(res.user));
-        const userRole = res.user?.roleId;
+      setCookie("token", res.token, 1);
+      dispatch(loginSuccess(res.user));
 
+      notification.success({
+        message: "Đăng nhập thành công",
+        description: (
+          <div>
+            <b>{res.user?.fullName ?? "Người dùng"}</b>
+            <div>Chào mừng bạn quay trở lại</div>
+          </div>
+        ),
+        icon: <SmileOutlined style={{ color: "#7494ec" }} />,
+        placement: "topRight",
+        duration: 3,
+      });
 
-        notification.success({
-          message: "Đăng nhập thành công",
-          description: `Xin chào ${res.user?.fullName ?? "người dùng"}!`,
-        });
-
-        if (userRole === "R0" || "R1") {
-          // Role cho Admin
-          navigate("/admin/home");
-        }
-      } else {
-        notification.error({
-          message: "Đăng nhập thất bại",
-          description: res?.message ?? "Sai tài khoản hoặc mật khẩu",
-        });
+      if (["R0", "R1"].includes(res.user?.roleId)) {
+        navigate("/home");
       }
     } catch (err) {
-      notification.error({
-        message: "Lỗi hệ thống",
-        description: "Vui lòng thử lại sau.",
-      });
+      console.log("Login error:", err);
+
+      const message = err?.response?.data?.message || "Email hoặc mật khẩu không đúng";
+
+      if (err?.response?.status === 401) {
+        // Chỉ hiện lỗi dưới ô password
+        loginForm.setFields([
+          {
+            name: "password",
+            errors: [message],
+          },
+        ]);
+      } else {
+        notification.error({
+          message: "Lỗi hệ thống",
+          description: "Vui lòng thử lại sau.",
+        });
+      }
     }
   };
 
@@ -91,19 +105,33 @@ const LoginPage = () => {
           {/* Login Form */}
           <div className="form-box login">
             <div className="form-content">
-              <Form layout="vertical" onFinish={onLogin}>
+              <Form
+                layout="vertical"
+                form={loginForm}
+                onFinish={onLogin}
+              >
                 <h1>Login</h1>
                 <Form.Item
                   name="email"
                   rules={[{ required: true, message: "Please input your email!" }]}
                 >
-                  <Input id="login-email" placeholder="Email" />
+                  <Input
+                    placeholder="Email"
+                    onChange={() =>
+                      loginForm.setFields([{ name: "email", errors: [] }])
+                    }
+                  />
                 </Form.Item>
                 <Form.Item
                   name="password"
                   rules={[{ required: true, message: "Please input your password!" }]}
                 >
-                  <Input.Password id="login-password" placeholder="Password" />
+                  <Input.Password
+                    placeholder="Password"
+                    onChange={() =>
+                      loginForm.setFields([{ name: "password", errors: [] }])
+                    }
+                  />
                 </Form.Item>
                 <div className="forgot-link">
                   <a
@@ -177,16 +205,7 @@ const LoginPage = () => {
           <div className="toggle-box">
             <div className="toggle-panel toggle-left">
               <h1>Welcome!</h1>
-              <p>Don't have an account?</p>
-              <button
-                className="btn-outline"
-                onClick={() => {
-                  navigate("/register");
-                  setIsActive(true);
-                }}
-              >
-                Register
-              </button>
+              <p>We’re glad to have you here!</p>
             </div>
             <div className="toggle-panel toggle-right">
               <h1>Welcome Back!</h1>

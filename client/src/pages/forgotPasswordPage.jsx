@@ -12,11 +12,11 @@ const ForgotPasswordPage = () => {
   const mode = location.state?.mode || "forgot";
 
   // Dựa vào mode để đặt tiêu đề và mô tả
-  const title = mode === "change" ? "Đổi mật khẩu" : "Quên mật khẩu";
+  const title = mode === "change" ? "Change Password" : "Forgot Password";
   const description =
     mode === "change"
-      ? "Nhập email để thay đổi mật khẩu."
-      : "Nhập email để nhận hướng dẫn đặt lại mật khẩu.";
+      ? "Enter your email to change your password."
+      : "Enter your email to receive password reset instructions.";
 
   const onFinish = async (values) => {
     const email = values.email;
@@ -65,11 +65,11 @@ const ForgotPasswordPage = () => {
               <Form.Item
                 name="email"
                 rules={[
-                  { required: true, message: "Vui lòng nhập email!" },
-                  { type: "email", message: "Email không hợp lệ!" },
+                  { required: true, message: "Please enter your email!" },
+                  { type: "email", message: "Invalid email address!" },
                 ]}
               >
-                <Input placeholder="Nhập email của bạn" />
+                <Input placeholder="Enter your email" />
               </Form.Item>
 
               <Button
@@ -78,7 +78,7 @@ const ForgotPasswordPage = () => {
                 className="btn-primary"
                 block
               >
-                Gửi yêu cầu
+                Submit
               </Button>
             </Form>
             {mode !== "change" && (
@@ -90,7 +90,7 @@ const ForgotPasswordPage = () => {
                     navigate("/login");
                   }}
                 >
-                  ← Quay lại trang đăng nhập
+                   ← Back to Login
                 </a>
               </div>
             )}

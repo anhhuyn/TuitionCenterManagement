@@ -92,9 +92,12 @@ export default function ClassModal({ show, onClose, onSuccess }) {
                 sessionsPerWeek: parseInt(formData.sessionsPerWeek),
                 maxStudents: parseInt(formData.maxStudents),
                 price: parseFloat(formData.price),
+                
             };
 
             const res = await createSubjectApi(payload);
+            console.log("API response:", res);
+
             if (res.success) {
                 onSuccess();
                 resetForm();

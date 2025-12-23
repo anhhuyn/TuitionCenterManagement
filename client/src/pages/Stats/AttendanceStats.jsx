@@ -166,7 +166,6 @@ const AttendanceStats = () => {
 
     return (
         <div className="attendance-stats-wrapper">
-            <h3>Học sinh đi trễ / vắng</h3>
 
             {/* Bộ lọc */}
             <div className="attendance-filters">

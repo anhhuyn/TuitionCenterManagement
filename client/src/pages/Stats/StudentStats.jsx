@@ -338,7 +338,7 @@ const StudentStats = () => {
 
     const renderMonthlyLineChart = () => (
         <div className="pie-chart-container">
-            <h3>BIẾN ĐỘNG SỐ LƯỢNG HỌC SINH TRONG 12 THÁNG</h3>
+            <h3>BIẾN ĐỘNG SỐ LƯỢNG HỌC VIÊN TRONG 12 THÁNG</h3>
             <ResponsiveContainer width="100%" height={300}>
                 <LineChart data={monthlyData} margin={{ top: 20, right: 30, left: 20, bottom: 10 }}>
                     <CartesianGrid strokeDasharray="3 3" />
@@ -408,7 +408,7 @@ const StudentStats = () => {
 
     const renderGradeBarChart = () => (
         <div className="pie-chart-container">
-            <h3>SỐ LƯỢNG HỌC SINH THEO KHỐI LỚP</h3>
+            <h3>SỐ LƯỢNG HỌC VIÊN THEO KHỐI LỚP</h3>
 
             <ResponsiveContainer width="100%" height={320}>
                 <BarChart
@@ -441,27 +441,27 @@ const StudentStats = () => {
 
     return (
         <div className="subject-stats-wrapper">
-            <h2 className="subject-stats-title">Thống kê học sinh</h2>
+            <h2 className="subject-stats-title">Thống kê học viên</h2>
 
             <div className="subject-stats">
                 <div className="stat-card all">
                     <div className="stat-number">{stats.total}</div>
-                    <div className="stat-label">Tổng số học sinh</div>
+                    <div className="stat-label">Tổng số học viên</div>
                 </div>
 
                 <div className="stat-card new">
                     <div className="stat-number">{stats.createdThisMonth}</div>
-                    <div className="stat-label">Học sinh mới trong tháng</div>
+                    <div className="stat-label">Học viên mới trong tháng</div>
                 </div>
 
                 <div className="stat-card middle">
                     <div className="stat-number">{stats.totalCap2}</div>
-                    <div className="stat-label">Học sinh cấp 2</div>
+                    <div className="stat-label">Học viên cấp 2</div>
                 </div>
 
                 <div className="stat-card high">
                     <div className="stat-number">{stats.totalCap3}</div>
-                    <div className="stat-label">Học sinh cấp 3</div>
+                    <div className="stat-label">Học viên cấp 3</div>
                 </div>
             </div>
             <div className="pie-charts-row">

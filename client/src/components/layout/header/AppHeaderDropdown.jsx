@@ -75,7 +75,7 @@ const AppHeaderDropdown = () => {
 
         <CDropdownItem>
           <Link
-            to="/admin/profile"
+            to="/profile"
             className="d-flex align-items-center"
             style={{ textDecoration: "none", color: "inherit" }}
           >

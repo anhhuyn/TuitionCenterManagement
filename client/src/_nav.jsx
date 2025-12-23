@@ -32,7 +32,7 @@ const _nav = [
       {
         component: CNavItem,
         name: 'Doanh thu',
-        to: '/admin/classlist',
+        to: '/admin/revenue-statistics',
       },
       {
         component: CNavItem,
@@ -72,25 +72,6 @@ const _nav = [
         component: CNavItem,
         name: 'Danh sách lớp học',
         to: '/admin/classlist',
-      },
-      {
-        component: CNavItem,
-        name: 'Đề xuất mở lớp',
-        to: '/base/breadcrumbs',
-      },
-      {
-        component: CNavItem,
-        name: (
-          <React.Fragment>
-            {'Thời khóa biểu'}
-            <CIcon icon={cilExternalLink} size="sm" className="ms-2" />
-          </React.Fragment>
-        ),
-        href: 'https://coreui.io/react/docs/components/calendar/',
-        badge: {
-          color: 'danger',
-          text: 'PRO',
-        },
       },
       {
         component: CNavItem,

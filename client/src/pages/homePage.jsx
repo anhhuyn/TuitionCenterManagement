@@ -63,13 +63,13 @@ const HomePage = () => {
       title: "Bảng lương",
       path: "/admin/teacher-main-payments",
       image:
-        "https://cdn.vietnambiz.vn/2019/9/1/howtopaychinesesuppliersbybanktransfertt-1567312994119669667236.jpg",
+        "https://base.vn/wp-content/uploads/2025/04/cach-tinh-luong.webp",
     },
     {
-      title: "Tạo bảng lương",
-      path: "/admin/teacher-main-payments/create",
+      title: "Danh sách học phí",
+      path: "/admin/student-tuitions",
       image:
-        "https://base.vn/wp-content/uploads/2025/04/cach-tinh-luong.webp",
+        "https://cdn.vietnambiz.vn/2019/9/1/howtopaychinesesuppliersbybanktransfertt-1567312994119669667236.jpg",
     },
   ];
 

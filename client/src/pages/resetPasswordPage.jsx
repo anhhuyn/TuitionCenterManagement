@@ -51,8 +51,8 @@ const ResetPasswordPage = () => {
       {/* Bìa xanh bên trái */}
       <div className="toggle-box">
         <div className="toggle-panel toggle-left">
-          <h1>Đặt mật khẩu mới</h1>
-          <p>Nhập mật khẩu mới của bạn để hoàn tất quá trình.</p>
+          <h1>Set New Password</h1>
+            <p>Enter your new password to complete the process.</p>
         </div>
       </div>
 
@@ -64,18 +64,18 @@ const ResetPasswordPage = () => {
               name="newPassword"
               rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới!" }]}
             >
-              <Input.Password placeholder="Mật khẩu mới" />
+               <Input.Password placeholder="New Password" />
             </Form.Item>
 
             <Form.Item
               name="confirmPassword"
               rules={[{ required: true, message: "Vui lòng nhập lại mật khẩu!" }]}
             >
-              <Input.Password placeholder="Xác nhận mật khẩu mới" />
+               <Input.Password placeholder="Confirm New Password" />
             </Form.Item>
 
             <Button type="primary" htmlType="submit" className="btn-primary" block>
-              Đặt lại mật khẩu
+              Reset Password
             </Button>
           </Form>
 
@@ -87,7 +87,7 @@ const ResetPasswordPage = () => {
                 navigate("/login");
               }}
             >
-              ← Quay lại trang đăng nhập
+               ← Back to Login
             </a>
           </div>
         </div>

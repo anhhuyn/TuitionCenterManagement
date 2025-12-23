@@ -262,7 +262,7 @@ const Profile = () => {
               >
                 <option value="male">Nam</option>
                 <option value="female">Nữ</option>
-                <option value="undefined">Không xác định</option>
+                
               </select>
             ) : (
               <p>
@@ -286,25 +286,14 @@ const Profile = () => {
       <CIcon icon={cilBriefcase} className="profile-icon" />
       <h4>Chức vụ</h4>
     </div>
-    {isEditing ? (
-      <select
-        className="profile-input"
-        value={formData.roleId}
-        onChange={(e) => handleInputChange("roleId", e.target.value)}
-      >
-        <option value="R0">Quản lý</option>
-        <option value="R1">Giáo Viên</option>
-        <option value="R2">Học sinh</option>
-      </select>
-    ) : (
-      <p>
-        {{
-          R0: "Quản lý",
-          R1: "Giáo Viên",
-          R2: "Học sinh",
-        }[user.roleId] || "Chưa có vai trò"}
-      </p>
-    )}
+    {/* Không cho chỉnh sửa, luôn hiển thị role */}
+    <p>
+      {{
+        R0: "Quản lý",
+        R1: "Giáo Viên",
+        R2: "Học sinh",
+      }[user.roleId] || "Chưa có vai trò"}
+    </p>
   </div>
 
   {/* Số điện thoại – luôn hiển thị như R0 */}

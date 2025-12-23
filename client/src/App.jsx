@@ -115,7 +115,7 @@ function App() {
 
       {/* --- Main admin pages (được bảo vệ) --- */}
       <Route
-        path="/admin/home"
+        path="/home"
         element={
           <ProtectedRoute>
             <HomePage />
@@ -123,7 +123,7 @@ function App() {
         }
       />
       <Route
-        path="/admin/profile"
+        path="/profile"
         element={
           <ProtectedRoute>
             <Profile />
@@ -321,7 +321,7 @@ function App() {
         path="/"
         element={
           isLoggedIn ? (
-            <Navigate to="/admin/home" replace />
+            <Navigate to="/home" replace />
           ) : (
             <Navigate to="/login" replace />
           )
