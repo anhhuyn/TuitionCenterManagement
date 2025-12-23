@@ -37,7 +37,8 @@ import TeacherMainPaymentCreate from "./pages/teacherMainPayments/TeacherMainPay
 import AnnouncementList from "./pages/AnnouncementList.jsx";
 import RoomSchedulePage from "./pages/RoomSchedulePage.jsx";
 import TeacherSchedulePage from "./pages/TeacherSchedulePage.jsx";
-
+import DailySessions from "./pages/DailySessions.jsx";
+import SubjectStats from "./pages/SubjectStats.jsx";
 
 function AppWrapper() {
   return (
@@ -267,6 +268,17 @@ function App() {
       />
 
       <Route
+        path="/admin/sessions/daily"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <DailySessions />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/room-schedule"
         element={
           <ProtectedRoute>
@@ -283,6 +295,17 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <TeacherSchedulePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/statistics/classroom"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SubjectStats />
             </Layout>
           </ProtectedRoute>
         }

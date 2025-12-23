@@ -114,7 +114,18 @@ export default function MaterialList({ classData }) {
   };
 
   const handleUpdate = (material) => {
-    setActiveMenu(null); // Đóng menu khi mở modal cập nhật
+    setActiveMenu(null); // Đóng menu khi mở modal
+
+    if (!currentUser) {
+      alert("Bạn cần đăng nhập để thực hiện thao tác này.");
+      return;
+    }
+
+    if (currentUser.id !== material.User?.id) {
+      alert("Bạn chỉ có thể cập nhật tài liệu do chính mình tải lên.");
+      return;
+    }
+
     setEditMaterial(material);
     setShowModal(true);
   };
