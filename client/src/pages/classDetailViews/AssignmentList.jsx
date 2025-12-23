@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { getAssignmentsBySubjectIdApi, deleteAssignmentApi } from "../../util/api";
+import { getAssignmentsBySubjectIdApi, deleteAssignmentApi, getUserApi } from "../../util/api";
 import "../../styles/classDetailViews/AssignmentList.css";
 import { FiDownload, FiEdit2, FiTrash2, FiBook } from "react-icons/fi";
 import ConfirmModal from "../../components/modal/ConfirmModal";
@@ -43,6 +43,7 @@ const monthOptions = Array.from({ length: 12 }, (_, i) => i + 1);
 const yearOptions = generateYears();
 
 export default function AssignmentList({ classData }) {
+  const [roleId, setRoleId] = useState(null);
   const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,6 +54,19 @@ export default function AssignmentList({ classData }) {
   const [showMenuId, setShowMenuId] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [editAssignment, setEditAssignment] = useState(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      try {
+        const res = await getUserApi();
+        if (res?.roleId) setRoleId(res.roleId);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin user:", err);
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   useEffect(() => {
     const fetchAssignments = async () => {
@@ -135,15 +149,17 @@ export default function AssignmentList({ classData }) {
           </div>
 
           {/* Nút thêm bài tập */}
-          <button
-            className="add-assignment-button"
-            onClick={() => {
-              setEditAssignment(null);
-              setShowModal(true);
-            }}
-          >
-            + Thêm bài
-          </button>
+          {roleId !== "R0" && (
+            <button
+              className="add-assignment-button"
+              onClick={() => {
+                setEditAssignment(null);
+                setShowModal(true);
+              }}
+            >
+              + Thêm bài
+            </button>
+          )}
         </div>
 
         {/* Hàng 2: Bộ lọc tháng/năm */}
@@ -176,42 +192,45 @@ export default function AssignmentList({ classData }) {
           {filteredAssignments.map((item) => (
             <li key={item.id} className="assignment-item">
               {/* Nút 3 chấm (Menu Options) ở góc trên bên phải */}
-              <div className="options-menu">
-                <button
-                  className="options-button"
-                  onClick={(e) => {
-                    e.stopPropagation(); // ngăn event nổi bọt
-                    toggleMenu(item.id);
-                  }}
-                  aria-expanded={showMenuId === item.id}
-                  aria-label="Tùy chọn bài tập"
-                >
-                  ...
-                </button>
-                {showMenuId === item.id && (
-                  <div className="menu-dropdown">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleEdit(item);
-                      }}
-                    >
-                      <FiEdit2 style={{ marginRight: "6px" }} />
-                      Sửa
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDelete(item.id);
-                      }}
-                      className="delete-option"
-                    >
-                      <FiTrash2 style={{ marginRight: "6px" }} />
-                      Xóa
-                    </button>
-                  </div>
-                )}
-              </div>
+              {/* Nút 3 chấm (Menu Options) ở góc trên bên phải */}
+              {roleId !== "R0" && (
+                <div className="options-menu">
+                  <button
+                    className="options-button"
+                    onClick={(e) => {
+                      e.stopPropagation(); // ngăn event nổi bọt
+                      toggleMenu(item.id);
+                    }}
+                    aria-expanded={showMenuId === item.id}
+                    aria-label="Tùy chọn bài tập"
+                  >
+                    ...
+                  </button>
+                  {showMenuId === item.id && (
+                    <div className="menu-dropdown">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleEdit(item);
+                        }}
+                      >
+                        <FiEdit2 style={{ marginRight: "6px" }} />
+                        Sửa
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(item.id);
+                        }}
+                        className="delete-option"
+                      >
+                        <FiTrash2 style={{ marginRight: "6px" }} />
+                        Xóa
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="assignment-content">
                 <p
                   className="assignment-header-line clickable-title"

@@ -10,7 +10,8 @@ import {
   cilChatBubble,
   cilBook,
   cilGroup,
-  cilMoney
+  cilMoney,
+   cilBarChart
 } from '@coreui/icons'
 import { CNavGroup, CNavItem, CNavTitle } from '@coreui/react'
 
@@ -21,6 +22,26 @@ const _nav = [
     to: '/dashboard',
     icon: <CIcon icon={cilHome} customClassName="nav-icon" />,
   },
+
+   {
+    component: CNavGroup,
+    name: 'Thống kê',
+    to: '/base',
+    icon: <CIcon icon={ cilBarChart} customClassName="nav-icon" />,
+    items: [
+      {
+        component: CNavItem,
+        name: 'Doanh thu',
+        to: '/admin/classlist',
+      },
+      {
+        component: CNavItem,
+        name: 'Lớp học',
+        to: '/admin/statistics/classroom',
+      },
+       ],
+  },
+
   {
     component: CNavTitle,
     name: 'Thông tin chung',
@@ -33,8 +54,8 @@ const _nav = [
   },
   {
     component: CNavItem,
-    name: 'Quản lý thông báo',
-    to: '/theme/typography',
+    name: 'Lịch học chung',
+    to: '/admin/sessions/daily',
     icon: <CIcon icon={cilBell} customClassName="nav-icon" />,
   },
   {

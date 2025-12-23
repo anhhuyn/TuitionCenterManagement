@@ -1,0 +1,141 @@
+.attendance-stats-wrapper {
+  margin-top: 1rem;
+  background-color: #ffffff;
+  padding: 1.5rem;
+}
+
+.attendance-stats-wrapper h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #1e88e5;
+}
+
+.attendance-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  align-items: flex-end;
+}
+
+.attendance-filters label {
+  display: flex;
+  flex-direction: column;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.attendance-filters select,
+.attendance-filters input {
+  margin-top: 4px;
+  padding: 4px 10px;
+  border-radius: 4px;
+  border: 1px solid #d1d5db;
+  font-size: 0.9rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.attendance-filters select:focus,
+.attendance-filters input:focus {
+  border-color: #1e88e5;
+  box-shadow: 0 0 0 2px rgba(30, 136, 229, 0.2);
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.attendance-table th {
+  background-color: #f4f4f4;
+  font-weight: 600;
+  color: #374151;
+}
+
+.attendance-table td {
+  color: #374151;
+}
+
+.attendance-table tr:nth-child(even) {
+  background-color: #f9fafb;
+}
+
+.attendance-table td.status-late {
+  color: #f59e0b; /* màu cam cho đi trễ */
+  font-weight: 500;
+}
+
+.attendance-table td.status-absent {
+  color: #dc2626; /* màu đỏ cho vắng */
+  font-weight: 500;
+}
+
+.attendance-table td.status-all {
+  color: #374151;
+}
+
+@media (max-width: 640px) {
+  .attendance-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .attendance-filters label {
+    width: 100%;
+  }
+
+  .attendance-table th,
+  .attendance-table td {
+    font-size: 0.85rem;
+    padding: 8px 10px;
+  }
+}
+
+.count-warning {
+  background-color: #fde68a !important; /* vàng */
+  font-weight: 600;
+  text-align: center;
+}
+
+.count-danger {
+  background-color: #fca5a5 !important; /* đỏ */
+  font-weight: 600;
+  text-align: center;
+}
+
+.view-more {
+  color: #1e88e5;
+  cursor: pointer;
+  margin-left: 0px;
+  font-size: 11px;
+  font-style: italic;
+}
+.view-more:hover {
+  text-decoration: underline;
+}
+
+.attendance-table tr.row-warning td {
+  background-color: #ffecb3 !important; /* vàng kem nhạt */
+  color: #8a4b00;
+}
+.attendance-table tr.row-warning:hover td {
+  background-color: #fff8e1 !important;
+}
+.attendance-table tr.row-danger td {
+  background-color: #fbd5d0 !important; /* đỏ hồng nhẹ */
+  color: #7f1d1d;
+}
+.attendance-table tr.row-danger:hover td {
+  background-color: #fdecea !important;
+}
+

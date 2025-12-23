@@ -86,6 +86,34 @@ const getSubjectsApi = async ({ page = 1, limit = 12, status = null } = {}) => {
   return res;
 };
 
+// Lấy tất cả subjects (KHÔNG phân trang)
+const getAllSubjectsApi = async ({ status = null } = {}) => {
+  const params = {};
+  if (status) params.status = status;
+
+  const res = await axios.get("/v1/api/subjects/all", { params });
+  return res;
+};
+
+
+// Lấy danh sách môn học theo userId của giáo viên
+const getSubjectsByTeacherApi = async ({
+  userId,
+  page = 1,
+  limit = 12,
+  status = null
+} = {}) => {
+
+  if (!userId) throw new Error("userId is required");
+
+  const params = { page, limit };
+  if (status) params.status = status;
+
+  const res = await axios.get(`/v1/api/subjects/teacher/${userId}`, { params });
+  return res; // interceptor sẽ trả về res.data
+};
+
+
 const createSubjectApi = async (formData) => {
   try {
     const res = await axios.post("/v1/api/subjects", formData, {
@@ -319,7 +347,7 @@ const updateAssignmentApi = async (assignmentId, formData) => {
 };
 
 const getSubjectByIdApi = async (id) => {
-    return await axios.get(`/v1/api/subjects/${id}`);
+  return await axios.get(`/v1/api/subjects/${id}`);
 };
 
 // Gán assignment cho học sinh theo assignmentId
@@ -374,23 +402,23 @@ const getTeacherSubjectByIdApi = async (id) => {
 };
 
 const createTeacherSubjectApi = async (data) => {
-  try {
-    const res = await axios.post("/v1/api/teacher-subjects", data);
-    return res.data;
-  } catch (err) {
-    console.error("Lỗi khi gọi API createTeacherSubjectApi:", err);
-    throw err; // Quan trọng: ném lỗi ra ngoài để component có thể bắt và hiển thị thông báo trùng lặp (409)
-  }
+  try {
+    const res = await axios.post("/v1/api/teacher-subjects", data);
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API createTeacherSubjectApi:", err);
+    throw err; // Quan trọng: ném lỗi ra ngoài để component có thể bắt và hiển thị thông báo trùng lặp (409)
+  }
 };
 // Cập nhật thỏa thuận (teacher-subject)
 const updateTeacherSubjectApi = async (id, data) => {
-  try {
-    const res = await axios.put(`/v1/api/teacher-subjects/${id}`, data);
-    return res.data;
-  } catch (err) {
-    console.error("Lỗi khi gọi API updateTeacherSubjectApi:", err);
-    throw err; // Ném lỗi ra để component có thể bắt
-  }
+  try {
+    const res = await axios.put(`/v1/api/teacher-subjects/${id}`, data);
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi gọi API updateTeacherSubjectApi:", err);
+    throw err; // Ném lỗi ra để component có thể bắt
+  }
 };
 // 📅 1. Lấy danh sách lương theo tháng & năm
 // Backend: GET /v1/api/payments/list?month=X&year=Y
@@ -403,7 +431,7 @@ const getTeacherPaymentsByMonth = (month, year, name, status) => {
 const createTeacherPayments = (data) => {
   // data = { month, year, notes }
   return axios.post("/v1/api/payments/create", null, {
-    params: data 
+    params: data
   });
 };
 
@@ -529,17 +557,57 @@ export const getTeacherScheduleApi = async (teacherId, startDate, endDate) => {
   }
 };
 
-// --- API HỌC PHÍ HỌC SINH (STUDENT TUITION) ---
+
 const TUITION_API_BASE = "/v1/api/tuitions";
 
 // 1. Tạo hóa đơn học phí (Dùng Params)
 const createStudentTuitions = (data) => {
   // data = { month, year, notes }
-  return axios.post(`${TUITION_API_BASE}/create`, null, {
+  return axios.post(`${TUITION_API_BASE}/create`), null, {
     params: {
       month: data.month,
       year: data.year,
       notes: data.notes
+    }}};
+// Lấy danh sách điểm danh giáo viên theo subject
+const getTeacherAttendanceBySubjectApi = async (subjectId) => {
+  return await axios.get(`/v1/api/teacher-attendance/subject/${subjectId}/teacher-attendance`);
+};
+
+// Cập nhật trạng thái điểm danh giáo viên
+const updateTeacherAttendanceStatusApi = async (sessionId, teacherId, status) => {
+  return await axios.put(`/v1/api/teacher-attendance/teacher-attendance/status`, {
+    sessionId,
+    teacherId,
+    status
+  });
+};
+
+// Cập nhật ghi chú điểm danh giáo viên
+const updateTeacherAttendanceNoteApi = async (sessionId, teacherId, note) => {
+  return await axios.put(`/v1/api/teacher-attendance/teacher-attendance/note`, {
+    sessionId,
+    teacherId,
+    note
+  });
+};
+
+// Lấy danh sách buổi học (môn học) theo ngày
+const getSessionsByDateApi = async (date) => {
+  return await axios.get(`/v1/api/session/daily`, {
+    params: { date }
+  });
+};
+
+// Lấy danh sách học sinh group theo trường + tổng số
+const getStudentsGroupBySchoolApi = async (params = {}) => {
+  return await axios.get('/v1/api/students/group-by-school', {
+    params: {
+      name: params.name,
+      grade: params.grade,
+      schoolName: params.schoolName,
+      gender: params.gender
+
     }
   });
 };
@@ -582,7 +650,21 @@ const exportRevenueStatisticsApi = (year) => {
     });
 };
 
+// Lấy danh sách học sinh đi trễ hoặc vắng trong khoảng thời gian
+const getAbsentOrLateStudentsApi = async (startDate, endDate) => {
+  return await axios.get('/v1/api/attendance/absent-or-late', {
+    params: { startDate, endDate }
+  });
+};
+
 export {
+  getAbsentOrLateStudentsApi,
+  getStudentsGroupBySchoolApi,
+  getSessionsByDateApi,
+  getTeacherAttendanceBySubjectApi,
+  updateTeacherAttendanceStatusApi,
+  updateTeacherAttendanceNoteApi,
+  getSubjectsByTeacherApi,
   getRoomScheduleApi,
   deleteAnnouncementApi,
   updateAnnouncementApi,
@@ -608,7 +690,7 @@ export {
   getScheduleBySubjectId,
   getRoomsApi,
   createManualSessionApi,
-  addStudentToSubjectApi, getStudentsByGradeApi, removeStudentFromSubjectApi, getStudentsBySubjectIdApi, getTeacherBasicListApi, updateSubjectApi, updateImageApi, verifyEmailChangeOtpApi, updateProfileApi, registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi,
+  addStudentToSubjectApi, getStudentsByGradeApi, removeStudentFromSubjectApi, getStudentsBySubjectIdApi, getTeacherBasicListApi, updateSubjectApi, updateImageApi, verifyEmailChangeOtpApi, updateProfileApi, registerApi, verifyRegisterOtpApi, loginApi, getUserApi, getAuthMe, fetchUserFromToken, forgotPasswordApi, verifyOtpApi, resetPasswordApi, getSubjectsApi, getAllSubjectsApi,
   updateStudentAssignmentApi,
   assignToStudentsApi,
   getStudentAssignmentsByAssignmentIdApi,

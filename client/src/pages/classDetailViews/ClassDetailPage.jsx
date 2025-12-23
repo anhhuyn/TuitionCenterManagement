@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-// ✅ Sử dụng getSubjectByIdApi để lấy chi tiết 
 import { getSubjectByIdApi } from "../../util/api"; 
 import "../../styles/ClassDetailView.css";
 import { cilCalendar, cilChart, cilUser, cilList, cilBook, cilFolder, cilCheckCircle, cilClipboard, cilContact, cilBell, cilDescription } from "@coreui/icons";
@@ -12,20 +11,21 @@ import CustomCalendar from "./CustomCalendar";
 import AttendanceStudent from "./AttendanceStudent";
 import MaterialList from "./MaterialList";
 import AssignmentList from "./AssignmentList";
+import AttendanceTeacher from "./AttendanceTeacher";
 
 const sideMenu = [
     { label: "Chi tiết môn học", icon: cilDescription },
     { label: "Lịch học", icon: cilCalendar },
-    { label: "Thống kê", icon: cilChart },
+    //{ label: "Thống kê", icon: cilChart },
     { label: "Học viên", icon: cilUser },
-    { label: "Các buổi học", icon: cilList },
+    //{ label: "Các buổi học", icon: cilList },
     { label: "Bài tập", icon: cilBook },
     { label: "Tài liệu", icon: cilFolder },
     { label: "Điểm danh", icon: cilCheckCircle },
-    { label: "Bảng điểm", icon: cilClipboard },
+    //{ label: "Bảng điểm", icon: cilClipboard },
     { label: "Điểm danh giáo viên", icon: cilUser },
-    { label: "Phản hồi buổi học", icon: cilContact },
-    { label: "Thông báo", icon: cilBell }
+    //{ label: "Phản hồi buổi học", icon: cilContact },
+    //{ label: "Thông báo", icon: cilBell }
 ];
 
 const componentMap = {
@@ -35,6 +35,7 @@ const componentMap = {
     "Điểm danh": AttendanceStudent,
     "Tài liệu": MaterialList,
     "Bài tập": AssignmentList,
+     "Điểm danh giáo viên": (props) => <AttendanceTeacher subjectData={props.classData} />,
 
     // ... các component khác
 };
@@ -49,12 +50,12 @@ export default function ClassDetailPage() {
 
     useEffect(() => {
         const fetchClass = async () => {
-            // ✅ RESET trạng thái khi ID thay đổi
+            // RESET trạng thái khi ID thay đổi
             setLoading(true);
             setClassData(null); 
             
             try {
-                // 🚀 GỌI API CHI TIẾT THEO ID TỪ URL
+                // GỌI API CHI TIẾT THEO ID TỪ URL
                 const res = await getSubjectByIdApi(id); 
 
                 if (res.success && res.data) {

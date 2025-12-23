@@ -1,0 +1,133 @@
+.student-stats-wrapper {
+  padding: 20px;
+  background-color: #f9fafb;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.student-stats-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 40px;
+  color: #111827;
+}
+
+.student-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 40px;
+}
+
+.stat-card {
+  flex: 1 1 180px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 16px;
+  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  transition: transform 0.2s;
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+}
+
+.stat-number {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #6b7280;
+}
+
+
+/* Biểu đồ */
+.pie-charts-row {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* luôn 2 cột */
+  gap: 10px;
+  align-items: stretch;
+}
+
+.pie-chart-container {
+  margin-top: 10px;
+  width: 100%;
+  padding: 15px 5px;
+  box-sizing: border-box;
+  border: 1px solid #1E88E5;   /* xanh dương giống hình */
+  
+  background-color: #ffffff;
+}
+
+.pie-chart-container h3 {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 16px;
+  color: #1E88E5; 
+}
+/* ===== Tooltip ===== */
+.custom-tooltip {
+  background: rgba(255, 255, 255, 0.6);
+  padding: 6px 14px;
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(2px); 
+  -webkit-backdrop-filter: blur(8px); 
+}
+
+.tooltip-value {
+  font-size: 13px;
+  color: #374151;
+}
+
+.recharts-sector {
+  transition: all 0.25s ease;
+}
+
+@media (max-width: 900px) {
+  .pie-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ===== BAR CHART (khối lớp) ===== */
+.pie-chart-container .recharts-cartesian-grid line {
+  stroke: #e5e7eb; /* xám nhạt giống dashboard */
+}
+
+.pie-chart-container .recharts-xAxis .recharts-text,
+.pie-chart-container .recharts-yAxis .recharts-text {
+  fill: #374151;   /* màu chữ trục */
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.pie-chart-container .recharts-tooltip-wrapper {
+  z-index: 10;
+}
+
+/* Cột */
+.pie-chart-container .recharts-bar-rectangle {
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.pie-chart-container .recharts-bar-rectangle:hover {
+  opacity: 0.85;
+}
+
+/* Tắt toàn bộ lưới nếu còn sót */
+.pie-chart-container .recharts-cartesian-grid {
+  display: none;
+}
+/* Tắt hiệu ứng hover xám của bar */
+.recharts-bar-rectangle:hover {
+  fill-opacity: 1 !important;
+}
+
+

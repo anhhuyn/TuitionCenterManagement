@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getSubjectsApi } from "../util/api";
+import { getSubjectsApi, getUserApi, getSubjectsByTeacherApi } from "../util/api";
 import CIcon from "@coreui/icons-react";
 import { cilFilter, cilPeople, cilChevronLeft, cilChevronRight } from "@coreui/icons";
 import "../styles/ClassList.css";
@@ -9,6 +9,8 @@ import ClassModal from "./ClassModal";
 const colors = ["#EDE9FE", "#DBEAFE", "#EBFCEF", "#FFFDE7", "#FFF5F5"];
 
 export default function ClassList() {
+    const [roleId, setRoleId] = useState(null);
+    const [adminId, setAdminId] = useState(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [classes, setClasses] = useState([]);
     const [search, setSearch] = useState("");
@@ -31,6 +33,21 @@ export default function ClassList() {
         "Sắp diễn ra": "upcoming",
         "Kết thúc": "ended",
     };
+
+    useEffect(() => {
+        const fetchUser = async () => {
+            try {
+                const res = await getUserApi();
+                if (res?.roleId) setRoleId(res.roleId);
+                if (res?.id) setAdminId(res.id);
+            } catch (err) {
+                console.error("Lỗi khi lấy thông tin user:", err);
+            }
+        };
+        fetchUser();
+    }, []);
+
+
     // Reset về trang 1 khi đổi filter
     useEffect(() => {
         setPage(1);
@@ -39,8 +56,24 @@ export default function ClassList() {
     useEffect(() => {
         const fetchClasses = async () => {
             try {
-                const status = filterStatusMap[filter]; // lấy status theo filter hiện tại
-                const res = await getSubjectsApi({ page, limit, status });
+                const status = filterStatusMap[filter];
+
+                let res;
+
+                // Nếu là giáo viên → dùng API mới theo userId
+                if (roleId === "R1" && adminId) {
+                    res = await getSubjectsByTeacherApi({
+                        userId: adminId,
+                        page,
+                        limit,
+                        status,
+                    });
+                }
+                // Admin → API cũ
+                else {
+                    res = await getSubjectsApi({ page, limit, status });
+                }
+
                 if (res.success) {
                     setClasses(res.data);
                     setStats(res.stats);
@@ -52,8 +85,12 @@ export default function ClassList() {
                 console.error("Lỗi fetch classes:", err);
             }
         };
-        fetchClasses();
-    }, [page, limit, filter]);
+
+        // đợi userId load xong mới fetch
+        if (roleId) fetchClasses();
+
+    }, [page, limit, filter, roleId, adminId]);
+
 
     const statusText = {
         active: "Đang diễn ra",
@@ -125,7 +162,11 @@ export default function ClassList() {
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
-                    <button className="btn-add" onClick={() => setShowAddModal(true)}>+ Tạo lớp</button>
+                    {roleId !== "R1" && (
+                        <button className="btn-add" onClick={() => setShowAddModal(true)}>
+                            + Tạo lớp
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -182,9 +223,11 @@ export default function ClassList() {
                                     <CIcon icon={cilPeople} className="me-1" />
                                     {cls.currentStudents} / {cls.maxStudents}
                                 </span>
-                                <span className="price">
-                                    {Number(cls.price).toLocaleString()} VNĐ
-                                </span>
+                                {roleId !== "R1" && (
+                                    <span className="price">
+                                        {Number(cls.price).toLocaleString()} VNĐ
+                                    </span>
+                                )}
                             </div>
                         </div>
                     </div>

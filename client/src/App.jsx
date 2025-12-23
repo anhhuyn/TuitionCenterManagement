@@ -41,6 +41,10 @@ import StudentTuitionList from "./pages/StudentTuition/StudentTuitionList.jsx";
 import StudentTuitionCreate from "./pages/StudentTuition/StudentTuitionCreate.jsx";
 import StudentTuitionDetail from "./pages/StudentTuition/StudentTuitionDetail.jsx";
 import RevenuePage from "./pages/charts/RevenueChart.jsx"; 
+import DailySessions from "./pages/DailySessions.jsx";
+import SubjectStats from "./pages/SubjectStats.jsx";
+
+
 function AppWrapper() {
   return (
     <Router>
@@ -269,6 +273,17 @@ function App() {
       />
 
       <Route
+        path="/admin/sessions/daily"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <DailySessions />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
         path="/admin/room-schedule"
         element={
           <ProtectedRoute>
@@ -285,6 +300,17 @@ function App() {
           <ProtectedRoute>
             <Layout>
               <TeacherSchedulePage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/statistics/classroom"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <SubjectStats />
             </Layout>
           </ProtectedRoute>
         }

@@ -72,17 +72,6 @@ const AppHeaderDropdown = () => {
           {user?.fullName}
         </CDropdownHeader>
 
-        {/* Một số mục phụ */}
-        <CDropdownItem href="#">
-          <CIcon icon={cilBell} className="me-2" />
-          Updates
-          <CBadge color="info" className="ms-2">42</CBadge>
-        </CDropdownItem>
-
-        {/* --- SETTINGS --- */}
-        <CDropdownHeader className="bg-body-secondary fw-semibold my-2">
-          Cài đặt
-        </CDropdownHeader>
 
         <CDropdownItem>
           <Link
@@ -91,7 +80,7 @@ const AppHeaderDropdown = () => {
             style={{ textDecoration: "none", color: "inherit" }}
           >
             <CIcon icon={cilUser} className="me-2" />
-            Thông tin cá nhân
+            Thông tin tài khoản
           </Link>
         </CDropdownItem>
 

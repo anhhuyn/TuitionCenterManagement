@@ -45,7 +45,7 @@ const LoginPage = () => {
           description: `Xin chào ${res.user?.fullName ?? "người dùng"}!`,
         });
 
-        if (userRole === "R0") {
+        if (userRole === "R0" || "R1") {
           // Role cho Admin
           navigate("/admin/home");
         }

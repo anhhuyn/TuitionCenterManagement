@@ -1,0 +1,148 @@
+.subject-stats-wrapper {
+    margin-bottom: 24px;
+}
+
+.subject-stats-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1E88E5;
+    /* màu chữ chuẩn dashboard */
+}
+.subject-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* hàng trên 3 cột */
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* Hàng dưới 4 cột */
+.subject-stats .stat-card:nth-child(n+4) {
+    grid-column: span 1;
+}
+
+/* Dòng thứ 2 thành 4 cột */
+@media (min-width: 1024px) {
+    .subject-stats {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.stat-card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    transition: transform 0.25s ease;
+    /* thêm dòng này */
+}
+
+.stat-card {
+    cursor: pointer;
+}
+
+/* Phóng to khi hover */
+.stat-card:hover {
+    transform: scale(1.05);
+}
+
+.stat-number {
+    font-size: 32px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+/* Màu theo trạng thái */
+.stat-card.all .stat-number {
+    color: #2563eb;
+}
+
+.stat-card.active .stat-number {
+    color: #16a34a;
+}
+
+.stat-card.upcoming .stat-number {
+    color: #f59e0b;
+}
+
+.stat-card.ended .stat-number {
+    color: #dc2626;
+}
+.stat-card.middle .stat-number {
+  color: #10b981; /* xanh lá */
+}
+
+.stat-card.high .stat-number {
+  color: #f97316; /* cam */
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .subject-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 640px) {
+    .subject-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+.stat-card.new .stat-number {
+    color: #7c3aed;
+    /* tím */
+}
+
+/* Container tabs */
+.stats-tabs {
+    display: flex;
+    gap: 12px; /* khoảng cách giữa các nút */
+    margin-bottom: 24px;
+    flex-wrap: wrap; /* responsive, xuống dòng nếu quá nhỏ */
+}
+
+/* Các nút tab */
+.stats-tabs button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    background-color: #f3f4f6; /* nền nhạt */
+    color: #374151; /* chữ tối */
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+/* Hover */
+.stats-tabs button:hover {
+    background-color: #e5e7eb;
+    border-color: #9ca3af;
+}
+
+/* Tab đang active */
+.stats-tabs button.active {
+    background-color: #1e88e5; /* màu primary */
+    color: #ffffff;
+    border-color: #1e88e5;
+}
+
+/* Responsive: thu nhỏ nút trên mobile */
+@media (max-width: 640px) {
+    .stats-tabs {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .stats-tabs button {
+        width: 100%;
+        text-align: center;
+    }
+}

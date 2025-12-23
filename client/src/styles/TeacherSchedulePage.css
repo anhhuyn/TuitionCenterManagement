@@ -82,6 +82,11 @@
 }
 
 /* ========== CALENDAR VIEW ========= */
+.teacher-calendar-wrapper {
+  width: 100%;
+  box-sizing: border-box; /* tránh padding ảnh hưởng width */
+}
+
 .teacher-calendar-wrapper .fc-event {
   padding: 4px !important;
   border-radius: 6px !important;
@@ -117,23 +122,35 @@
 
 /* Legend */
 .status-legend {
-  margin-top: 15px;
+  margin: 15px auto 0;  
   display: flex;
   gap: 20px;
   font-size: 14px;
   align-items: center;
+  justify-content: center;
+  width: fit-content;      
 }
 
 .legend-box {
+  display: inline-block;
+  vertical-align: middle;
   width: 18px;
   height: 18px;
   border-radius: 4px;
   margin-right: 6px;
 }
 
-.legend-box.scheduled { background: #ff7a00; }
-.legend-box.completed { background: #7494ec; }
-.legend-box.canceled { background: #f6c23e; }
+.legend-box.scheduled {
+  background: #ff7a00;
+}
+
+.legend-box.completed {
+  background: #7494ec;
+}
+
+.legend-box.canceled {
+  background: #f6c23e;
+}
 
 /* ========== VIEW MODE SWITCH ========= */
 .view-mode-switch {
@@ -187,9 +204,63 @@
 }
 
 /* Giảm kích thước chữ trong Select */
-.teacher-select .css-1nmdiq5-menu,      /* menu options */
-.teacher-select .css-1jqq78o-placeholder, /* placeholder */
-.teacher-select .css-qbdosj-Input,       /* input typing */
-.teacher-select .css-1dimb5e-singleValue /* selected value */ {
-  font-size: 13px !important;  /* nhỏ hơn mặc định */
+.teacher-select .css-1nmdiq5-menu,
+/* menu options */
+.teacher-select .css-1jqq78o-placeholder,
+/* placeholder */
+.teacher-select .css-qbdosj-Input,
+/* input typing */
+.teacher-select .css-1dimb5e-singleValue
+
+/* selected value */
+  {
+  font-size: 13px !important;
+  /* nhỏ hơn mặc định */
+}
+
+/* ===== TOP ROW ===== */
+.filter-row-top {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 10px;
+}
+
+/* ===== BOTTOM ROW ===== */
+.filter-row-bottom {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+/* Ensure fixed width to avoid stretching */
+.filter-row-top .form-group,
+.filter-row-bottom .form-group {
+  min-width: 220px;
+}
+
+/* FIX: Select bị FullCalendar che */
+.teacher-select {
+  position: relative;
+  z-index: 5000;
+}
+
+.teacher-select .css-26l3qy-menu {
+  z-index: 9999 !important;
+}
+
+.filter-row-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+}
+
+.left-group {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
 }

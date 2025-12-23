@@ -58,11 +58,9 @@ const Profile = () => {
     const fetchUser = async () => {
       try {
         const res = await getUserApi();
-        console.log("📥 Response từ API getUserApi:", res);
 
         if (res) {
           setUser(res);
-          console.log("✅ User được set:", res);
         } else {
           setError("Không lấy được thông tin user");
         }
@@ -179,8 +177,6 @@ const Profile = () => {
       </Layout>
     );
 
-  const isManager = user.roleId === "R0";
-
   return (
     <Layout>
       {/* Cover */}
@@ -279,88 +275,57 @@ const Profile = () => {
             )}
           </div>
 
-
-          {!isManager && (
-            <ProfileCard
-              icon={cilPhone}
-              title="Số điện thoại"
-              value={
-                isEditing ? formData.phoneNumber : user.phoneNumber || "Chưa có số điện thoại"
-              }
-              editable={isEditing}
-              onChange={(val) => handleInputChange("phoneNumber", val)}
-            />
-          )}
         </div>
 
         {/* Cột phải */}
-        <div className="profile-right">
-          <div className="profile-card">
-            <div className="profile-card-header">
-              <CIcon icon={cilBriefcase} className="profile-icon" />
-              <h4>Chức vụ</h4>
-            </div>
-            {isEditing ? (
-              <select
-                className="profile-input"
-                value={formData.roleId}
-                onChange={(e) => handleInputChange("roleId", e.target.value)}
-              >
-                <option value="R0">Quản lý</option>
-                <option value="R1">Giáo Viên</option>
-                <option value="R2">Học sinh</option>
-              </select>
-            ) : (
-              <p>
-                {{
-                  R0: "Quản lý",
-                  R1: "Giáo Viên",
-                  R2: "Học sinh",
-                }[user.roleId] || "Chưa có vai trò"}
-              </p>
-            )}
-          </div>
+      {/* Cột phải — tất cả role giống R0 */}
+<div className="profile-right">
 
+  <div className="profile-card">
+    <div className="profile-card-header">
+      <CIcon icon={cilBriefcase} className="profile-icon" />
+      <h4>Chức vụ</h4>
+    </div>
+    {isEditing ? (
+      <select
+        className="profile-input"
+        value={formData.roleId}
+        onChange={(e) => handleInputChange("roleId", e.target.value)}
+      >
+        <option value="R0">Quản lý</option>
+        <option value="R1">Giáo Viên</option>
+        <option value="R2">Học sinh</option>
+      </select>
+    ) : (
+      <p>
+        {{
+          R0: "Quản lý",
+          R1: "Giáo Viên",
+          R2: "Học sinh",
+        }[user.roleId] || "Chưa có vai trò"}
+      </p>
+    )}
+  </div>
 
-          {isManager ? (
-            <ProfileCard
-              icon={cilPhone}
-              title="Số điện thoại"
-              value={
-                isEditing ? formData.phoneNumber : user.phoneNumber || "Chưa có số điện thoại"
-              }
-              editable={isEditing}
-              onChange={(val) => handleInputChange("phoneNumber", val)}
-            />
-          ) : (
-            <>
-              <ProfileCard
-                icon={cilHome}
-                title="Địa chỉ"
-                value={isEditing ? formData.address : user.address || "Chưa có địa chỉ"}
-                editable={isEditing}
-                onChange={(val) => handleInputChange("address", val)}
-              />
+  {/* Số điện thoại – luôn hiển thị như R0 */}
+  <ProfileCard
+    icon={cilPhone}
+    title="Số điện thoại"
+    value={isEditing ? formData.phoneNumber : user.phoneNumber || "Chưa có số điện thoại"}
+    editable={isEditing}
+    onChange={(val) => handleInputChange("phoneNumber", val)}
+  />
 
-              <ProfileCard
-                icon={cilBirthdayCake}
-                title="Ngày sinh"
-                value={isEditing ? formData.dob : user.dob || "Chưa có ngày sinh"}
-                editable={isEditing}
-                onChange={(val) => handleInputChange("dob", val)}
-                type="date"
-              />
-            </>
-          )}
-          {/* Nút cập nhật */}
-          {isEditing && (
-            <div style={{ textAlign: "center", margin: "20px" }}>
-              <SubmitButton onClick={() => setIsConfirmVisible(true)}>
-                Cập nhật
-              </SubmitButton>
-            </div>
-          )}
-        </div>
+  {/* Nút cập nhật */}
+  {isEditing && (
+    <div style={{ textAlign: "center", margin: "20px" }}>
+      <SubmitButton onClick={() => setIsConfirmVisible(true)}>
+        Cập nhật
+      </SubmitButton>
+    </div>
+  )}
+</div>
+
 
       </div>
 
