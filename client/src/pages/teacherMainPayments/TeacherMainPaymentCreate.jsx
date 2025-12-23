@@ -20,53 +20,57 @@ const TeacherPaymentCreate = () => {
   const [message, setMessage] = useState(null);
 
 const handleCreate = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setMessage(null);
+    e.preventDefault();
+    setLoading(true);
+    setMessage(null);
 
-  try {
-    const res = await createTeacherPayments({ month, year, notes });
-    console.log("📦 API response:", res);
+    try {
+      const res = await createTeacherPayments({ month, year, notes });
+      
+      // LOGIC XỬ LÝ THÀNH CÔNG (Status 2xx)
+      // Cố gắng lấy errCode từ res hoặc res.data
+      const errCode = res.errCode !== undefined ? res.errCode : res.data?.errCode;
+      
+      if (errCode === 0 || errCode === undefined) { 
+        // Nếu API trả về list trực tiếp hoặc errCode=0
+        setMessage({
+          type: "success",
+          text: res.message || `Tạo bảng lương tháng ${month}/${year} thành công!`,
+        });
+        setNotes("");
+      } 
+    } catch (err) {
+      console.error("❌ Lỗi API:", err);
+      
+      // LOGIC XỬ LÝ LỖI (Status 4xx, 5xx sẽ nhảy vào đây)
+      if (err.response) {
+        const status = err.response.status;
+        const data = err.response.data; // Dữ liệu backend trả về trong lỗi
 
-    if (res.errCode === 0) {
-      // ✅ Thành công
-      setMessage({
-        type: "success",
-        text: `Tạo bảng lương tháng ${month}/${year} thành công!`,
-      });
-      setNotes("");
-    } else if (res.errCode === 409) {
-      // ⚠️ Trùng bảng lương
-      setMessage({
-        type: "warning",
-        text: res.message || `Bảng lương tháng ${month}/${year} đã được tạo trước đó!`,
-      });
-    } else {
-      // ❌ Lỗi khác
-      setMessage({
-        type: "danger",
-        text: res.message || "Không thể tạo bảng lương! Vui lòng thử lại sau.",
-      });
+        if (status === 409 || (data && data.errCode === 409)) {
+          // ✅ Xử lý trường hợp "Đã tồn tại" -> Hiện màu Vàng
+          setMessage({
+            type: "warning",
+            text: data.message || `Bảng lương tháng ${month}/${year} đã được tạo trước đó!`,
+          });
+        } else {
+          // ❌ Các lỗi khác -> Hiện màu Đỏ
+          setMessage({
+            type: "danger",
+            text: data?.message || "Lỗi server! Vui lòng thử lại.",
+          });
+        }
+      } else {
+        setMessage({
+          type: "danger",
+          text: "Không thể kết nối tới server!",
+        });
+      }
+    } finally {
+      setLoading(false);
+      setTimeout(() => setMessage(null), 5000);
     }
-  } catch (err) {
-    console.error("❌ Lỗi khi gọi API tạo bảng lương:", err);
-
-    if (err.response) {
-      setMessage({
-        type: "danger",
-        text: err.response.data?.message || "Lỗi server!",
-      });
-    } else {
-      setMessage({
-        type: "danger",
-        text: "Không thể kết nối tới server!",
-      });
-    }
-  } finally {
-    setLoading(false);
-    setTimeout(() => setMessage(null), 5000);
-  }
-};
+  };
 
 
 

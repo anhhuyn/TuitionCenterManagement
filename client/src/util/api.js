@@ -394,15 +394,12 @@ const updateTeacherSubjectApi = async (id, data) => {
 };
 // 📅 1. Lấy danh sách lương theo tháng & năm
 // Backend: GET /v1/api/payments/list?month=X&year=Y
-const getTeacherPaymentsByMonth = (month, year) => {
+const getTeacherPaymentsByMonth = (month, year, name, status) => {
   return axios.get("/v1/api/payments/list", {
-    params: { month, year }
+    params: { month, year, name, status }
   });
 };
 
-// 💾 2. Tạo bảng lương
-// Backend: POST /v1/api/payments/create?month=X&year=Y&notes=Z
-// Lưu ý: Backend dùng @RequestParam nên phải gửi qua `params`, body để null
 const createTeacherPayments = (data) => {
   // data = { month, year, notes }
   return axios.post("/v1/api/payments/create", null, {
@@ -410,21 +407,21 @@ const createTeacherPayments = (data) => {
   });
 };
 
-// 🔍 3. Lấy chi tiết lương 1 giáo viên
-// Backend: GET /v1/api/payments/detail?teacherId=X&month=Y&year=Z
 const getTeacherSalaryDetail = (teacherId, month, year) => {
   return axios.get("/v1/api/payments/detail", {
     params: { teacherId, month, year }
   });
 };
 
-// 💸 4. Thanh toán lương giáo viên
-// Backend: POST /v1/api/payments/pay (Body: { teacherId, month, year })
-const payTeacherSalary = (data) => {
-  // data = { teacherId, month, year }
-  return axios.post("/v1/api/payments/pay", data);
-};
 
+const payTeacherSalary = (teacherId, month, year) => {
+  // Sửa 'instance' thành 'axios'
+  return axios.post("/v1/api/payments/pay", {
+    teacherId: teacherId,
+    month: month,
+    year: year
+  });
+};
 // Thông báo
 const getAnnouncementsApi = async ({ page = 0, limit = 10 } = {}) => {
   try {
@@ -505,7 +502,6 @@ export const updateRoomApi = async (roomId, room) => {
 };
 
 
-// Xóa phòng
 export const deleteRoomApi = async (roomId) => {
   const res = await axios.delete(`/v1/api/rooms/${roomId}`);
   return res.data;
@@ -531,6 +527,59 @@ export const getTeacherScheduleApi = async (teacherId, startDate, endDate) => {
     console.error('Error fetching teacher schedule:', err);
     return { success: false, error: err.response?.data || err.message };
   }
+};
+
+// --- API HỌC PHÍ HỌC SINH (STUDENT TUITION) ---
+const TUITION_API_BASE = "/v1/api/tuitions";
+
+// 1. Tạo hóa đơn học phí (Dùng Params)
+const createStudentTuitions = (data) => {
+  // data = { month, year, notes }
+  return axios.post(`${TUITION_API_BASE}/create`, null, {
+    params: {
+      month: data.month,
+      year: data.year,
+      notes: data.notes
+    }
+  });
+};
+
+// 2. Lấy danh sách hóa đơn
+const getStudentTuitionsByMonth = (month, year, name, grade, status) => {
+    return axios.get(`/v1/api/tuitions/list`, {
+        params: { month, year, name, grade, status }
+    });
+};
+
+// 3. Lấy chi tiết hóa đơn 1 học sinh
+const getStudentTuitionDetail = (studentId, month, year) => {
+  return axios.get(`${TUITION_API_BASE}/detail`, {
+    params: { studentId, month, year }
+  });
+};
+
+// 4. Thanh toán học phí (Dùng Body JSON)
+const payStudentTuition = (tuitionId, amount) => {
+    return axios.post('/v1/api/tuitions/pay', {
+        tuitionId: tuitionId, // ID của hóa đơn (không phải studentId)
+        amount: amount        // Số tiền muốn đóng
+    });
+};
+const updateTuitionDetailApi = (data) => {
+  // data = { detailId, attendedSessions, totalMoney, note }
+  return axios.post('/v1/api/tuitions/detail/update', data);
+};
+
+const getRevenueStatisticsApi = (year) => {
+  return axios.get('/v1/api/statistics/revenue', {
+    params: { year }
+  });
+};
+const exportRevenueStatisticsApi = (year) => {
+    return axios.get('/v1/api/statistics/export/revenue', {
+        params: { year },
+        responseType: 'blob' // QUAN TRỌNG: Để nhận dữ liệu file nhị phân
+    });
 };
 
 export {
@@ -567,10 +616,17 @@ export {
   getTeacherSubjectByIdApi,
   createTeacherSubjectApi,
   updateTeacherSubjectApi,
-
   getTeacherPaymentsByMonth,
   createTeacherPayments,
   getTeacherSalaryDetail,
   payTeacherSalary,
+  createStudentTuitions,
+  getStudentTuitionsByMonth,
+  getStudentTuitionDetail,
+  payStudentTuition,
+  updateTuitionDetailApi,
+  getRevenueStatisticsApi,
+  exportRevenueStatisticsApi,
+  
 };
 

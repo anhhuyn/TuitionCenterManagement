@@ -110,6 +110,16 @@ const _nav = [
         name: 'Chờ xếp lớp',
         to: '/buttons/dropdowns',
       },
+      {
+        component: CNavItem,
+        name: 'Học phí học sinh',
+        to: '/admin/student-tuitions', // Trang danh sách
+      },
+      {
+        component: CNavItem,
+        name: 'Tạo hóa đơn học phí',
+        to: '/admin/student-tuitions/create', // Trang tạo mới
+      },
       
     ],
   },
@@ -206,6 +216,11 @@ const _nav = [
         component: CNavItem,
         name: 'Thu chi',
         to: '/register',
+      },
+      {
+        component: CNavItem,
+        name: 'Thống kê Doanh thu', // Đổi tên hiển thị
+        to: '/admin/revenue-statistics', // Trỏ về Route vừa tạo ở App.js
       },
       {
         component: CNavItem,

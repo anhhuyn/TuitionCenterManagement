@@ -37,8 +37,10 @@ import TeacherMainPaymentCreate from "./pages/teacherMainPayments/TeacherMainPay
 import AnnouncementList from "./pages/AnnouncementList.jsx";
 import RoomSchedulePage from "./pages/RoomSchedulePage.jsx";
 import TeacherSchedulePage from "./pages/TeacherSchedulePage.jsx";
-
-
+import StudentTuitionList from "./pages/StudentTuition/StudentTuitionList.jsx";
+import StudentTuitionCreate from "./pages/StudentTuition/StudentTuitionCreate.jsx";
+import StudentTuitionDetail from "./pages/StudentTuition/StudentTuitionDetail.jsx";
+import RevenuePage from "./pages/charts/RevenueChart.jsx"; 
 function AppWrapper() {
   return (
     <Router>
@@ -297,6 +299,49 @@ function App() {
           ) : (
             <Navigate to="/login" replace />
           )
+        }
+      />
+
+      {/* --- Quản lý Học phí học sinh (Student Tuition) --- */}
+      <Route
+        path="/admin/student-tuitions"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <StudentTuitionList />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/student-tuitions/create"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <StudentTuitionCreate />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/student-tuition-detail/:id"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <StudentTuitionDetail />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path="/admin/revenue-statistics"
+        element={
+          <ProtectedRoute>
+            <Layout>
+              <RevenuePage />
+            </Layout>
+          </ProtectedRoute>
         }
       />
 

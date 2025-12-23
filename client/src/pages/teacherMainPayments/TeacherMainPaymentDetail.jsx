@@ -1,28 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CSpinner,
-  CButton,
-  CBadge,
+  CCard, CCardHeader, CCardBody,
+  CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
+  CSpinner, CButton, CBadge,
 } from "@coreui/react";
 import { getTeacherSalaryDetail, payTeacherSalary } from "../../util/api";
 import Swal from "sweetalert2";
 
 const TeacherMainPaymentDetail = () => {
-  const { id } = useParams();
+  const { id } = useParams(); // id ở đây là teacherId
   const [params] = useSearchParams();
   const month = parseInt(params.get("month"));
   const year = parseInt(params.get("year"));
-  const [teacher, setTeacher] = useState(null);
+  const [paymentData, setPaymentData] = useState(null); // Đổi tên biến cho rõ nghĩa
   const [loading, setLoading] = useState(true);
   const [paying, setPaying] = useState(false);
 
@@ -31,11 +22,18 @@ const TeacherMainPaymentDetail = () => {
       setLoading(true);
       try {
         const res = await getTeacherSalaryDetail(id, month, year);
-        console.log("📦 API result:", res.data);
-        setTeacher(res.data);
+        console.log("📦 Chi tiết lương API:", res);
+
+        // Logic lấy data an toàn
+        let data = (res && res.errCode === 0) ? res.data : (res?.data || null);
+        
+        // Nếu backend trả về mảng (lỗi logic backend), lấy phần tử đầu
+        if (Array.isArray(data)) data = data[0];
+
+        setPaymentData(data);
       } catch (err) {
         console.error("Lỗi khi lấy chi tiết lương:", err);
-        setTeacher(null);
+        setPaymentData(null);
       } finally {
         setLoading(false);
       }
@@ -44,11 +42,13 @@ const TeacherMainPaymentDetail = () => {
   }, [id, month, year]);
 
   const handlePaySalary = async () => {
-    if (!teacher) return;
+    if (!paymentData) return;
+
+    const teacherName = paymentData.teacher?.userInfo?.fullName || "Giáo viên";
 
     const confirm = await Swal.fire({
       title: "Xác nhận thanh toán?",
-      text: `Thanh toán lương tháng ${month}/${year} cho ${teacher.fullName}?`,
+      text: `Thanh toán lương tháng ${month}/${year} cho ${teacherName}?`,
       icon: "question",
       showCancelButton: true,
       confirmButtonText: "Thanh toán",
@@ -60,79 +60,60 @@ const TeacherMainPaymentDetail = () => {
 
     try {
       setPaying(true);
-      const res = await payTeacherSalary(teacher.teacherId, month, year);
-      console.log("🧾 Response:", res.data);
-
-      if (
-        res.data?.errCode === 0 ||
-        res.data?.data?.status === "paid" ||
-        res.data?.status === "paid"
-      ) {
+      // Gọi API Pay
+      const res = await payTeacherSalary(paymentData.teacher.id, month, year);
+      
+      // Kiểm tra thành công (check cả errCode và status)
+      const successData = (res && res.errCode === 0) ? res.data : res;
+      
+      if (successData?.status === "paid") {
         Swal.fire({
           title: "Thành công!",
           text: "Đã thanh toán lương giáo viên!",
           icon: "success",
           confirmButtonColor: "#7494ec",
         });
-        setTeacher({ ...teacher, status: "paid" });
+        // Cập nhật lại trạng thái UI ngay lập tức
+        setPaymentData({ ...paymentData, status: "paid" });
       } else {
-        Swal.fire("❌ Lỗi", res.data?.message || "Không thể thanh toán!", "error");
+        Swal.fire("❌ Lỗi", res.message || "Không thể thanh toán!", "error");
       }
     } catch (err) {
       console.error("❌ Lỗi khi thanh toán:", err);
-      Swal.fire("Lỗi", "Không thể kết nối tới server!", "error");
+      // Check lỗi 400 từ backend
+      const msg = err.response?.data?.message || "Lỗi kết nối!";
+      Swal.fire("Lỗi", msg, "error");
     } finally {
       setPaying(false);
     }
   };
 
-  if (loading)
-    return (
-      <div className="text-center my-4">
-        <CSpinner color="primary" style={{ color: "#7494ec" }} />
-      </div>
-    );
+  if (loading) return <div className="text-center my-4"><CSpinner color="primary" /></div>;
+  if (!paymentData) return <div className="text-center mt-5">Không tìm thấy dữ liệu lương.</div>;
 
-  if (!teacher) return <p>Không tìm thấy dữ liệu lương.</p>;
+  // Rút gọn biến cho dễ dùng trong JSX
+  const teacherInfo = paymentData.teacher?.userInfo || {};
+  const details = paymentData.paymentDetails || []; // Backend trả về paymentDetails
 
   return (
     <CCard className="shadow-sm border-0">
-      <CCardHeader
-        className="text-white fw-bold d-flex justify-content-between align-items-center"
-        style={{ backgroundColor: "#7494ec" }}
-      >
+      <CCardHeader className="text-white fw-bold d-flex justify-content-between align-items-center" style={{ backgroundColor: "#7494ec" }}>
         <div>
-          Chi tiết lương {teacher.fullName} - Tháng {month}/{year}
+          Chi tiết lương: {teacherInfo.fullName} - Tháng {month}/{year}
         </div>
         <div>
-          {teacher.status === "paid" ? (
-            <CBadge
-              className="p-2"
-              style={{
-                backgroundColor: "#28a745",
-                color: "white",
-              }}
-            >
-              Đã thanh toán
-            </CBadge>
+          {paymentData.status === "paid" ? (
+            <CBadge className="p-2" color="success">Đã thanh toán</CBadge>
           ) : (
-            <CBadge
-              className="p-2"
-              style={{
-                backgroundColor: "#ffc107",
-                color: "white",
-              }}
-            >
-              Chưa thanh toán
-            </CBadge>
+            <CBadge className="p-2" color="warning">Chưa thanh toán</CBadge>
           )}
         </div>
       </CCardHeader>
 
       <CCardBody>
         <p>
-          <strong>Email:</strong> {teacher.email} <br />
-          <strong>Số điện thoại:</strong> {teacher.phoneNumber}
+          <strong>Email:</strong> {teacherInfo.email} <br />
+          <strong>Số điện thoại:</strong> {teacherInfo.phoneNumber}
         </p>
 
         <CTable striped bordered hover responsive>
@@ -146,16 +127,17 @@ const TeacherMainPaymentDetail = () => {
             </CTableRow>
           </CTableHead>
           <CTableBody>
-            {teacher.subjects.map((s, i) => (
+            {details.map((item, i) => (
               <CTableRow key={i}>
-                <CTableDataCell>{s.subjectName}</CTableDataCell>
-                <CTableDataCell>{s.totalSessions}</CTableDataCell>
-                <CTableDataCell>{s.totalHours.toFixed(1)}</CTableDataCell>
+                {/* Sửa: item.subject.name thay vì item.subjectName */}
+                <CTableDataCell>{item.subject?.name}</CTableDataCell>
+                <CTableDataCell>{item.totalSessions}</CTableDataCell>
+                <CTableDataCell>{item.totalHours}</CTableDataCell>
                 <CTableDataCell>
-                  {parseFloat(s.salaryRate).toLocaleString("vi-VN")} ₫
+                  {item.salaryRate ? item.salaryRate.toLocaleString("vi-VN") : 0} ₫
                 </CTableDataCell>
                 <CTableDataCell>
-                  {s.totalMoney.toLocaleString("vi-VN")} ₫
+                  {item.totalMoney ? item.totalMoney.toLocaleString("vi-VN") : 0} ₫
                 </CTableDataCell>
               </CTableRow>
             ))}
@@ -163,28 +145,17 @@ const TeacherMainPaymentDetail = () => {
         </CTable>
 
         <h5 className="mt-3 text-end fw-bold" style={{ color: "#7494ec" }}>
-          Tổng cộng: {teacher.totalAmount.toLocaleString("vi-VN")} ₫
+          Tổng cộng: {paymentData.amount ? paymentData.amount.toLocaleString("vi-VN") : 0} ₫
         </h5>
 
         <div className="d-flex justify-content-between mt-3">
-          <CButton
-            style={{
-              backgroundColor: "#ccc",
-              borderColor: "#ccc",
-              color: "#333",
-            }}
-            onClick={() => window.history.back()}
-          >
+          <CButton color="secondary" onClick={() => window.history.back()}>
             ← Quay lại
           </CButton>
 
-          {teacher.status !== "paid" && (
+          {paymentData.status !== "paid" && (
             <CButton
-              style={{
-                backgroundColor: "#7494ec",
-                borderColor: "#7494ec",
-                color:"white"
-              }}
+              style={{ backgroundColor: "#7494ec", borderColor: "#7494ec", color:"white" }}
               onClick={handlePaySalary}
               disabled={paying}
             >
