@@ -201,11 +201,33 @@ export default function SubjectDetail() {
                 teacherId: editedData.teacherId ? editedData.teacherId : null,
             };
 
-            const res = await updateSubjectApi(classData.id, payload);
+            await updateSubjectApi(classData.id, payload);
+
+            alert("Cập nhật môn học thành công.");
             setIsEditing(false);
+
+            // reload lại dữ liệu
+            const res = await getSubjectByIdApi(id);
+            if (res.success) {
+                setClassData(res.data);
+                setEditedData(getInitialEditedData(res.data));
+            }
+
         } catch (error) {
-            console.error("Lỗi khi cập nhật môn học:", error);
-            alert("Cập nhật thất bại. Vui lòng thử lại.");
+            const data = error?.response?.data;
+
+            let msg = "Cập nhật thất bại.";
+
+            switch (data?.code) {
+                case "TEACHER_UNPAID_CHANGE":
+                    msg = "Không thể thay đổi giáo viên vì vẫn còn lương chưa thanh toán.";
+                    break;
+
+                default:
+                    msg = data?.message || msg;
+            }
+
+            alert(msg);
         }
     };
 

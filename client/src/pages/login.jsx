@@ -52,7 +52,9 @@ const LoginPage = () => {
         duration: 3,
       });
 
-      if (["R0", "R1"].includes(res.user?.roleId)) {
+      if (res.user?.roleId === "R1") {
+        navigate("/announcements");
+      } else if (res.user?.roleId === "R0") {
         navigate("/home");
       }
     } catch (err) {

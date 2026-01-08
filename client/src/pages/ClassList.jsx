@@ -225,7 +225,7 @@ export default function ClassList() {
                                 </span>
                                 {roleId !== "R1" && (
                                     <span className="price">
-                                        {Number(cls.price).toLocaleString()} VNĐ
+                                        {Number(cls.price).toLocaleString()} VNĐ / GIỜ
                                     </span>
                                 )}
                             </div>

@@ -80,29 +80,41 @@ export default function StudentList({ classData }) {
     setShowConfirmModal(true);
   };
 
-  const handleConfirmDelete = async () => {
-    try {
-      if (isDeleteMultiple) {
-        await Promise.all(
-          selected.map((studentId) =>
-            removeStudentFromSubjectApi(studentId, classData.id)
-          )
-        );
-        setStudents((prev) => prev.filter((s) => !selected.includes(s.id)));
-        setSelected([]);
-      } else {
-        await removeStudentFromSubjectApi(studentToDelete, classData.id);
-        setStudents((prev) => prev.filter((s) => s.id !== studentToDelete));
-        setSelected((prev) => prev.filter((id) => id !== studentToDelete));
+ const handleConfirmDelete = async () => {
+  const failed = [];
+
+  try {
+    if (isDeleteMultiple) {
+      for (const studentId of selected) {
+        try {
+          await removeStudentFromSubjectApi(studentId, classData.id);
+        } catch (err) {
+          failed.push(studentId);
+        }
       }
-    } catch (error) {
-      alert("Xảy ra lỗi khi xóa học sinh.");
-    } finally {
-      setShowConfirmModal(false);
-      setIsDeleteMultiple(false);
-      setStudentToDelete(null);
+
+      if (failed.length > 0) {
+        alert(
+          `Không thể xóa ${failed.length} học sinh do còn nợ học phí`
+        );
+      }
+
+      setStudents((prev) =>
+        prev.filter((s) => !selected.includes(s.id) || failed.includes(s.id))
+      );
+      setSelected([]);
+    } else {
+      await removeStudentFromSubjectApi(studentToDelete, classData.id);
+      setStudents((prev) => prev.filter((s) => s.id !== studentToDelete));
     }
-  };
+  } catch (error) {
+    alert(error?.response?.message || "Có lỗi xảy ra");
+  } finally {
+    setShowConfirmModal(false);
+    setIsDeleteMultiple(false);
+    setStudentToDelete(null);
+  }
+};
 
   // --- Tìm kiếm + sắp xếp ---
   const splitNameParts = (fullName) => {

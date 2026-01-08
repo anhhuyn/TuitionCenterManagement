@@ -2,8 +2,6 @@
   padding: 20px;
   background: #ffffff; /* nền trắng */
   min-height: 100vh;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* đổ bóng */
-  border-radius: 8px;
 }
 
 /* 🔹 Thanh trên */
@@ -64,7 +62,7 @@
   background: #fff;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  
 }
 
 .customer-table th,
@@ -478,6 +476,7 @@ h6.text-primary {
 }
 
 .custom-modal-header {
-  background-color: #7494ec !important; /* xanh nhạt bạn dùng ở phần khác */
+  background-color: #7494ec !important; 
   color: #fff !important;
 }
+

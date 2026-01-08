@@ -442,12 +442,10 @@ const getTeacherSalaryDetail = (teacherId, month, year) => {
 };
 
 
-const payTeacherSalary = (teacherId, month, year) => {
-  // Sửa 'instance' thành 'axios'
+const payTeacherSalary = (paymentId, amount) => {
   return axios.post("/v1/api/payments/pay", {
-    teacherId: teacherId,
-    month: month,
-    year: year
+    paymentId: paymentId,
+    amount: amount
   });
 };
 // Thông báo
@@ -563,12 +561,12 @@ const TUITION_API_BASE = "/v1/api/tuitions";
 // 1. Tạo hóa đơn học phí (Dùng Params)
 const createStudentTuitions = (data) => {
   // data = { month, year, notes }
-  return axios.post(`${TUITION_API_BASE}/create`), null, {
+  return axios.post(`${TUITION_API_BASE}/create`, null, {
     params: {
       month: data.month,
       year: data.year,
       notes: data.notes
-    }}};
+    }});};
 // Lấy danh sách điểm danh giáo viên theo subject
 const getTeacherAttendanceBySubjectApi = async (subjectId) => {
   return await axios.get(`/v1/api/teacher-attendance/subject/${subjectId}/teacher-attendance`);
@@ -657,7 +655,13 @@ const getAbsentOrLateStudentsApi = async (startDate, endDate) => {
   });
 };
 
+const updateTeacherPaymentDetail = (data) => {
+    return axios.post('/v1/api/payments/update-detail', data);
+};
+
+
 export {
+  updateTeacherPaymentDetail,
   getAbsentOrLateStudentsApi,
   getStudentsGroupBySchoolApi,
   getSessionsByDateApi,

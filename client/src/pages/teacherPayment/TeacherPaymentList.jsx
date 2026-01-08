@@ -10,7 +10,7 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { FiTrash2, FiPlus, FiEdit2, FiEye } from 'react-icons/fi'
 import '../../styles/TeacherPaymentList.css'
-import ConfirmModal from '../../components/modal/ConfirmModal' // ✅ thêm dòng này
+import ConfirmModal from '../../components/modal/ConfirmModal' 
 
 const TeacherPaymentList = () => {
   const [teacherSubjects, setTeacherSubjects] = useState([])
@@ -18,20 +18,39 @@ const TeacherPaymentList = () => {
   const [showConfirmModal, setShowConfirmModal] = useState(false)
   const [subjectToDelete, setSubjectToDelete] = useState(null)
   const navigate = useNavigate()
+  const [filters, setFilters] = useState({
+    grade: '',
+    teacherName: '',
+    subjectName: '',
+  })
 
-  useEffect(() => {
+useEffect(() => {
+  const delay = setTimeout(() => {
     fetchData()
-  }, [])
+  }, 500)
 
-const fetchData = async () => {
+  return () => clearTimeout(delay)
+}, [filters])
+
+const fetchData = async (customFilters = filters) => {
   try {
-    const res = await axios.get('http://localhost:8088/v1/api/teacher-subjects')
-    // Kiểm tra errCode và lấy mảng data bên trong
+    setLoading(true)
+
+    const params = {}
+
+    if (customFilters.grade) params.grade = customFilters.grade
+    if (customFilters.teacherName) params.teacherName = customFilters.teacherName
+    if (customFilters.subjectName) params.subjectName = customFilters.subjectName
+
+    const res = await axios.get(
+      'http://localhost:8088/v1/api/teacher-subjects',
+      { params }
+    )
+
     if (res.data && res.data.errCode === 0) {
-      setTeacherSubjects(res.data.data) 
+      setTeacherSubjects(res.data.data)
     } else {
-      setTeacherSubjects([]) // Nếu lỗi hoặc rỗng thì set mảng rỗng
-      console.error(res.data.message)
+      setTeacherSubjects([])
     }
   } catch (error) {
     console.error('Lỗi khi tải dữ liệu:', error)
@@ -40,6 +59,7 @@ const fetchData = async () => {
     setLoading(false)
   }
 }
+
 
   // Hàm tạo mới
   const handleCreateNew = () => {
@@ -89,16 +109,97 @@ const handleConfirmDelete = async () => {
   return (
     <div className="teacher-payment-container">
       {/* Tiêu đề và nút thêm */}
-      <div className="d-flex justify-content-between align-items-center mb-4">
-        <h2 className="fw-bold mb-0"></h2>
-        <CButton
-          color="success"
-          onClick={handleCreateNew}
-          className="d-flex align-items-center gap-2"
-        >
-          <FiPlus /> Thêm Thỏa Thuận Mới
-        </CButton>
+{/* Header + Filter */}
+<div className="mb-4">
+  {/* Tiêu đề + nút thêm */}
+  <div className="d-flex justify-content-between align-items-center mb-3">
+    <h4 className="fw-bold mb-0">Danh sách thỏa thuận lương</h4>
+    <CButton
+      color="success"
+      size="sm"
+      onClick={handleCreateNew}
+      className="d-flex align-items-center gap-2"
+    >
+      <FiPlus /> Thêm thỏa thuận mới
+    </CButton>
+  </div>
+
+  {/* Filter */}
+  <div className="bg-white rounded shadow-sm p-3">
+    <div className="row align-items-center g-3">
+
+      {/* Lớp */}
+      <div className="col-md-2">
+        <input
+          type="number"
+          className="form-control form-control-sm"
+          placeholder="Lớp"
+          value={filters.grade}
+          onChange={(e) =>
+            setFilters({ ...filters, grade: e.target.value })
+          }
+        />
       </div>
+
+      {/* Giáo viên */}
+      <div className="col-md-4">
+        <input
+          type="text"
+          className="form-control form-control-sm"
+          placeholder="Tên giáo viên"
+          value={filters.teacherName}
+          onChange={(e) =>
+            setFilters({ ...filters, teacherName: e.target.value })
+          }
+        />
+      </div>
+
+      {/* Môn học */}
+      <div className="col-md-4">
+        <input
+          type="text"
+          className="form-control form-control-sm"
+          placeholder="Tên môn học"
+          value={filters.subjectName}
+          onChange={(e) =>
+            setFilters({ ...filters, subjectName: e.target.value })
+          }
+        />
+      </div>
+
+      {/* Action */}
+<div className="col-md-2 d-flex justify-content-end gap-2">
+  <CButton
+    color="info"
+    size="sm"
+    shape="rounded-pill"
+    className="px-3"
+    onClick={() => fetchData()}
+    disabled={!filters.grade && !filters.teacherName && !filters.subjectName}
+  >
+    Lọc
+  </CButton>
+
+  <CButton
+    color="danger"
+    size="sm"
+    shape="rounded-pill"
+    variant="outline"
+    className="px-3"
+    onClick={() => {
+      const reset = { grade: '', teacherName: '', subjectName: '' }
+      setFilters(reset)
+      fetchData(reset)
+    }}
+  >
+    Xóa
+  </CButton>
+</div>
+
+    </div>
+  </div>
+</div>
+
 
       {/* GRID */}
       <div className="teacher-payment-grid">

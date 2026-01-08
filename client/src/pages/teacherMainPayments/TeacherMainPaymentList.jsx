@@ -1,27 +1,12 @@
 import React, { useState, useEffect } from "react";
 import {
-  CCard,
-  CCardHeader,
-  CCardBody,
-  CRow,
-  CCol,
-  CFormSelect,
-  CFormInput,
-  CButton,
-  CSpinner,
-  CTable,
-  CTableHead,
-  CTableRow,
-  CTableHeaderCell,
-  CTableBody,
-  CTableDataCell,
-  CBadge,
-  CInputGroup,
-  CInputGroupText,
+  CCard, CCardHeader, CCardBody, CRow, CCol, CFormSelect, CFormInput,
+  CTable, CTableHead, CTableRow, CTableHeaderCell, CTableBody, CTableDataCell,
+  CBadge, CInputGroup, CInputGroupText, CSpinner
 } from "@coreui/react";
 import CIcon from "@coreui/icons-react";
-import { cilSearch, cilFilter, cilMoney, cilUser } from "@coreui/icons";
-import { getTeacherPaymentsByMonth } from "../../util/api";
+import { cilFilter, cilMoney, cilUser } from "@coreui/icons";
+import { getTeacherPaymentsByMonth } from "../../util/api"; // Đảm bảo đường dẫn đúng
 import { useNavigate } from "react-router-dom";
 
 const TeacherPaymentList = () => {
@@ -29,94 +14,88 @@ const TeacherPaymentList = () => {
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [year, setYear] = useState(new Date().getFullYear());
 
-  // State quản lý bộ lọc mới
+  // State quản lý bộ lọc
   const [searchName, setSearchName] = useState("");
-  const [filterStatus, setFilterStatus] = useState(""); // "" = All, "paid", "unpaid", "partial"
+  const [filterStatus, setFilterStatus] = useState(""); 
+  
+  // State debounce
+  const [debouncedName, setDebouncedName] = useState(searchName);
 
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Hàm gọi API (Cập nhật thêm tham số name và status)
-  const handleFetchData = async () => {
-    try {
-      setLoading(true);
-      
-      // Lưu ý: Bạn cần chắc chắn hàm API getTeacherPaymentsByMonth trong file api.js 
-      // đã chấp nhận thêm tham số (month, year, name, status) như Controller
-      const res = await getTeacherPaymentsByMonth(month, year, searchName, filterStatus);
-      
-      console.log("📦 Dữ liệu từ API:", res);
+  // 1. Xử lý Debounce: Chỉ update debouncedName khi dừng gõ 600ms
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedName(searchName);
+    }, 600);
 
-      let listPayment = [];
-      if (res.errCode === 0) {
-        listPayment = res.data || [];
-      } else if (res.data && Array.isArray(res.data)) {
-        listPayment = res.data;
-      } else if (Array.isArray(res)) {
-        listPayment = res;
+    return () => clearTimeout(timer);
+  }, [searchName]);
+
+  // 2. Gọi API: Chạy khi debouncedName hoặc các filter khác thay đổi
+  useEffect(() => { // <--- ĐÃ SỬA LỖI seEffect THÀNH useEffect
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        // Gọi API với debouncedName (giá trị đã được làm trễ)
+        const res = await getTeacherPaymentsByMonth(month, year, debouncedName, filterStatus);
+        
+        let listPayment = [];
+        if (res && res.errCode === 0) {
+          listPayment = res.data || [];
+        } else if (res && Array.isArray(res.data)) {
+          listPayment = res.data;
+        } else if (Array.isArray(res)) {
+          listPayment = res;
+        }
+        setData(listPayment);
+      } catch (error) {
+        console.error("❌ Lỗi:", error);
+        setData([]);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setData(listPayment);
-    } catch (error) {
-      console.error("❌ Lỗi khi lấy danh sách lương:", error);
-      setData([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchData();
+  }, [debouncedName, filterStatus, month, year]);
 
-  // Helper: Format tiền tệ
-  const formatCurrency = (amount) => {
-    return amount ? amount.toLocaleString("vi-VN") + " ₫" : "0 ₫";
-  };
-
-  // Helper: Lấy màu badge trạng thái
+  // Helper functions giữ nguyên
+  const formatCurrency = (amount) => amount ? amount.toLocaleString("vi-VN") + " ₫" : "0 ₫";
+  
   const getStatusBadge = (status) => {
     switch (status) {
-      case "paid":
-        return "success"; // Xanh lá
-      case "partial":
-        return "warning"; // Vàng
-      case "unpaid":
-        return "danger";  // Đỏ
-      default:
-        return "secondary";
+      case "paid": return "success";
+      case "partial": return "warning";
+      case "unpaid": return "danger";
+      default: return "secondary";
     }
   };
 
-  // Helper: Dịch trạng thái sang tiếng Việt
   const getStatusLabel = (status) => {
     switch (status) {
       case "paid": return "Đã thanh toán";
       case "partial": return "Thanh toán 1 phần";
       case "unpaid": return "Chưa thanh toán";
-      default: return "Không rõ";
+      default: return "Khác";
     }
   };
 
   return (
     <CCard className="shadow-sm border-0">
-      <CCardHeader
-        className="text-white fw-bold d-flex align-items-center justify-content-between"
-        style={{ backgroundColor: "#7494ec" }}
-      >
-        <span>
-          <CIcon icon={cilMoney} className="me-2" />
-          QUẢN LÝ LƯƠNG GIÁO VIÊN
-        </span>
+      <CCardHeader className="text-white fw-bold d-flex align-items-center justify-content-between" style={{ backgroundColor: "#7494ec" }}>
+        <span><CIcon icon={cilMoney} className="me-2" /> QUẢN LÝ LƯƠNG GIÁO VIÊN</span>
       </CCardHeader>
       
       <CCardBody>
-        {/* --- KHU VỰC BỘ LỌC --- */}
+        {/* --- BỘ LỌC --- */}
         <CRow className="g-3 mb-4">
-          {/* 1. Tìm theo tên */}
-          <CCol md={3}>
+          <CCol md={4}> 
             <label className="form-label fw-bold text-secondary">Tìm tên giáo viên</label>
             <CInputGroup>
-              <CInputGroupText className="bg-light">
-                <CIcon icon={cilUser} />
-              </CInputGroupText>
+              <CInputGroupText className="bg-light"><CIcon icon={cilUser} /></CInputGroupText>
               <CFormInput 
                 placeholder="Nhập tên..." 
                 value={searchName}
@@ -125,13 +104,9 @@ const TeacherPaymentList = () => {
             </CInputGroup>
           </CCol>
 
-          {/* 2. Lọc trạng thái */}
           <CCol md={3}>
-            <label className="form-label fw-bold text-secondary">Trạng thái thanh toán</label>
-            <CFormSelect
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-            >
+            <label className="form-label fw-bold text-secondary">Trạng thái</label>
+            <CFormSelect value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)}>
               <option value="">-- Tất cả --</option>
               <option value="unpaid">Chưa thanh toán</option>
               <option value="partial">Thanh toán 1 phần</option>
@@ -139,18 +114,14 @@ const TeacherPaymentList = () => {
             </CFormSelect>
           </CCol>
 
-          {/* 3. Chọn Tháng */}
           <CCol md={2}>
             <label className="form-label fw-bold text-secondary">Tháng</label>
             <CFormSelect value={month} onChange={(e) => setMonth(e.target.value)}>
-              {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>
-              ))}
+              {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>Tháng {i + 1}</option>)}
             </CFormSelect>
           </CCol>
 
-          {/* 4. Chọn Năm */}
-          <CCol md={2}>
+          <CCol md={3}>
             <label className="form-label fw-bold text-secondary">Năm</label>
             <CFormSelect value={year} onChange={(e) => setYear(e.target.value)}>
               {Array.from({ length: 5 }, (_, i) => {
@@ -159,21 +130,9 @@ const TeacherPaymentList = () => {
               })}
             </CFormSelect>
           </CCol>
-
-          {/* 5. Nút tìm kiếm */}
-          <CCol md={2} className="d-flex align-items-end">
-            <CButton
-              className="w-100 text-white fw-bold"
-              style={{ backgroundColor: "#7494ec", borderColor: "#7494ec" }}
-              onClick={handleFetchData}
-              disabled={loading}
-            >
-              {loading ? <CSpinner size="sm" /> : <><CIcon icon={cilSearch} className="me-1"/> Tìm kiếm</>}
-            </CButton>
-          </CCol>
         </CRow>
 
-        {/* --- KHU VỰC BẢNG DỮ LIỆU --- */}
+        {/* --- BẢNG DỮ LIỆU --- */}
         <div className="table-responsive">
           <CTable striped hover bordered className="align-middle">
             <CTableHead className="text-center" style={{ backgroundColor: "#e8edfd", whiteSpace: "nowrap" }}>
@@ -189,9 +148,16 @@ const TeacherPaymentList = () => {
             </CTableHead>
             
             <CTableBody>
-              {data.length > 0 ? (
+              {/* Hiệu ứng Loading ngay trong bảng */}
+              {loading ? (
+                <CTableRow>
+                  <CTableDataCell colSpan="7" className="text-center py-5">
+                    <CSpinner color="primary" variant="grow"/>
+                    <div className="mt-2 text-primary">Đang tải dữ liệu...</div>
+                  </CTableDataCell>
+                </CTableRow>
+              ) : data.length > 0 ? (
                 data.map((t, index) => {
-                  // Tính toán hiển thị
                   const total = t.amount || 0;
                   const paid = t.paidAmount || 0;
                   const remaining = total - paid;
@@ -199,49 +165,26 @@ const TeacherPaymentList = () => {
                   return (
                     <CTableRow key={t.id} className="text-center">
                       <CTableDataCell>{index + 1}</CTableDataCell>
-                      
-                      {/* Thông tin giáo viên */}
                       <CTableDataCell className="text-start">
                         <div className="fw-bold text-primary">{t.teacher?.userInfo?.fullName}</div>
                         <div className="small text-muted">{t.teacher?.userInfo?.phoneNumber}</div>
                       </CTableDataCell>
-                      
-                      {/* Trạng thái */}
                       <CTableDataCell>
-                        <CBadge color={getStatusBadge(t.status)} shape="rounded-pill">
-                          {getStatusLabel(t.status)}
-                        </CBadge>
+                        <CBadge color={getStatusBadge(t.status)} shape="rounded-pill">{getStatusLabel(t.status)}</CBadge>
                       </CTableDataCell>
-                      
-                      {/* Tổng lương - In đậm */}
-                      <CTableDataCell className="fw-bold">
-                        {formatCurrency(total)}
-                      </CTableDataCell>
-
-                      {/* Đã trả - Màu xanh */}
-                      <CTableDataCell className="text-success">
-                        {formatCurrency(paid)}
-                      </CTableDataCell>
-
-                      {/* Còn lại - Màu đỏ nếu > 0 */}
+                      <CTableDataCell className="fw-bold">{formatCurrency(total)}</CTableDataCell>
+                      <CTableDataCell className="text-success">{formatCurrency(paid)}</CTableDataCell>
                       <CTableDataCell className={remaining > 0 ? "text-danger fw-bold" : "text-muted"}>
                         {formatCurrency(remaining)}
                       </CTableDataCell>
-                      
-                      {/* Nút thao tác */}
                       <CTableDataCell>
-                        <CButton
-                          size="sm"
-                          variant="outline"
-                          style={{ color: "#7494ec", borderColor: "#7494ec" }}
-                          onClick={() =>
-                            navigate(
-                              `/admin/teacher-main-payments/${t.teacher?.id}?month=${month}&year=${year}`
-                            )
-                          }
+                        {/* Lưu ý: Bạn cần update lại đường dẫn này cho khớp với router của bạn */}
+                        <button 
+                          className="btn btn-sm btn-outline-primary"
+                          onClick={() => navigate(`/admin/teacher-main-payments/${t.teacher?.id}?month=${month}&year=${year}`)}
                         >
                           Xem chi tiết
-                        </CButton>
+                        </button>
                       </CTableDataCell>
                     </CTableRow>
                   );

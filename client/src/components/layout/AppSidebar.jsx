@@ -36,29 +36,30 @@ useEffect(() => {
     setRoleId(user.roleId);
 
     if (user.roleId === 'R1') {
-      // tìm group "Lớp học"
-      const classGroup = navigation.find(item => item.name === 'Lớp học');
+  // tìm group "Lớp học"
+  const classGroup = navigation.find(item => item.name === 'Lớp học');
 
-      // lấy 2 item cần thiết, đổi tên và gán icon
-      const myClasses = classGroup?.items
-        .filter(i => i.name === 'Danh sách lớp học' || i.name === 'Lịch trống giáo viên')
-        .map(i => {
-          if (i.name === 'Danh sách lớp học') 
-            return { ...i, name: 'Lớp học của tôi', icon: <CIcon icon={cilSchool} customClassName="nav-icon" /> };
-          if (i.name === 'Lịch trống giáo viên') 
-            return { ...i, name: 'Lịch dạy của tôi', icon: <CIcon icon={cilCalendar} customClassName="nav-icon" /> };
-          return i;
-        }) || [];
+  // lấy 2 item cần thiết, đổi tên và gán icon
+  const myClasses = classGroup?.items
+    .filter(i => i.name === 'Danh sách lớp học' || i.name === 'Lịch trống giáo viên')
+    .map(i => {
+      if (i.name === 'Danh sách lớp học') 
+        return { ...i, name: 'Lớp học của tôi', icon: <CIcon icon={cilSchool} customClassName="nav-icon" /> };
+      if (i.name === 'Lịch trống giáo viên') 
+        return { ...i, name: 'Lịch dạy của tôi', icon: <CIcon icon={cilCalendar} customClassName="nav-icon" /> };
+      return i;
+    }) || [];
 
-      // menu mới: giữ Trang chủ + Tin tức + 2 item này
-      const filteredNav = navigation
-        .filter(item => item.name === 'Trang chủ' || item.name === 'Tin tức')
-        .concat(myClasses);
+  // menu mới: Ẩn Trang chủ, chỉ giữ Tin tức + 2 item này
+  const filteredNav = navigation
+    .filter(item => item.name === 'Tin tức') // chỉ giữ Tin tức
+    .concat(myClasses);
 
-      setFilteredNavigation(filteredNav);
-    } else {
-      setFilteredNavigation(navigation); // role khác -> full menu
-    }
+  setFilteredNavigation(filteredNav);
+} else {
+  setFilteredNavigation(navigation); // role khác -> full menu
+}
+
   };
 
   fetchUser();

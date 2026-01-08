@@ -49,7 +49,7 @@ const _nav = [
   {
     component: CNavItem,
     name: 'Tin tức',
-    to: '/admin/announcements',
+    to: '/announcements',
     icon: <CIcon icon={cilDescription} customClassName="nav-icon" />,
   },
   {
@@ -99,21 +99,6 @@ const _nav = [
       },
       {
         component: CNavItem,
-        name: 'Học viên trong lớp',
-        to: '/buttons/button-groups',
-      },
-      {
-        component: CNavItem,
-        name: 'Chuyển lớp',
-        to: '/buttons/dropdowns',
-      },
-       {
-        component: CNavItem,
-        name: 'Chờ xếp lớp',
-        to: '/buttons/dropdowns',
-      },
-      {
-        component: CNavItem,
         name: 'Học phí học sinh',
         to: '/admin/student-tuitions', // Trang danh sách
       },
@@ -123,47 +108,6 @@ const _nav = [
         to: '/admin/student-tuitions/create', // Trang tạo mới
       },
       
-    ],
-  },
-  {
-    component: CNavGroup,
-    name: 'Kết nối phụ huynh',
-    icon: <CIcon icon={cilChatBubble} customClassName="nav-icon" />,
-    items: [
-      
-      {
-        component: CNavItem,
-        name: 'Danh sách phụ huynh',
-        to: '/forms/checks-radios',
-      },
-      {
-        component: CNavItem,
-        name: 'Phản hồi',
-        to: '/forms/floating-labels',
-      },
-      {
-        component: CNavItem,
-        name: 'Cảnh báo học viên',
-        to: '/forms/form-control',
-      },
-    ],
-  },
- 
-  {
-    component: CNavGroup,
-    name: 'Tài liệu',
-    icon: <CIcon icon={cilBook} customClassName="nav-icon" />,
-    items: [
-      {
-        component: CNavItem,
-        name: 'Tài liệu học',
-        to: '/notifications/alerts',
-      },
-      {
-        component: CNavItem,
-        name: 'Đề thi',
-        to: '/notifications/badges',
-      },
     ],
   },
   {
@@ -180,11 +124,6 @@ const _nav = [
         name: 'Danh sách giáo viên',
         to: '/admin/nhanvien',
       },
-      {
-        component: CNavItem,
-        name: 'Duyệt lịch nghỉ',
-        to: '/register',
-      },
       {
         component: CNavItem,
         name: 'Thỏa thuận giáo viên',
@@ -209,26 +148,12 @@ const _nav = [
     name: 'Quản lý tài chính',
     icon: <CIcon icon={cilMoney} customClassName="nav-icon" />,
     items: [
+    
       {
         component: CNavItem,
-        name: 'Thông tin thanh toán',
-        to: '/login',
-      },
-      {
-        component: CNavItem,
-        name: 'Thu chi',
-        to: '/register',
-      },
-      {
-        component: CNavItem,
-        name: 'Thống kê Doanh thu', // Đổi tên hiển thị
-        to: '/admin/revenue-statistics', // Trỏ về Route vừa tạo ở App.js
-      },
-      {
-        component: CNavItem,
-        name: 'Duyệt thanh toán',
-        to: '/404',
-      },
+        name: 'Thống kê Doanh thu',
+        to: '/admin/revenue-statistics', 
+      }
     ],
   },
   

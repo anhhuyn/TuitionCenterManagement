@@ -79,20 +79,20 @@ const TeacherManagement = () => {
     },
   });
 
-// fetch dữ liệu
+  // fetch dữ liệu
   useEffect(() => {
     const fetchTeachers = async () => {
       try {
         setLoading(true); // Đặt loading true khi bắt đầu
-        
+
         // Tạo params chuẩn để loại bỏ các giá trị null/undefined/rỗng
         const params = new URLSearchParams();
         params.append("page", page);
         params.append("limit", limit);
-        
+
         if (filters.name) params.append("name", filters.name);
         if (filters.gender) params.append("gender", filters.gender);
-        
+
         // Chỉ append chuyên môn nếu có giá trị
         if (filters.specialty) params.append("specialty", filters.specialty);
 
@@ -149,18 +149,20 @@ const TeacherManagement = () => {
       setSelected([...selected, id]);
     }
   };
-// 👇 1. Thêm hàm xử lý ảnh (để hiển thị ảnh từ localhost)
-const getImageUrl = (imagePath) => {
-  if (!imagePath) return "https://cdn-icons-png.flaticon.com/512/847/847969.png";
-  if (imagePath.startsWith("http")) return imagePath;
-  return `http://localhost:8088/${imagePath}`;
-};
+  const getImageUrl = (image) => {
+    if (!image) return "https://cdn-icons-png.flaticon.com/512/847/847969.png";
+    if (typeof image === "string") {
+      return image.startsWith("http") ? image : `http://localhost:8088/${image}`;
+    }
+    return URL.createObjectURL(image);
+  };
 
-// 👇 2. Thêm hàm click vào dòng (để mở modal chi tiết)
-const handleRowClick = (teacher) => {
-  setDetailEmployee(teacher);
-  setShowDetailModal(true);
-};
+
+  // 👇 2. Thêm hàm click vào dòng (để mở modal chi tiết)
+  const handleRowClick = (teacher) => {
+    setDetailEmployee(teacher);
+    setShowDetailModal(true);
+  };
   // Hàm tách họ, tên lót, tên
   const splitNameParts = (fullName = "") => {
     const parts = fullName.trim().split(/\s+/);
@@ -263,114 +265,118 @@ const handleRowClick = (teacher) => {
   };
 
   const handleSubmit = async () => {
-  try {
-    const formData = new FormData();
-    
-    // 1. Append các trường cơ bản
-    formData.append("fullName", newEmployee.fullName);
-    formData.append("email", newEmployee.email);
-    formData.append("phoneNumber", newEmployee.phoneNumber);
-    formData.append("specialty", newEmployee.specialty);
-    formData.append("gender", newEmployee.gender);
-    formData.append("dateOfBirth", newEmployee.dateOfBirth || "");
-    formData.append("roleId", "R1"); // Role Teacher
-    
-    // Gửi password nếu có nhập (hoặc backend tự set default)
-    if (newEmployee.password) {
+    try {
+      const formData = new FormData();
+
+      // 1. Append các trường cơ bản
+      formData.append("fullName", newEmployee.fullName);
+      formData.append("email", newEmployee.email);
+      formData.append("phoneNumber", newEmployee.phoneNumber);
+      formData.append("specialty", newEmployee.specialty);
+      formData.append("gender", newEmployee.gender);
+      formData.append("dateOfBirth", newEmployee.dateOfBirth || "");
+      formData.append("roleId", "R1"); // Role Teacher
+
+      // Gửi password nếu có nhập (hoặc backend tự set default)
+      if (newEmployee.password) {
         formData.append("password", newEmployee.password);
-    } else if (!editMode) {
+      } else if (!editMode) {
         formData.append("password", "123456"); // Default cho tạo mới
-    }
-
-    // 2. SỬA QUAN TRỌNG: Append Address dùng dấu chấm (.)
-    if (newEmployee.address) {
-      formData.append("address.details", newEmployee.address.details || "");
-      formData.append("address.ward", newEmployee.address.ward || "");
-      formData.append("address.province", newEmployee.address.province || "");
-    }
-
-    // 3. Append Image
-    if (newEmployee.image instanceof File) {
-      formData.append("file", newEmployee.image);
-    }
-
-    // --- GỌI API (Sửa URL thành /teachers) ---
-    let response;
-    if (editMode && currentId) {
-      response = await axios.put(
-        `http://localhost:8088/v1/api/teachers/${currentId}`, // SỬA
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-    } else {
-      response = await axios.post(
-        "http://localhost:8088/v1/api/teachers", // SỬA
-        formData,
-        { headers: { "Content-Type": "multipart/form-data" } }
-      );
-    }
-
-    if (response.data.errCode === 0) {
-      alert(editMode ? "Cập nhật thành công!" : "Thêm thành công!");
-      
-      // Load lại danh sách
-      const refreshed = await axios.get(
-        `http://localhost:8088/v1/api/teachers?page=${page}&limit=${limit}` // SỬA
-      );
-      if (refreshed.data.errCode === 0) {
-        setTeachers(refreshed.data.data);
       }
-      setShowModal(false);
-    } else {
-      alert(response.data.message);
-    }
 
-  } catch (err) {
-    console.error(err);
-    alert("Có lỗi xảy ra!");
-  }
-};
+      // 2. SỬA QUAN TRỌNG: Append Address dùng dấu chấm (.)
+      if (newEmployee.address) {
+        formData.append("address.details", newEmployee.address.details || "");
+        formData.append("address.ward", newEmployee.address.ward || "");
+        formData.append("address.province", newEmployee.address.province || "");
+      }
+
+      // 3. Append Image
+      if (newEmployee.image instanceof File) {
+        formData.append("file", newEmployee.image);
+      }
+
+      // --- GỌI API (Sửa URL thành /teachers) ---
+      let response;
+      if (editMode && currentId) {
+        response = await axios.put(
+          `http://localhost:8088/v1/api/teachers/${currentId}`, // SỬA
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      } else {
+        response = await axios.post(
+          "http://localhost:8088/v1/api/teachers", // SỬA
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } }
+        );
+      }
+
+      if (response.data.errCode === 0) {
+        alert(editMode ? "Cập nhật thành công!" : "Thêm thành công!");
+
+        // Load lại danh sách
+        const refreshed = await axios.get(
+          `http://localhost:8088/v1/api/teachers?page=${page}&limit=${limit}` // SỬA
+        );
+        if (refreshed.data.errCode === 0) {
+          setTeachers(refreshed.data.data);
+        }
+        setShowModal(false);
+      } else {
+        alert(response.data.message);
+      }
+
+    } catch (err) {
+      console.error(err);
+      alert("Có lỗi xảy ra!");
+    }
+  };
   // Xóa nhân viên
-const handleDelete = async (id) => {
-  if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
-  try {
-    // SỬA: /employees -> /teachers
-    const response = await axios.delete(`http://localhost:8088/v1/api/teachers/${id}`);
-    if (response.data.errCode === 0) {
-      alert("Xóa thành công!");
-      setTeachers(teachers.filter((t) => t.id !== id));
-      setSelected(selected.filter((s) => s !== id));
-    } else {
-      alert(response.data.message);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa?")) return;
+    try {
+      const response = await axios.delete(`http://localhost:8088/v1/api/teachers/${id}`);
+      if (response.data.errCode === 0) {
+        alert("Xóa thành công!");
+        setTeachers(teachers.filter((t) => t.id !== id));
+        setSelected(selected.filter((s) => s !== id));
+      } else {
+        alert(response.data.message);
+      }
+    } catch (err) {
+      // Lấy message từ backend nếu có
+      const msg =
+        err.response?.data?.message ||
+        "Lỗi khi xóa!";
+      alert(msg);
     }
-  } catch (err) {
-    alert("Lỗi khi xóa!");
-  }
-};
+  };
 
-// Xóa nhiều
-const handleDeleteMultiple = async () => {
-  if (selected.length === 0) return alert("Vui lòng chọn nhân viên!");
-  if (!window.confirm(`Xóa ${selected.length} nhân viên đã chọn?`)) return;
+  // Xóa nhiều
+  const handleDeleteMultiple = async () => {
+    if (selected.length === 0) return alert("Vui lòng chọn nhân viên!");
+    if (!window.confirm(`Xóa ${selected.length} nhân viên đã chọn?`)) return;
 
-  try {
-    // SỬA: /employees -> /teachers
-    const response = await axios.post(
-      "http://localhost:8088/v1/api/teachers/delete-multiple",
-      { ids: selected }
-    );
+    try {
+      // SỬA: /employees -> /teachers
+      const response = await axios.post(
+        "http://localhost:8088/v1/api/teachers/delete-multiple",
+        { ids: selected }
+      );
 
-    if (response.data.errCode === 0) {
-      alert(response.data.message);
-      setTeachers(teachers.filter((t) => !selected.includes(t.id)));
-      setSelected([]);
-    } else {
-      alert(response.data.message);
+      if (response.data.errCode === 0) {
+        alert(response.data.message);
+        setTeachers(teachers.filter((t) => !selected.includes(t.id)));
+        setSelected([]);
+      } else {
+        alert(response.data.message);
+      }
+    } catch (error) {
+      const msg = error.response?.data?.message || "Lỗi khi xóa nhiều!";
+      alert(msg);
     }
-  } catch (error) {
-    alert("Lỗi khi xóa nhiều!");
-  }
-};
+  };
 
   const handleExportExcel = async () => {
     try {
@@ -432,7 +438,7 @@ const handleDeleteMultiple = async () => {
     }
   };
 
-  
+
 
 
   return (
@@ -464,7 +470,7 @@ const handleDeleteMultiple = async () => {
 
 
             <div className="search-wrapper">
-              
+
               <input
                 type="text"
                 placeholder="Tra cứu nhân viên"
@@ -658,16 +664,7 @@ const handleDeleteMultiple = async () => {
               <label className="fw-bold mb-2">Ảnh đại diện</label>
               <div className="avatar-upload border rounded-circle d-flex align-items-center justify-content-center mb-2" style={{ width: "120px", height: "120px", overflow: "hidden" }}>
                 {newEmployee.image ? (
-                  <img
-                    src={
-                      typeof newEmployee.image === "string"
-                        ? `${import.meta.env.VITE_BACKEND_URL}/${newEmployee.image}`
-                        : URL.createObjectURL(newEmployee.image)
-                    }
-                    alt="Avatar"
-                    className="w-100 h-100"
-                    style={{ objectFit: "cover" }}
-                  />
+                  <img src={getImageUrl(newEmployee.image)} alt="Avatar" />
                 ) : (
                   <div className="text-muted small text-center">Chưa có ảnh</div>
                 )}
@@ -823,9 +820,6 @@ const handleDeleteMultiple = async () => {
         </CModalBody>
 
         <CModalFooter>
-          <CButton color="secondary" onClick={() => setShowModal(false)}>
-            Hủy
-          </CButton>
           <CButton color="primary" onClick={handleSubmit}>
             {editMode ? "Cập nhật" : "Lưu"}
           </CButton>
@@ -850,21 +844,7 @@ const handleDeleteMultiple = async () => {
                 {/* Cột trái - Ảnh và thông tin cơ bản */}
                 <div className="col-md-4 text-center">
                   <div className="card shadow-sm border-0 rounded-4 p-3">
-                    <img
-                      src={
-                        detailEmployee.image
-                          ? `${import.meta.env.VITE_BACKEND_URL}/${detailEmployee.image}`
-                          : "https://cdn-icons-png.flaticon.com/512/847/847969.png"
-                      }
-                      alt={detailEmployee.fullName}
-                      className="rounded-circle mx-auto mb-3"
-                      style={{
-                        width: "140px",
-                        height: "140px",
-                        objectFit: "cover",
-                        border: "0px solid #7494ec",
-                      }}
-                    />
+                    <img src={getImageUrl(detailEmployee?.image)} alt={detailEmployee?.fullName} />
                     <h5 >
                       {detailEmployee.fullName}
                     </h5>
@@ -878,7 +858,7 @@ const handleDeleteMultiple = async () => {
                 <div className="col-md-8">
                   {/* Thông tin cá nhân */}
                   <div className="card shadow-sm border-0 rounded-4 p-3 mb-3">
-                     <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Thông tin cá nhân</h6>
+                    <h6 style={{ color: '#7494ec', fontWeight: 600 }}>Thông tin cá nhân</h6>
                     <div className="row mb-2">
                       <div className="col-sm-6">
                         <strong>Email:</strong> {detailEmployee.email || "—"}

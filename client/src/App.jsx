@@ -262,7 +262,7 @@ function App() {
       />
 
       <Route
-        path="/admin/announcements"
+        path="/announcements"
         element={
           <ProtectedRoute>
             <Layout>
